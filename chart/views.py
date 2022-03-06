@@ -1361,7 +1361,6 @@ def getapisymbols(request):
 
         ohlcs_m1_arr = _ohlcs_m1[-1:][0]
 
-      
         m1from_m1_data = {
             'open':ohlcs_m1_arr['open'],
             'high':ohlcs_m1_arr['high'],
@@ -1373,8 +1372,6 @@ def getapisymbols(request):
             allred = False
         else:
             allgreen = False
-
-
 
         ohlcs_m5_arr = _ohlcs_m1[-5:]
         max_high_ohlcs_m5 = 0
@@ -1488,7 +1485,6 @@ def getapisymbols(request):
         # else:
         #     allgreen = False
 
-
         if allred == True or allgreen == True:
             greenOrred.append(search.id)
     # print(greenOrred)
@@ -1531,9 +1527,9 @@ def getorders(request):
     for i, data in ohlc_data_m1.iterrows():
         ohlc = {
             'time':data['time'],
-            'open':data['open'] ,
+            'open':data['open'],
             'high':data['high'],
-            'low':data['low'] ,
+            'low':data['low'],
             'close':data['close'], 
             'tick':data['tick_volume'],
         }
@@ -1544,7 +1540,7 @@ def getorders(request):
     for i, data in ohlc_data_m5.iterrows():
         ohlc = {
             'time':data['time'],
-            'open':data['open'] ,
+            'open':data['open'],
             'high':data['high'],
             'low':data['low'] ,
             'close':data['close'], 
@@ -1552,13 +1548,12 @@ def getorders(request):
         }
         ohlcs_m5.append(ohlc)
 
-
     ohlc_data_m15 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M15, 0, 450))
     ohlc_data_m15['time']=pd.to_datetime(ohlc_data_m15['time'], unit='s',utc=True)
     for i, data in ohlc_data_m15.iterrows():
         ohlc = {
             'time':data['time'],
-            'open':data['open'] ,
+            'open':data['open'],
             'high':data['high'],
             'low':data['low'] ,
             'close':data['close'], 
@@ -1675,8 +1670,6 @@ def getorders(request):
         else:
             allgreen = False
 
-
-
         ohlcs_m5_arr = _ohlcs_m1[-5:]
         max_high_ohlcs_m5 = 0
         for i in ohlcs_m5_arr:
@@ -1702,7 +1695,6 @@ def getorders(request):
             allred = False
         else:
             allgreen = False
-
 
         ohlcs_m15_arr = _ohlcs_m1[-15:]
         max_high_ohlcs_m15 = 0
@@ -1789,11 +1781,9 @@ def getorders(request):
         # else:
         #     allgreen = False
 
-
         if allred == True or allgreen == True:
             greenOrred.append(search.id)
 
-    
     isMarketClose = 0    
     if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
         isMarketClose = 1

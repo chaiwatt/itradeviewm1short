@@ -243,7 +243,7 @@
                                 closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
                                         // linemessage=_symbol + " Profit " +  _profit
                                         // lineNotification(linemessage).then(data => {
-                                        //     // beep();
+                                        //     beep();
                                         //     location.reload(true);
                                         // }).catch(error => {})
                                 }).catch(error => {})
@@ -252,10 +252,9 @@
                             let gbp_price_for_lot = order.lot * 50
                             if(_profit > price_for_lot){
                                 closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
-                                    // location.reload(true);
                                     // linemessage=_symbol + " Profit " +  _profit
                                     // lineNotification(linemessage).then(data => {
-                                    //         // beep();
+                                    //         beep();
                                     //     location.reload(true);
                                     // }).catch(error => {})
                                 }).catch(error => {})

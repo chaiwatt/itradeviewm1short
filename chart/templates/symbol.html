@@ -1,0 +1,134 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0">Symbol setting</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Symbol setting</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+  
+      <!-- Main content -->
+      <div class="content">
+        <div class="container-fluid">
+          
+          <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header border-transparent">
+                      <h3 class="card-title">Symbols (TickMill)</h3>
+      
+                      {% csrf_token %}
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body p-0">
+                      <div class="table-responsive">
+                        <table class="table m-0">
+                          <thead>
+                          <tr>
+                            <th>Status</th>
+                            <th>Symbol</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                            {% for symbol in symbols %}
+                              <tr>
+                                <td>
+                                    <div class="icheck-primary d-inline">
+                                        <input type="checkbox" class="symbol" data-name="{{ symbol.name }}" id="{{ symbol.id }}" 
+                                        
+                                        {% if symbol.status == '1' %}
+                                        checked
+                                        {% endif %}
+                                        
+                                        >
+                                            <label for="{{ symbol.id }}">
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>{{ symbol.name }}</td>
+                              </tr>
+                          {% endfor %} 
+                
+                         
+                          </tbody>
+                        </table>
+                      </div>
+                      <!-- /.table-responsive -->
+                    </div>
+             
+                  </div>
+  
+            </div>
+     
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content -->
+
+      <script>
+
+
+      $(document).ready(function (){
+          toastr.options = {
+            "closeButton": false,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": false,
+            "positionClass": "toast-bottom-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "100",
+            "hideDuration": "100",
+            "timeOut": "1500",
+            "extendedTimeOut": "100",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        }
+      })
+
+        $(document).on('change', '.symbol', function(e) {
+            let status = ($(this).is(":checked")) ? 1:0  
+            changeSymbolStatus($(this).attr("id"),status).then(data => {
+                toastr.info(`Symbol ${$(this).data('name')} setting has been saved`)
+            }).catch(error => {})
+        })
+
+        function changeSymbolStatus(id,status){  
+            data = {
+                  id: id,
+                  status: status,
+                  csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+              } 
+           return new Promise((resolve, reject) => {
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'changesymbolstatus' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+      </script>
+
+{% endblock %} 

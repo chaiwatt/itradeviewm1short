@@ -1,0 +1,3 @@
+python manage.py dumpdata --format=json chart > chartapp_dumpdata.json
+
+python manage.py loaddata chartapp_dumpdata.json

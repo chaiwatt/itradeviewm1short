@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iTRADER | Hunter</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- select2 -->
+  <link rel="stylesheet" href="{% static 'plugins/select2/css/select2.min.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/select2/css/select2-bootstrap4.min.css' %}">
+  <!-- icheck -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck/icheck-bootstrap.min.css' %}">
+  <!-- toastr -->
+  <link rel="stylesheet" href="{% static 'plugins/toastr/css/toastr.min.css' %}">
+  <!-- sweet alert2 -->
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+  <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> -->
+
+  <!-- <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script> -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+<!-- select2 -->
+<script type="text/javascript" src="{% static 'plugins/select2/js/select2.full.min.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'plugins/boostrap-switch/bootstrap-switch.min.js' %}"></script>
+
+  <script src="{% static 'js/calc_m1.js' %}" ></script>
+  <script type="text/javascript" src="{% static 'plugins/echartv3/echarts.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'plugins/toastr/js/toastr.min.js' %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+  
+
+
+ 
+
+</head>
+<body class="dark-mode hold-transition sidebar-mini sidebar-collapse">
+  <div id="loader" style="display:none;">
+    <div style="display:flex; justify-content:center; align-items:center; background:#000;position:fixed; top: 0px; left: 0px; z-index:9999; width:100% ; height:100%; opacity:0.6">
+        <div class="la-ball-spin la-2x">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- Navbar -->
+  <nav class="main-header navbar navbar-expand navbar-dark">
+    <!-- Left navbar links -->
+    <ul class="navbar-nav">
+     
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="/" class="nav-link"><i class="fas fa-home"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <!-- <a class="nav-link"></a> -->
+        {% if request.path != '/backtesting' %}
+        <span class="nav-link">User: <strong>{{ accountinfo.login }} ({{ accountinfo.name }})</strong> Balance: <strong>{{ accountinfo.balance }}</strong> Equity: <strong>{{ accountinfo.equity }}</strong> 
+          Mode: 
+          {% if accountinfo.trade_mode == 0 %} 
+          <strong>Demo</strong>
+          {% else %}
+          <strong>Real</strong>
+          {% endif %}
+          Broker: <strong>{{ accountinfo.company }}</strong> </span>
+
+          {%else%}
+          
+          <span class="nav-link"><a id="showbalance" href="#"><i class="fas fa-edit text-warning mr-1"></i></a> Demo Balance: <strong><span id="presentbalance">{{ setting.demobalance|floatformat:'2' }}</span>$</strong></span>
+        {% endif %} 
+
+      </li>
+    </ul>
+
+
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- Main Sidebar Container -->
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="/" class="brand-link text-white">
+      <!-- <img src="{% static 'dist/img/AdminLTELogo.png' %}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8"> -->
+      <i class="fas fa-piggy-bank fa-2x text-white"></i>
+      <span class="brand-text font-weight-light">iTRADER</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar Menu -->
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <li class="nav-item menu-is-opening">
+            <a href="#" class="nav-link active">
+              <i class="nav-icon fas fa-cog"></i>
+              <p>
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %} ">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Home</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/orders" class="nav-link {% if request.path == '/orders' %}active{% endif %} ">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Orders</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/backtesting" class="nav-link {% if request.path == '/backtesting' %}active{% endif %} ">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Back Testing</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/symbolsetting" class="nav-link {% if request.path == '/symbolsetting' %}active{% endif %} ">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Symbol</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/spec" class="nav-link {% if request.path == '/spec' %}active{% endif %} ">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Spec</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="/setting" class="nav-link {% if request.path == '/setting' %}active{% endif %} ">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Setting</p>
+                </a>
+              </li>
+            </ul>
+          </li> 
+        </ul>
+      </nav>
+      <!-- /.sidebar-menu -->
+    </div>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    {% block content %}
+
+    {% endblock %}
+  </div>
+  <!-- /.content-wrapper -->
+
+
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="float-right d-none d-sm-inline">
+      iTRADER
+    </div>
+    <!-- Default to the left -->
+    <strong>Copyright &copy; 2021-2022 <a href="">iTRADER</a>.</strong> All rights reserved.
+  </footer>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED SCRIPTS -->
+
+<!-- jQuery -->
+
+
+
+</body>
+</html>

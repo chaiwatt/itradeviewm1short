@@ -1,0 +1,1775 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0"><span id="symbol"></span> <span id="timeframe"></span></h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Chart</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+  
+      <!-- Main content -->
+      <div class="content">
+        <div class="container-fluid">
+            {% csrf_token %}
+          <div class="row">
+            <div class="col-lg-9">
+              <div class="card">
+                <div class="card-body">
+      
+                    <div id="canndle_stick_chart"></div>
+                    <div id="canndle_stick_chart_zoom"></div>
+                    <div id="macd_chart"></div>
+                   
+                
+                </div>
+              </div>
+  
+            </div>
+            <!-- /.col-md-6 -->
+            <div class="col-lg-3">
+              
+                <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Order Buy Test Spec <span id="symbolname"></span></h3>
+                    </div>
+                    <div class="card-body p-0">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Spec</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody  id="orderbuy_spec_table">   
+    
+                        </tbody>
+                      </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Order Sell Test Spec </h3>
+                    </div>
+                    <div class="card-body p-0">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Spec</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody  id="ordersell_spec_table">   
+    
+                        </tbody>
+                      </table>
+                    </div>
+                </div>
+
+
+                <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Exit Point Test Spec</h3>
+                    </div>
+                    <div class="card-body p-0">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Spec</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody id="exit_point_spec_table">   
+
+                        </tbody>
+                      </table>
+                    </div>
+                </div>
+
+                  <!-- <button type="button" id="sendLineNotify" class="btn btn-info">Test Line Notify</button> -->
+                  <button type="button" id="btnGetSingleOhlc" class="btn btn-info">Get OHLC</button>
+                  <button type="button" id="openOrderBuy" class="btn btn-info">Open Order Buy</button>
+                  <button type="button" id="openOrderSale" class="btn btn-info">Open Order Sale</button>
+                  <br>
+                  <button type="button" id="closeAllOrder" class="btn btn-primary">Close All</button>
+                  <button type="button" id="closeOrder" class="btn btn-success">Close on Profit</button>
+
+            </div>
+            <!-- /.col-md-6 -->
+          </div>
+          <!-- /.row -->+-
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content -->
+      <script>
+
+        var slopeSpec = 0.00001;
+        var canndleStickChart = echarts.init(document.getElementById('canndle_stick_chart'));  
+        var macdChart = echarts.init(document.getElementById('macd_chart')); 
+        var canndleStickChartZoom = echarts.init(document.getElementById('canndle_stick_chart_zoom')); 
+        
+
+        // var entryspecs = [];// JSON.parse('{{ entryspecs|escapejs }}');
+        var orderbuy_entry_specs = [];// JSON.parse('{{ entryspecs|escapejs }}');
+        var ordersale_entry_specs = [];
+
+        var orderbuy_close_specs = [];//JSON.parse('{{ exitspecs|escapejs }}');
+        var ordersell_close_specs = [];
+
+        var responseData = [] ;//JSON.parse("{{resData|escapejs}}"); 
+        var apisymbols = JSON.parse("{{apisymbols|escapejs}}"); 
+        var apitimeframes = JSON.parse("{{apitimeframes|escapejs}}"); 
+        var sma100PresentLevel = null
+        var data = []
+        var axisData = [];
+        var MacdArr = [];
+        var AvgMacdArr = [];
+        var SignalArr = [];
+        var HistogramArr = [];
+        var RSIArr = [];
+        var RSIDelayArr = [];
+        var CCIArr = [];
+        var SSMA5Arr = [];
+        var SSMA8Arr = [];
+        var SSMA13Arr = [];
+        var SSMA20Arr = [];
+        var SSMA50Arr = [];
+        var SSMA100Arr = [];
+        var Smoth_SSMA5Arr = [];
+        var Smoth_SSMA8Arr = [];
+        var Smoth_SSMA13Arr = [];
+        var Smoth_SSMA20Arr = [];
+        var Smoth_SSMA50Arr = [];
+        var dataMA5 = [];
+        var dataMA10 = [];
+        var dataMA20 = [];
+        var dataMA50 = [];
+        var dataMA100 = [];
+        var dataMA200 = [];
+        var MarkData = [];
+        // var askPrice = 0;
+        // var bidPrice = 0;
+        var MacdCrossData  = [];
+        var markMA100LineCord = [];
+        var MarkMA100Slope  = [];
+        var sma100Trend = [];
+        var ssma3LineOrder = null;
+        var markLineCordSsma5 = []
+        var markLineCordSsma8 = []
+        var markLineCordSsma13 = []
+        var regressiveEqSmma5 = [];
+        var regressiveEqSmma8 = [];
+        var regressiveEqSmma13 = [];
+        var ssma5STD = 0;
+        var ssma8STD = 0;
+        var ssma13STD = 0;
+        var dataResult = null
+        var sma100ArrowLevel = null
+        var foundEntryPoint = false;
+        var lineLenght = 10;
+        var testResult = []
+        var symbolCountId = 0;
+        var timeframeCountId = 3;
+        var searchResult = [];
+        var foundOrderBuyEntryPoint = false;
+        var foundOrderSellEntryPoint = false;
+        var orderBuyEntryPointflag = false;
+        var orderSellEntryPointflag = false;
+        var testResult = [];
+        var tmpDataIn = null;
+        var searchType = JSON.parse("{{searchtype|escapejs}}")[0].fields; 
+        var momenttumBar = false;
+        var trendPattern = false;
+
+        $( document ).ready(function () {   
+             setInterval(function(){
+                searchMarket();
+             },600000)
+
+            // setInterval(function(){
+            //     closeOrder('').then(data => { //closeall
+
+            //     }).catch(error => {})
+            //  },2000)
+        });
+
+        $(document).on('click','#btnGetSingleOhlc', function(){
+            
+            searchMarket();
+
+        })
+
+        function searchMarket(){
+            let symbol = parseInt(apisymbols[symbolCountId].pk);
+            let timeframe = timeframeCountId;
+            let html_entrypoint_testspecs = ``
+            let html_openbuy_testspecs = ``
+            let html_opensell_testspecs = ``
+            getSingleOhlc(symbol,timeframe).then(data_item => {
+                // let entry_specs = JSON.parse(data_item.entryspecs);
+
+                let _orderbuy_entry_specs = JSON.parse(data_item.entryspecs).filter(x => x.fields.order_type == 0);
+                let _ordersell_entry_specs = JSON.parse(data_item.entryspecs).filter(x => x.fields.order_type == 1);
+
+                let _orderbuy_close_specs = JSON.parse(data_item.exitspecs).filter(x => x.fields.order_type == 0);
+                let _ordersell_close_specs = JSON.parse(data_item.exitspecs).filter(x => x.fields.order_type == 1);
+
+                orderbuy_close_specs = _orderbuy_close_specs;
+                ordersell_close_specs = _ordersell_close_specs;
+
+                orderbuy_entry_specs = _orderbuy_entry_specs;
+                ordersell_entry_specs = _ordersell_entry_specs;
+                // console.log(_ordersell_close_specs)
+
+                if(JSON.parse(data_item.entryspecs).length == 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: `Not found Test spec for ${$(this).find(':selected').data('name')}`,
+                    })
+                }
+
+                
+                // _rawData =  createRawData(data_item.ohlcs);
+                // console.log(_orderbuy_entry_specs)
+                _orderbuy_entry_specs.forEach(spec_item => {
+                    html_openbuy_testspecs += `<tr>
+                        <td>${ spec_item.fields.name}</td>
+                        <td id="td_orderbuy_spec_${spec_item.fields.parameter}">${spec_item.fields.entry_value}</td>
+                        <td id="td_orderbuy_reading_${spec_item.fields.parameter}"></td>
+                        </tr>`;
+                });
+               
+                _ordersell_entry_specs.forEach(spec_item => {
+                    html_opensell_testspecs += `<tr>
+                        <td>${ spec_item.fields.name}</td>
+                        <td id="td_ordersell_spec_${spec_item.fields.parameter}">${spec_item.fields.entry_value}</td>
+                        <td id="td_ordersell_reading_${spec_item.fields.parameter}"></td>
+                        </tr>`;
+                });
+
+                // entryspecs = _orderbuy_entry_specs;
+                // _orderbuy_entry_specs.forEach(spec_item => {
+                //     html_entrypoint_testspecs += `<tr>
+                //         <td>${ spec_item.fields.name}</td>
+                //         <td id="td_spec_${spec_item.fields.parameter}">${spec_item.fields.entry_value}</td>
+                //         <td id="td_reading_${spec_item.fields.parameter}"></td>
+                //         </tr>`;
+                // });
+                // $('#entry_point_spec_table').html(html_entrypoint_testspecs);
+                $('#orderbuy_spec_table').html(html_openbuy_testspecs);
+                $('#ordersell_spec_table').html(html_opensell_testspecs);
+                createData(data_item);
+            }).catch(error => {})
+
+         
+            symbolCountId++;            
+            if(symbolCountId == apisymbols.length) {
+                MarkData = [];
+                orderBuyEntryPointflag = false;
+                orderSellEntryPointflag = false;
+                testResult = [];
+                tmpDataIn = null;
+                symbolCountId= 0
+                timeframeCountId++;
+                if(timeframeCountId > 6){
+                    // send summary
+                    // console.log(searchResult)
+                    searchResult = [];
+                    timeframeCountId = 3;
+                }
+            }
+            
+           
+        }
+
+        function getSingleOhlc(symbol,timeframe){
+            return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    timeframe: timeframe,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getsingleohlc' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        function createData(response){
+            _forexData = response.series;
+            $("#timeframe").html(response.timeframe);
+            $("#symbol").html(response.symbol);
+            data = getData(_forexData);
+            // console.log(data)
+            closedPrice = getClosedPrice(_forexData);
+            lowPrice = getLowPrice(_forexData);
+            highPrice = getHighPrice(_forexData);
+            axisData = getDateLabel(_forexData); 
+            EMA_SHORT = EMACalc(closedPrice,12);
+            EMA_LONG = EMACalc(closedPrice,26);
+            EMA5Arr = EMACalc(closedPrice,5);
+            EMA20Arr = EMACalc(closedPrice,20);
+            EMA50Arr = EMACalc(closedPrice,50);
+            EMA200Arr = EMACalc(closedPrice,200);
+            MACD = MACDCalc(EMA_LONG,EMA_SHORT,26,12);
+            SSMA5Arr = SSMA_Calc(closedPrice,5);
+            SSMA8Arr = SSMA_Calc(closedPrice,8);
+            SSMA13Arr = SSMA_Calc(closedPrice,13);
+            SSMA20Arr = SSMA_Calc(closedPrice,20);
+            SSMA50Arr = SSMA_Calc(closedPrice,50);
+            SSMA100Arr = SSMA_Calc(closedPrice,100);
+            RSI = RS(closedPrice,14);
+
+            Smoth_SSMA5 = SSMA_BARESMOTH(SSMA5Arr,3);
+            Smoth_SSMA8 = SSMA_BARESMOTH(SSMA8Arr,3);
+            Smoth_SSMA13 = SSMA_BARESMOTH(SSMA13Arr,3);
+            Smoth_SSMA20 = SSMA_BARESMOTH(SSMA20Arr,3);
+            Smoth_SSMA50 = SSMA_BARESMOTH(SSMA50Arr,3);
+
+            SIGNAL = EMACalc(MACD,9);
+            HISTOGRAM = HistogramCalc(SIGNAL,MACD,9);
+
+            var nullForMACD = Array(closedPrice.length - MACD.length).fill(null);
+            var nullForSIGNAL = Array(closedPrice.length - SIGNAL.length).fill(null);
+            var nullForHISTOGRAM = Array(closedPrice.length - HISTOGRAM.length).fill(null);
+            var nullSmoth_SSMA5 = Array(closedPrice.length - Smoth_SSMA5.length).fill(null);
+            var nullSmoth_SSMA8 = Array(closedPrice.length - Smoth_SSMA8.length).fill(null);
+            var nullSmoth_SSMA13 = Array(closedPrice.length - Smoth_SSMA13.length).fill(null);
+            var nullSmoth_SSMA20 = Array(closedPrice.length - Smoth_SSMA20.length).fill(null);
+            var nullSmoth_SSMA50 = Array(closedPrice.length - Smoth_SSMA50.length).fill(null);
+            var nullSmoth_SSMA100 = Array(closedPrice.length - SSMA100Arr.length).fill(null);
+            var nullRS = Array(closedPrice.length - RSI.length).fill(null);
+
+            RSIArr = nullRS.concat(RSI); 
+
+            dataMA200 = calculateMA(200, data);
+            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr);  //calculateMA(100, data); 
+
+            MacdArr = nullForMACD.concat(MACD); 
+            SignalArr = nullForSIGNAL.concat(SIGNAL); 
+            HistogramArr = nullForHISTOGRAM.concat(HISTOGRAM); 
+
+            Smoth_SSMA5Arr = nullSmoth_SSMA5.concat(Smoth_SSMA5); 
+            Smoth_SSMA8Arr = nullSmoth_SSMA8.concat(Smoth_SSMA8); 
+            Smoth_SSMA13Arr = nullSmoth_SSMA13.concat(Smoth_SSMA13); 
+            Smoth_SSMA20Arr = nullSmoth_SSMA20.concat(Smoth_SSMA20); 
+            Smoth_SSMA50Arr = nullSmoth_SSMA8.concat(Smoth_SSMA50); 
+
+            MacdCrossData = getMacdCross(MacdArr,SignalArr)
+  
+            ssma5STD = StandardDeviationCalc(Smoth_SSMA5Arr,5); 
+            ssma8STD = StandardDeviationCalc(Smoth_SSMA8Arr,5);  
+            ssma13STD = StandardDeviationCalc(Smoth_SSMA13Arr,5);
+
+            let regressiveEq = genRegressionLine(dataMA100,lineLenght)
+            markMA100LineCord = getCoord(regressiveEq,dataMA100.length-1-lineLenght,dataMA100.length-1,lineLenght)
+
+            sma100Trend = isUpTrend(regressiveEq[0],data,dataMA100,lineLenght,slopeSpec)
+
+            sma100ArrowLevel = {
+                sma100_arrow_below : sma100ArrowBelow(data,dataMA100,lineLenght),
+                sma100_arrow_above : sma100ArrowAbove(data,dataMA100,lineLenght),
+            }
+
+            sma100PresentLevel = {
+                sma100_present_below : sma100PresentBelow(data,dataMA100),
+                sma100_present_above : sma100PresentAbove(data,dataMA100),
+            }
+            
+            momenttumBar = getMomenttumBar(data,sma100PresentLevel,3);
+            trendPattern = getTrendPattern(data,sma100PresentLevel);
+
+            regressiveEqSmma5 = genRegressionLine(Smoth_SSMA5Arr,5)
+            markLineCordSsma5 = getCoord(regressiveEqSmma5,Smoth_SSMA5Arr.length-1-5,Smoth_SSMA5Arr.length-1,5)
+
+            regressiveEqSmma8 = genRegressionLine(Smoth_SSMA8Arr,5)
+            markLineCordSsma8 = getCoord(regressiveEqSmma8,Smoth_SSMA8Arr.length-1-5,Smoth_SSMA8Arr.length-1,5)
+
+            regressiveEqSmma13 = genRegressionLine(Smoth_SSMA13Arr,5)
+            markLineCordSsma13 = getCoord(regressiveEqSmma13,Smoth_SSMA13Arr.length-1-5,Smoth_SSMA13Arr.length-1,5)
+
+           
+            // MarkMA100Slope = sma100Trend[0];
+
+            ssma3LineOrder = getSsma3LineOrder(Smoth_SSMA5Arr,Smoth_SSMA8Arr,Smoth_SSMA13Arr)
+
+            dataResult = createResult()
+   
+            // setDom(dataResult, entryspecs,1)
+
+           
+          
+            setDom(dataResult, orderbuy_entry_specs,ordersell_entry_specs,1)
+
+            if(foundOrderBuyEntryPoint == false){
+                foundOrderBuyEntryPoint = findOrderBuyEntryPoint(dataResult, orderbuy_entry_specs)
+            }
+    
+            if(foundOrderSellEntryPoint == false){
+                foundOrderSellEntryPoint = findOrderSellEntryPoint(dataResult, ordersell_entry_specs)
+            }
+
+            if(foundOrderBuyEntryPoint == true){
+                console.log('hello')
+                if(findOrderBuyExitPoint(dataResult, orderbuy_close_specs)) {
+                    foundOrderBuyEntryPoint = false
+                    orderBuyEntryPointflag =false;
+                    // console.log('exit uptrend ' )
+                }else{
+                    if(bullishLadder(data,7) == true){
+                        console.log('Long Bullish Trend Ladder')
+                        testResult.push({
+                            'entry': data[data.length-1][4],
+                            'type' : 'Long Bullish Trend Ladder',
+                            'exit': data[data.length-1][4]
+                        })
+                    }
+                    if(bullishTrend(data,barSize,1,3) == true){
+                        // console.log('found bullish trend')
+                        if(bullishLadder(data,3) == true){
+                            console.log('Bullish Trend Ladder')
+                            testResult.push({
+                                'entry': data[data.length-1][4],
+                                'type' : 'Bullish Trend Ladder',
+                                'exit': data[data.length-1][4]
+                            })
+                        }
+                    }
+
+                    if(bullishMomentum(data,barSize,3,0.5,2) == true){
+                        console.log('Bullish Momentum')
+                        testResult.push({
+                            'entry': data[data.length-1][4],
+                            'type' : 'Bullish Momentum',
+                            'exit': data[data.length-1][4]
+                        })
+                    }
+
+                    if(shootingStar(data,barSize,0.5,500,100) == true){
+                        console.log('Bearish Shooting Star')
+                        testResult.push({
+                            'entry': data[data.length-1][4],
+                            'type' : 'Bearish Shooting Star',
+                            'exit': data[data.length-1][4]
+                        })
+                    }
+                } 
+            }
+
+
+            // if(searchType.trend == 1){
+            //     let orderbuyentrypoint = findOrderBuyEntryPoint(dataResult, orderbuy_entry_specs);
+            //     let ordersellentrypoint = findOrderSellEntryPoint(dataResult, ordersell_entry_specs);
+            //     if(orderbuyentrypoint ==true || ordersellentrypoint == true){
+            //         let ordertype = '';
+            //         if(orderbuyentrypoint){
+            //             ordertype = 'Order Buy (Trend)'
+            //         }else if(ordersellentrypoint == true){
+            //             ordertype = 'Order Sell (Trend)'
+            //         }
+            //         let tmp_info = data[data.length-1];
+            //         let found_symbol = $('#symbol').text();
+            //         let found_timeframe = $('#timeframe').text();
+            //         let found_bar = tmp_info[5];
+            //         let found_open = tmp_info[0];
+            //         let found_close = tmp_info[1];
+            //         let found_low = tmp_info[3];
+            //         let found_high = tmp_info[4];
+            //         let foundResult = `Symbol:${found_symbol} TF:${found_timeframe} Bar:${found_bar} Type:${ordertype} `
+            //         searchResult.push({
+            //             'Symbol':found_symbol,
+            //             'TF':found_timeframe,
+            //             'Bar':found_bar,
+            //             'Close':found_close,
+            //             'Type':ordertype,
+            //         })
+            //         UpdateSearchReport(found_symbol,found_timeframe,ordertype).then(data => { //0=order on Buy 1=order on Sell
+
+            //         }).catch(error => {})
+            //         // lineNotification(foundResult).then(data => {
+            //         //     console.log('sent!.')
+            //         // }).catch(error => {})
+            //     }
+            // }
+
+            // if(searchType.pattern == 1){
+            //     if(momenttumBar.foundBar == true){
+            //         let ordertype = '';
+            //         if(momenttumBar.type == 1){
+            //             ordertype = 'Order Sell (Momentum)'
+            //         }else if(momenttumBar.type == 2){
+            //             ordertype = 'Order Buy (Momentum)'
+            //         }
+
+            //         let tmp_info = data[data.length-1];
+            //         let found_symbol = $('#symbol').text();
+            //         let found_timeframe = $('#timeframe').text();
+            //         let found_bar = tmp_info[5];
+            //         let found_open = tmp_info[0];
+            //         let found_close = tmp_info[1];
+            //         let found_low = tmp_info[3];
+            //         let found_high = tmp_info[4];
+            //         let foundResult = `Symbol:${found_symbol} TF:${found_timeframe} Bar:${found_bar} Type:${ordertype}`
+            //         searchResult.push({
+            //             'Symbol':found_symbol,
+            //             'TF':found_timeframe,
+            //             'Bar':found_bar,
+            //             'Close':found_close,
+            //             'Type':ordertype,
+            //         })
+            //         UpdateSearchReport(found_symbol,found_timeframe,ordertype).then(data => { //0=order on Buy 1=order on Sell
+
+            //         }).catch(error => {})
+            //         // lineNotification(foundResult).then(data => {
+            //         //     console.log('sent!.')
+            //         // }).catch(error => {})
+            //     }
+
+            //     if(trendPattern.foundBar == true){
+            //         let ordertype = '';
+    
+            //         if(trendPattern.type == 1){
+            //             ordertype = 'Order Sell (Pattern down trend)'
+            //         }else if(trendPattern.type == 2){
+            //             ordertype = 'Order Buy (Pattern up trend)'
+            //         }
+
+            //         let tmp_info = data[data.length-1];
+            //         let found_symbol = $('#symbol').text();
+            //         let found_timeframe = $('#timeframe').text();
+            //         let found_bar = tmp_info[5];
+            //         let found_open = tmp_info[0];
+            //         let found_close = tmp_info[1];
+            //         let found_low = tmp_info[3];
+            //         let found_high = tmp_info[4];
+            //         let foundResult = `Symbol:${found_symbol} TF:${found_timeframe} Bar:${found_bar} Type:${ordertype}`
+            //         console.log(foundResult);
+            //         searchResult.push({
+            //             'Symbol':found_symbol,
+            //             'TF':found_timeframe,
+            //             'Bar':found_bar,
+            //             'Close':found_close,
+            //             'Type':ordertype,
+            //         })
+            //         UpdateSearchReport(found_symbol,found_timeframe,ordertype).then(data => { //0=order on Buy 1=order on Sell
+
+            //         }).catch(error => {})
+            //         // lineNotification(foundResult).then(data => {
+            //         //     console.log('sent!.')
+            //         // }).catch(error => {})
+            //     }
+            // }
+
+            canndleStickChart.setOption({
+                series : [
+                    {
+                        name: 'OHLC',
+                        data: data,
+                        markPoint: {
+                            label: {
+                                normal: {
+                                    formatter: function (param) {
+                                        return param != null ? param.data['name'] : '';
+                                    }
+                                }
+                            },
+                            data: MarkData,
+                        },
+                        markLine : {
+                            data: [
+                                [{
+                                    coord: markLineCordSsma5[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: '#2f4554'
+                                    }
+                                }, {
+                                    coord: markLineCordSsma5[1],
+                                    lineStyle: {
+                                        color: '#2f4554'
+                                    }
+                                }],
+                                [{
+                                    coord: markLineCordSsma8[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: '#61a0a8'
+                                    }
+                                }, {
+                                    coord: markLineCordSsma8[1],
+                                    lineStyle: {
+                                        color: '#61a0a8'
+                                    }
+                                }],
+                                [{
+                                    coord: markLineCordSsma13[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: '#d48265'
+                                    }
+                                }, {
+                                    coord: markLineCordSsma13[1],
+                                    lineStyle: {
+                                        color: '#d48265'
+                                    }
+                                }]
+                            ],
+                        },
+                    }, 
+                    {
+                        name: 'SSMA20',
+                        data: Smoth_SSMA20Arr,
+                    },
+                    {
+                        name: 'SSMA5',
+                        data: Smoth_SSMA5Arr,
+                    }, 
+                    {
+                        name: 'SSMA8',
+                        data: Smoth_SSMA8Arr,
+                    }, 
+                    {
+                        name: 'SSMA13',
+                        data: Smoth_SSMA13Arr,
+                    }
+                    // 
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100
+                },
+            });
+
+            macdChart.setOption({
+                series : [
+                    {
+                        name:'MACD',
+                        data: MacdArr,
+                    },{
+                        name:'SIGNAL',
+                        data: SignalArr,
+                    },{
+                        name:'HISTOGRAM',
+                        data: HistogramArr,
+                    }
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100
+                },
+            });
+
+            canndleStickChartZoom.setOption({
+                series : [
+                    {
+                        name: 'OHLC-ZOOM',
+                        data: data,
+                        // markPoint: {
+                        //     label: {
+                        //         normal: {
+                        //             formatter: function (param) {
+                        //                 return param != null ? param.data['name']['slope'] : '';
+                        //             }
+                        //         }
+                        //     },
+                        //     symbol: 'circle',
+                        //     symbolRotate: 0,
+                        //     symbolSize: [1, 1],
+                        //     itemStyle: {
+                        //         color: 'black'
+                        //     },
+                        //     data: MarkMA100Slope,
+                        // },
+                        markLine : {
+                            data: [
+                                [{
+                                    coord: markMA100LineCord[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: 'white'
+                                    }
+                                    }, {
+                                    coord: markMA100LineCord[1],
+                                    lineStyle: {
+                                        color: 'white'
+                                    }
+                                }]
+                            ],
+                        },
+                    }, 
+                    {
+                        name: 'MA100',
+                        data: dataMA100,
+                    }
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    start : Math.round((data.length-300)/(data.length)*100),
+                    end : 100
+                },
+
+            });
+
+            function findEntryPoint(_reading,_rawSpec){
+                let result = true;
+                _rawSpec.forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        if(isNaN(reading.reading) === true){
+                            if(reading.reading !== spec.fields.entry_value){
+                                result = false ;
+                                return
+                            }
+                        }else{ 
+                            if(spec.fields.compare_reverse == 1){
+                                if(reading.reading < spec.fields.entry_value){
+                                    result = false ;
+                                    return
+                                }
+                            }else{
+                                if(reading.reading > spec.fields.entry_value){
+                                    result = false ;
+                                    return
+                                }
+                            }
+                        }
+                    }
+                });
+                return result;
+            }
+
+            function findExitPoint(_reading,_rawSpec){
+                let result = true;
+                _rawSpec.forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        if(isNaN(reading.reading) === true){
+                            if(reading.reading !== spec.fields.exit_value){
+                                result = false ;
+                                return
+                            }
+                        }else{ 
+                            if(spec.fields.compare_reverse == 1){
+                                if(reading.reading < spec.fields.exit_value){
+                                    result = false ;
+                                    return
+                                }
+                            }else{
+                                if(reading.reading > spec.fields.exit_value){
+                                    result = false ;
+                                    return
+                                }
+                            }
+                        }
+                    }
+                });
+                return result;
+            }
+
+            function findOrderBuyEntryPoint(_reading,_orderbuy_rawSpec,_ordersell_rawSpec){
+                let result = true;
+                _orderbuy_rawSpec.forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        if(isNaN(reading.reading) === true){
+                            if(reading.reading !== spec.fields.entry_value){
+                                result = false ;
+                                return
+                            }
+                        }else{ 
+                            if(spec.fields.compare_reverse == 1){
+                                if(reading.reading < spec.fields.entry_value){
+                                    result = false ;
+                                    return
+                                }
+                            }else{
+                                if(reading.reading > spec.fields.entry_value){
+                                    result = false ;
+                                    return
+                                }
+                            }
+                        }
+                    }
+                });
+                return result;
+            }
+
+            function findOrderSellEntryPoint(_reading,_ordersell_rawSpec){
+                let result = true;
+                _ordersell_rawSpec.forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        if(isNaN(reading.reading) === true){
+                            if(reading.reading !== spec.fields.entry_value){
+                                result = false ;
+                                return
+                            }
+                        }else{ 
+                            if(spec.fields.compare_reverse == 1){
+                                if(reading.reading < spec.fields.entry_value){
+                                    result = false ;
+                                    return
+                                }
+                            }else{
+                                if(spec.fields.entry_value < 0){
+                                    if(reading.reading*-1 < spec.fields.entry_value*-1){
+                                        result = false ;
+                                        return
+                                    }
+                                }else{
+                                    if(reading.reading > spec.fields.entry_value){
+                                        result = false ;
+                                        return
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                });
+                
+                return result;
+            }
+
+            function findOrderBuyExitPoint(_reading,_orderbuy_close_rawSpec){
+                let result = true;
+                _orderbuy_close_rawSpec.forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        if(isNaN(reading.reading) === true){
+                            if(reading.reading !== spec.fields.exit_value){
+                                result = false ;
+                                return
+                            }
+                        }else{ 
+                            if(spec.fields.compare_reverse == 1){
+                                if(reading.reading < spec.fields.exit_value){
+                                    result = false ;
+                                    return
+                                }
+                            }else{
+                                if(reading.reading > spec.fields.exit_value){
+                                    result = false ;
+                                    return
+                                }
+                            }
+                        }
+                    }
+                });
+                return result;
+            }
+
+            function findOrderSellExitPoint(_reading,_ordersell_close_rawSpec){
+                let result = true;
+                _ordersell_close_rawSpec.forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        if(isNaN(reading.reading) === true){
+                            if(reading.reading !== spec.fields.exit_value){
+                                result = false ;
+                                return
+                            }
+                        }else{ 
+                            if(spec.fields.compare_reverse == 1){
+                                if(reading.reading < spec.fields.exit_value){
+                                    result = false ;
+                                    return
+                                }
+                            }else{
+
+                                if(spec.fields.exit_value < 0){
+                                    if(reading.reading*-1 > spec.fields.exit_value*-1){
+                                        result = false ;
+                                        return
+                                    }
+                                }else{
+                                    if(reading.reading > spec.fields.exit_value){
+                                        result = false ;
+                                        return
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                return result;
+            }
+
+            function setDom(_reading,_orderbuy_rawSpec,_ordersell_rawSpec,_type){
+                _orderbuy_rawSpec.filter(x => x.fields.order_type == 0).forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    
+                    if(typeof reading !== 'undefined'){
+                        const dom = document.querySelector(`#td_orderbuy_reading_${spec.fields.parameter}`);
+                        if(_type == 1){ // entry point
+                            if(isNaN(reading.reading) === true){
+                                if(reading.reading === spec.fields.entry_value){
+                                    dom.innerHTML = `<span class="badge bg-success" >${reading.reading}</span>`
+                                }else{
+                                    dom.innerHTML = `<span class="badge bg-danger" >${reading.reading}</span>`
+                                }
+                            }else{ 
+                                if(spec.fields.compare_reverse == 1){
+                                    if(reading.reading > spec.fields.entry_value){
+                                        dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }else{
+                                        dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }
+                                }else{
+                                    if(reading.reading < spec.fields.entry_value){
+                                        dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }else{
+                                        dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                _ordersell_rawSpec.filter(x => x.fields.order_type == 1).forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        const dom = document.querySelector(`#td_ordersell_reading_${spec.fields.parameter}`);
+                        if(_type == 1){ // entry point
+                            if(isNaN(reading.reading) === true){
+                                if(reading.reading === spec.fields.entry_value){
+                                    dom.innerHTML = `<span class="badge bg-success" >${reading.reading}</span>`
+                                }else{
+                                    dom.innerHTML = `<span class="badge bg-danger" >${reading.reading}</span>`
+                                }
+                            }
+                            else{ 
+                                if(spec.fields.compare_reverse == 1){
+                                    
+                                    if(reading.reading > spec.fields.entry_value){
+                                        dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }else{
+                                        dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }
+                                }else{
+                                    if(spec.fields.entry_value < 0){
+                                        if(reading.reading*-1 > spec.fields.entry_value*-1){
+                                            dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }else{
+                                            dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }
+                                    }else{
+                                        if(reading.reading < spec.fields.entry_value){
+                                            dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }else{
+                                            dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                });
+
+            }
+            
+
+
+            // function setDom(_reading,_orderbuy_rawSpec,_ordersell_rawSpec,_type){
+             
+            //     _orderbuy_rawSpec.filter(x => x.fields.order_type == 0).forEach(spec => {
+            //         let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    
+            //         if(typeof reading !== 'undefined'){
+            //             const dom = document.querySelector(`#td_orderbuy_reading_${spec.fields.parameter}`);
+            //             if(_type == 1){ // entry point
+            //                 if(isNaN(reading.reading) === true){
+            //                     if(reading.reading === spec.fields.entry_value){
+            //                         dom.innerHTML = `<span class="badge bg-success" >${reading.reading}</span>`
+            //                     }else{
+            //                         dom.innerHTML = `<span class="badge bg-danger" >${reading.reading}</span>`
+            //                     }
+            //                 }else{ 
+            //                     if(spec.fields.compare_reverse == 1){
+            //                         if(reading.reading > spec.fields.entry_value){
+            //                             dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }else{
+            //                             dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }
+            //                     }else{
+            //                         if(reading.reading < spec.fields.entry_value){
+            //                             dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }else{
+            //                             dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     });
+
+            //     _ordersell_rawSpec.filter(x => x.fields.order_type == 1).forEach(spec => {
+            //         let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+            //         if(typeof reading !== 'undefined'){
+            //             const dom = document.querySelector(`#td_ordersell_reading_${spec.fields.parameter}`);
+            //             if(_type == 1){ // entry point
+            //                 if(isNaN(reading.reading) === true){
+            //                     if(reading.reading === spec.fields.entry_value){
+            //                         dom.innerHTML = `<span class="badge bg-success" >${reading.reading}</span>`
+            //                     }else{
+            //                         dom.innerHTML = `<span class="badge bg-danger" >${reading.reading}</span>`
+            //                     }
+            //                 }
+            //                 else{ 
+            //                     if(spec.fields.compare_reverse == 1){
+                                    
+            //                         if(reading.reading > spec.fields.entry_value){
+            //                             dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }else{
+            //                             dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }
+            //                     }else{
+            //                         if(spec.fields.entry_value < 0){
+            //                             if(reading.reading*-1 > spec.fields.entry_value*-1){
+            //                                 dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                             }else{
+            //                                 dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                             }
+            //                         }else{
+            //                             if(reading.reading < spec.fields.entry_value){
+            //                                 dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                             }else{
+            //                                 dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                             }
+            //                         }
+
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     });
+
+            // }
+            
+
+            
+            // function setDom(_reading,_rawSpec,_type){
+            //     // console.log(_rawSpec)
+            //     _rawSpec.forEach(spec => {
+            //         // console.log(spec.fields.parameter)
+            //         let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+            //         if(typeof reading !== 'undefined'){
+            //             const dom = document.querySelector(`#td_reading_${spec.fields.parameter}`);
+            //             if(_type == 1){ // entry point
+            //                 if(isNaN(reading.reading) === true){
+            //                     if(reading.reading === spec.fields.entry_value){
+            //                         dom.innerHTML = `<span class="badge bg-success" >${reading.reading}</span>`
+            //                     }else{
+            //                         dom.innerHTML = `<span class="badge bg-danger" >${reading.reading}</span>`
+            //                     }
+                                
+            //                 }else{ 
+            //                     if(spec.fields.compare_reverse == 1){
+            //                         if(reading.reading > spec.fields.entry_value){
+            //                             dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }else{
+            //                             dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }
+            //                     }else{
+            //                         if(reading.reading < spec.fields.entry_value){
+            //                             dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }else{
+            //                             dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+            //                         }
+            //                     }
+            //                 }
+
+            //             }
+
+  
+
+            //         }
+            //     });
+            // }
+            
+
+            function UpdateSearchReport(symbol,timeframe,message){   
+                return new Promise((resolve, reject) => {
+                        data = {
+                            symbol: symbol,
+                            timeframe: timeframe,
+                            message: message,
+                            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                        }
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'updatesearchreport' %}",
+                        dataType : "json",
+                        data: data,
+                        success: function(data) {
+                            resolve(data)
+                        },
+                        error: function(error) {
+                            reject(error)
+                        },
+                    })
+                })
+            }
+
+            function createResult(){
+                let _latestSsma5 = Smoth_SSMA5Arr[Smoth_SSMA5Arr.length-1];
+                let _latestSsma8 = Smoth_SSMA8Arr[Smoth_SSMA8Arr.length-1];
+                let _latestSsma13 = Smoth_SSMA13Arr[Smoth_SSMA13Arr.length-1];
+
+                let sumssmaTrend = markLineCordSsma5[0][1] + markLineCordSsma8[0][1] + markLineCordSsma13[0][1] - markLineCordSsma5[1][1] - markLineCordSsma8[1][1] - markLineCordSsma13[1][1]
+          
+                let ssma8PercentDiffssma5 = Math.abs((_latestSsma8 - _latestSsma5)*100/_latestSsma8);
+                let ssma8PercentDiffssma13 = Math.abs((_latestSsma8 - _latestSsma13)*100/_latestSsma8);
+
+                // _result = {
+                //     macd_value : MacdCrossData[3],
+                //     macd_trend : (MacdCrossData[0]) ? 'up' : 'down',
+                //     macd_cross : (MacdCrossData[1]) ? 'above' : 'below',
+                //     ma100_slope : regressiveEq[0].toFixed(10),
+                //     ma5_slope : regressiveEqSmma5[0].toFixed(10),
+                //     ma5_value : _latestSsma5.toFixed(10),
+                //     ma5_std : ssma5STD.toFixed(10),
+                //     ma8_slope : regressiveEqSmma8[0].toFixed(10),
+                //     ma8_value : _latestSsma8.toFixed(10),
+                //     ma8_std : ssma8STD.toFixed(10),
+                //     ma13_slope : regressiveEqSmma13[0].toFixed(10),
+                //     ma13_value : _latestSsma13.toFixed(10),
+                //     ma13_std : ssma13STD.toFixed(10),
+                //     aligator_trend : (sumssmaTrend < 0) ? 'up' : 'down',
+                //     rsi : RSIArr[RSIArr.length-1],
+                //     ssma8_percent_diff_ssma5 : ssma8PercentDiffssma5,
+                //     ssma8_percent_diff_ssma13 : ssma8PercentDiffssma13,
+                //     sma_arrow : sma100ArrowLevel,
+                //     ssma3line_order : ssma3LineOrder,
+                // }
+                // return _result;
+
+                return [
+                    {
+                        parameter: 'macd_value',
+                        reading: MacdCrossData[3]
+                    },
+                    {
+                        parameter: 'macd_trend',
+                        reading: (MacdCrossData[0]) ? 'Up' : 'Down'
+                    },
+                    {
+                        parameter: 'macd_cross',
+                        reading: (MacdCrossData[1]) ? 'Above' : 'Below'
+                    },
+                    {
+                        parameter: 'ma100_slope',
+                        reading: regressiveEq[0].toFixed(10)
+                    },
+                    {
+                        parameter: 'ma5_slope',
+                        reading: regressiveEqSmma5[0].toFixed(10)
+                    },
+                    {
+                        parameter: 'ma5_std',
+                        reading: ssma5STD.toFixed(10)
+                    },
+                    {
+                        parameter: 'ma8_slope',
+                        reading: regressiveEqSmma8[0].toFixed(10)
+                    },
+                    {
+                        parameter: 'ma8_std',
+                        reading: ssma8STD.toFixed(10)
+                    },
+                    {
+                        parameter: 'ma13_slope',
+                        reading: regressiveEqSmma13[0].toFixed(10)
+                    },
+                    {
+                        parameter: 'ma13_std',
+                        reading: ssma13STD.toFixed(10)
+                    },
+                    {
+                        parameter: 'aligator_trend',
+                        reading: (sumssmaTrend < 0) ? 'Up' : 'Down'
+                    },
+                    {
+                        parameter: 'rsi',
+                        reading: RSIArr[RSIArr.length-1]
+                    },
+                    {
+                        parameter: 'ssma8_percent_diff_ssma5',
+                        reading: ssma8PercentDiffssma5
+                    },
+                    {
+                        parameter: 'ssma8_percent_diff_ssma13',
+                        reading: ssma8PercentDiffssma13
+                    },
+                    {
+                        parameter: 'sma100_arrow_below',
+                        reading: sma100ArrowLevel.sma100_arrow_below ? 'True' : 'False'
+                    },
+                    {
+                        parameter: 'sma100_arrow_above',
+                        reading: sma100ArrowLevel.sma100_arrow_above ?  'True' : 'False'
+                    },
+                    {
+                        parameter: 'sma100_present_below',
+                        reading: sma100PresentLevel.sma100_present_below ? 'True' : 'False'
+                    },
+                    {
+                        parameter: 'sma100_present_above',
+                        reading: sma100PresentLevel.sma100_present_above ?  'True' : 'False'
+                    },
+                    {
+                        parameter: 'aligator_order_uptrend',
+                        reading: ssma3LineOrder.aligator_order_uptrend ?  'True' : 'False'
+                    },
+                    {
+                        parameter: 'aligator_order_downtrend',
+                        reading: ssma3LineOrder.aligator_order_downtrend ?  'True' : 'False'
+                    },
+                ];
+            }
+
+     
+
+        }
+
+        option = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+                // formatter: function (params) {
+                //     var res = params[0].name;
+                //     res += '<br/>' + params[0].seriesName;
+                //     res += '<br/>  Open : ' + params[0].value[1] + '  High : ' + params[0].value[4];
+                //     res += '<br/>  Close : ' + params[0].value[2] + '  Low : ' + params[0].value[3];
+                //     return res;
+                // }
+            },
+            legend: {
+                data:['OHLC','SSMA20', 'SSMA5','SSMA8','SSMA13'],
+                selected:{'SSMA20':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+                    markLine : {
+                            data: [
+                                [{
+                                    coord: markLineCordSsma5[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: '#2f4554'
+                                    }
+                                }, {
+                                    coord: markLineCordSsma5[1],
+                                    lineStyle: {
+                                        color: '#2f4554'
+                                    }
+                                }],
+                                [{
+                                    coord: markLineCordSsma8[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: '#61a0a8'
+                                    }
+                                }, {
+                                    coord: markLineCordSsma8[1],
+                                    lineStyle: {
+                                        color: '#61a0a8'
+                                    }
+                                }],
+                                [{
+                                    coord: markLineCordSsma13[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: '#d48265'
+                                    }
+                                }, {
+                                    coord: markLineCordSsma13[1],
+                                    lineStyle: {
+                                        color: '#d48265'
+                                    }
+                                }]
+                            ],
+                        },
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'SSMA20',
+                    type: 'line',
+                    data: Smoth_SSMA20Arr,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, {
+                    name: 'SSMA5',
+                    type: 'line',
+                    data: Smoth_SSMA5Arr,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, {
+                    name: 'SSMA8',
+                    type: 'line',
+                    data: Smoth_SSMA8Arr,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, {
+                    name: 'SSMA13',
+                    type: 'line',
+                    data: Smoth_SSMA13Arr,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                },
+            ]
+        };
+
+        option_macd = {
+            backgroundColor: '#21202D',
+            tooltip : {
+                trigger: 'axis',
+                showDelay: 0             // delay ms
+            },
+            legend: {
+                // y : -30,
+                data:['MACD','SIGNAL','HISTOGRAM'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+
+            grid: {
+                x: 80,
+                y: 20,
+                x2: 20,
+                y2: 60
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    splitNumber: 3,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'MACD',
+                    type:'line',
+                    symbol: 'none',
+                    data: MacdArr,
+                },{
+                    name:'SIGNAL',
+                    type:'line',
+                    symbol: 'none',
+                    data: SignalArr,
+                },{
+                    name:'HISTOGRAM',
+                    type:'bar',
+                    symbol: 'none',
+                    data: HistogramArr,
+                }
+            ]
+        };
+
+        option_zoom = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'USDJPY',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                showDelay: 0,             // delay ms
+                // formatter: function (params) {
+                //     var res = params[0].name;
+                //     res += '<br/>' + params[0].seriesName;
+                //     res += '<br/>  Open : ' + params[0].value[1] + '  High : ' + params[0].value[4];
+                //     res += '<br/>  Close : ' + params[0].value[2] + '  Low : ' + params[0].value[3];
+                //     return res;
+                // }
+            },
+            legend: {
+                data:['OHLC-ZOOM','MA100'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : {
+                y: 250,
+                show : false,
+                realtime: true,
+                start : Math.round((data.length-300)/(data.length)*100),
+                end : 100
+            },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,                        
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC-ZOOM',
+                    type:'candlestick',
+                    data: data,
+
+                    markLine : {
+                        data: [
+                            [{
+                                coord: markMA100LineCord[0],
+                                symbol : 'none',
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                                }, {
+                                coord: markMA100LineCord[1],
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                            }]
+                        ],
+                    },
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'MA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }
+            ]
+        };
+
+        canndleStickChart.setOption(option);
+        macdChart.setOption(option_macd);
+        canndleStickChartZoom.setOption(option_zoom);
+    
+        echarts.connect([canndleStickChart,macdChart,canndleStickChartZoom]);
+        // console.log(responseData);
+        if(responseData.length > 0){
+            createData(responseData);
+        }
+       
+       
+        window.onresize = function () {
+            canndleStickChart.resize();
+            macdChart.resize();
+            canndleStickChartZoom.resize();
+        }
+
+        // $(document).on('click','#sendLineNotify', function(){
+        //     searchResult=`[USDJPY H1 2012-11-22 Close:121] [USDJPY H1 2012-11-22 Close:121]`
+        //     lineNotification(searchResult).then(data => {
+        //         // alert('done');
+        //     }).catch(error => {})
+        // })
+
+        function lineNotification(message){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    message: message,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'lineNotification' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       $(document).on('click','#openOrderBuy', function(){
+        openOrder(1,'buy',0.01).then(data => { //0=order on Buy 1=order on Sell
+
+            }).catch(error => {})
+        })
+       
+       $(document).on('click','#openOrderSale', function(){
+        openOrder(1,'sell',0.01).then(data => { //0=order on Buy 1=order on Sell
+
+            }).catch(error => {})
+        })
+
+        function openOrder(symbol,ordertype,lot){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    ordertype: ordertype,
+                    lot: lot,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'openorder' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       
+       $(document).on('click','#closeAllOrder', function(){
+        closeOrder('closeall').then(data => { //closeall
+
+            }).catch(error => {})
+        })
+
+       $(document).on('click','#closeOrder', function(){
+        closeOrder('').then(data => { //closeall
+
+            }).catch(error => {})
+        })
+
+        function closeOrder(clossall){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    clossall: clossall,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'closeorder' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+    </script>
+
+{% endblock %} 

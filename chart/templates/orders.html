@@ -1,0 +1,1031 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0 " ><span id="symbol"></span> <span id="timeframe"></span>  </h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Search</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+  
+      <!-- Main content -->
+      <div class="content">
+        {% csrf_token %}
+        <div class="container-fluid">
+     
+          <div class="row">
+            <div class="col-lg-12">
+
+           
+               
+                      <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Orders</h3>
+                          </div>
+                        <div class="card-body" >
+                            <table class="table table-sm">
+                                <thead>
+                                  <tr>
+                                    <th>Symbol</th>
+                                    <th>Ticket</th>
+                                    <th>Type</th>
+                                    <th>Lot</th>
+                                    <th>Profit</th>
+                                    <th class="text-right">Close</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="orders_table">   
+        
+                                </tbody>
+                              </table>
+                        </div>
+                    </div>
+  
+            </div>
+            <!-- /.col-md-6 -->
+
+            <!-- /.col-md-6 -->
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+
+      <div class="modal fade" id="openorder_modal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">OPEN ORDER</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="stoplost">Stop Lost (0.01%)</label>
+                            <input type="text" class="form-control" id="stoplost" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="takeprofit">Take Profit (2xSL)</label>
+                            <input type="text" class="form-control" id="takeprofit" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="lotsize">Lot size</label>
+                            <input type="text" class="form-control" id="lotsize" value=""  >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="text" class="form-control" id="price" value="" readonly >
+                        </div>
+                     </div>
+
+                     <div class="col-md-12">
+                        <label for="ordertype">Order Type</label>
+                        <select class="form-control" name="ordertype" id="ordertype" >
+                            <option value="0" >Order Buy</option>
+                            <option value="1" >Order Sell</option>
+                        </select>
+                     </div>
+
+                     <div class="col-md-12">
+                         <div class="form-group d-flex justify-content-between align-items-center">
+                            <button type="button" id="viewalltimeframe" class="btn btn-primary mt-3">View All TIMEFRAME</button>
+                            <button type="button" id="ordering" data-dismiss="modal" class="btn btn-info mt-3">Open Order</button>
+                         </div>
+                        
+                     </div>
+                     
+                </div>
+               
+            </div>
+       
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+
+
+      <!-- /.modal -->
+      <!-- /.modal -->
+      <!-- /.content -->
+      <script>
+
+        // //Initialize Select2 Elements
+        $('.select2').select2();
+
+        // //Initialize Select2 Elements
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        })
+        var searchTimer;
+        var timerInterval = 5000;
+        var testRange = 250;
+        var count = 0;
+        var _rawData = [];
+        var slopeSpec = 0.00001;
+
+        // var canndle_stick_tf_all = echarts.init(document.getElementById('canndle_stick_tf_all'));  
+        // var canndleStickChart = echarts.init(document.getElementById('canndle_stick_chart'));  
+        // var canndleStickChartZoom = echarts.init(document.getElementById('canndle_stick_chart_zoom')); 
+  
+        var apisymbols = JSON.parse("{{apisymbols|escapejs}}"); 
+        var searchType = JSON.parse("{{searchtype|escapejs}}")[0].fields; 
+        var responseData = [] ; 
+        var orderbuy_entry_specs = [];
+        var ordersale_entry_specs = [];
+
+        var orderbuy_close_specs = [];
+        var ordersell_close_specs = [];
+        var data = []
+        var data_tf_m1 = []
+        // var data_tf_m5 = []
+
+        var axisData = [];
+        var SSMA20Arr = [];
+        var SSMA50Arr = [];
+        var SSMA100Arr = [];
+        
+        var dataMA100 = [];
+        var MarkData = [];
+        var MarkDataTF = [];
+        var MacdCrossData  = [];
+        var markMA100LineCord = [];
+        var MarkMA100Slope  = [];
+        var sma100Trend = [];
+        var dataResult = null
+        var sma100ArrowLevel = null
+        var sma100PresentLevel = null
+        var orderBuyEntryPointflag = false;
+        var orderSellEntryPointflag = false;
+        var testResult = [];
+        var tmpDataIn = null;
+        var lineLenght = 10;
+        var momenttumBar = false;
+        var trendPattern = false;
+        var barSize = 0;
+        var selectedTimeframe = '';
+        var calculationinfo = null;
+        var orderStatus = false;
+        var orderinfo = null;
+        var accumulateprice = 0;
+        var presentBarInfo = null;
+        var currentselecteddate = '';
+        var measurepip = false;
+        var measurepipvalue = [];
+        var countfromorderposition = 0;
+        let positionmark = 0;
+        let usdbase = 1;
+        let _ohlc_timeframe = []
+        var allstdbarsizes = []
+        var symbolCountId = 0;
+        var bullishall = false;
+        var bearishall = false
+
+
+
+
+        function autoSearch(){
+            function searching(){
+                // searchMarket();
+                console.log('oh')
+
+            }
+            searchTimer = setInterval(searching,timerInterval);
+        }
+
+        $(document).on('click','#btnGetSingleOhlc', function(){
+            // if (this.classList.contains('start')) {
+            //     this.classList.remove('start');
+            //     this.textContent = "Start Search";
+            //     clearInterval(searchTimer);
+            // } else {
+            //     this.classList.add('start');
+            //     this.textContent = "Stop Search";
+            //     autoSearch();
+            // }
+            // searchMarket();
+        })
+
+        $( document ).ready(function () {   
+            $( "#btnGetSingleOhlc" ).trigger( "click" );
+            setInterval(function(){
+                // searchMarket();
+                
+                getOrderSymbols().then(data => { //0=order on Buy 1=order on Sell
+                    let html_orders_list = ''
+                    
+                    data.orders.forEach((order,i) => {
+                        // console.log(order.symbol)
+                        let _profit = order.profit
+                        let _symbol = order.symbol
+                        if(_symbol.includes("GBP") == true){
+                            let gbp_price_for_lot = order.lot * 75
+                            if(_profit > gbp_price_for_lot){
+                                closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+                                        // linemessage=_symbol + " Profit " +  _profit
+                                        // lineNotification(linemessage).then(data => {
+                                        //     // beep();
+                                        //     location.reload(true);
+                                        // }).catch(error => {})
+                                }).catch(error => {})
+                            }
+                        }else{
+                            let gbp_price_for_lot = order.lot * 50
+                            if(_profit > price_for_lot){
+                                closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+                                    // location.reload(true);
+                                    // linemessage=_symbol + " Profit " +  _profit
+                                    // lineNotification(linemessage).then(data => {
+                                    //         // beep();
+                                    //     location.reload(true);
+                                    // }).catch(error => {})
+                                }).catch(error => {})
+                            }
+                        }
+                   
+            
+                        let type = ''
+                        if(order.type == 0){
+                            type = 'buy'
+                        }else if(order.type == 1){
+                            type = 'sell'
+                        }
+                
+                        html_orders_list += `<tr>
+                            <td>${order.symbol}</td>
+                            <td>${order.ticket}</td>
+                            <td>${type}</td>
+                            <td>${order.lot}</td>
+                            <td>${order.profit}</td>
+                            <td class="text-right"><button type="button" class="btn btn-sm btn-info closeorder" data-lot="${order.lot}" data-type="${order.type}" data-ticket="${order.ticket}" data-symbol="${order.symbol}">Close</button></td>
+                            </tr>`;
+                    });
+                    $('#orders_table').html(html_orders_list);
+                }).catch(error => {})
+             },3000)
+        });
+        function beep() {
+        (new Audio("data:audio/wav;base64,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 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU="
+            )).play();
+        }
+
+        function searchMarket(){
+            // console.log('aha')
+            if(apisymbols.length == 0){
+                getOrderSymbols().then(data => { //0=order on Buy 1=order on Sell
+                    updateapisymbols = JSON.parse(data_item.apisymbols)
+                }).catch(error => {})
+            }else{
+                let symbol = parseInt(apisymbols[symbolCountId].pk);
+                let timeframe = 1;
+                let html_entrypoint_testspecs = ``
+                let html_openbuy_testspecs = ``
+                let html_opensell_testspecs = ``
+                getOrders(symbol,timeframe).then(data_item => {
+                    usdbase = data_item.usdbase
+                    calculationinfo = data_item.calculationInfo;
+                    let stdbarsize = JSON.parse(data_item.barsize)[0].fields
+                    // console.log(data_item.ohlctimeframe)
+                    let pippriceperlotsize = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,1,usdbase)*10;
+                    let stoplossprice = parseFloat(stopLossPrice(stdbarsize.stoplostpercent,parseFloat(calculationinfo.balance)))
+                    let lotsize = getLotSize(stoplossprice,stdbarsize.stoplostpip,pippriceperlotsize).toFixed(5)*stdbarsize.lotsizeoffset
+
+                    let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
+
+                    updateapisymbols = JSON.parse(data_item.apisymbols)
+                    console.log(updateapisymbols)
+
+                    let html_orders_list = ''
+                    data_item.orders.forEach((order,i) => {
+
+                        if(order.profit > 50){
+                            closeOrder(order.symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+                                location.reload(true);
+                            }).catch(error => {})
+                        }
+            
+                        let type = ''
+                        if(order.type == 0){
+                            type = 'buy'
+                        }else if(order.type == 1){
+                            type = 'sell'
+                        }
+                
+                        html_orders_list += `<tr>
+                            <td>${order.symbol}</td>
+                            <td>${order.ticket}</td>
+                            <td>${type}</td>
+                            <td>${order.lot}</td>
+                            <td>${order.profit}</td>
+                            <td class="text-right"><button type="button" class="btn btn-sm btn-info closeorder" data-lot="${order.lot}" data-type="${order.type}" data-ticket="${order.ticket}" data-symbol="${order.symbol}">Close</button></td>
+                            </tr>`;
+                    });
+                    $('#orders_table').html(html_orders_list);
+
+                    $('#pipprice').html(pippriceperlotsize.toFixed(5));
+                    $('#spreadprice').html(-spreadprice+'$');
+                    $('#spread').html(calculationinfo.spread);
+                    $('#stoplost').val(stoplossprice)
+                    $('#takeprofit').val(2*stoplossprice)
+                    $('#lotsize').val(lotsize)
+                    
+                    // console.log(usdbase)
+                
+                    createData(data_item);
+                }).catch(error => {})
+
+                symbolCountId++;            
+                if(symbolCountId == apisymbols.length) {
+                    symbolCountId= 0
+                }
+            }
+
+
+        }
+
+        function getOrders(symbol,timeframe){
+            return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    timeframe: timeframe,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getorders' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        function getOrderSymbols(){
+            return new Promise((resolve, reject) => {
+                data = {
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getordersymbols' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+
+        const sumArray = arr =>
+        (arr || Array.of(arr))
+            .sort((a, b) => a - b)
+            .slice(1, (arr && (arr.length - 1)))
+            .reduce((sum, n) => sum + n, 0)
+
+        function createData(response){
+            _forexData = response.ohlc;
+           
+            $("#timeframe").html("("+response.timeframe+")");
+            $("#symbol").html(response.symbol);
+            
+            data = getData(_forexData);
+       
+
+            closedPrice = getClosedPrice(_forexData);
+            lowPrice = getLowPrice(_forexData);
+            highPrice = getHighPrice(_forexData);
+            axisData = getDateLabel(_forexData); 
+
+            SSMA100Arr = SSMA_Calc(closedPrice,100);
+
+            var nullSmoth_SSMA100 = Array(closedPrice.length - SSMA100Arr.length).fill(null);
+
+            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr);  //calculateMA(100, data); 
+
+            let regressiveEq = genRegressionLine(dataMA100,lineLenght)
+            markMA100LineCord = getCoord(regressiveEq,dataMA100.length-1-lineLenght,dataMA100.length-1,lineLenght)
+
+            sma100Trend = isUpTrend(regressiveEq[0],data,dataMA100,lineLenght,slopeSpec)
+
+            sma100ArrowLevel = {
+                sma100_arrow_below : sma100ArrowBelow(data,dataMA100,lineLenght),
+                sma100_arrow_above : sma100ArrowAbove(data,dataMA100,lineLenght),
+            }
+
+            sma100PresentLevel = {
+                sma100_present_below : sma100PresentBelow(data,dataMA100),
+                sma100_present_above : sma100PresentAbove(data,dataMA100),
+            }
+           
+   
+            var ohlc_timeframe_arr = response.ohlctimeframe
+
+            var tfs_arr = createTfDataSearch(ohlc_timeframe_arr)
+            
+           
+
+            // bullishall = bullishAllTimeframe(ohlc_timeframe_arr,false,false)
+                    
+            // if(bullishall == true){
+            //     beep();
+            // }
+
+            // bearishall = bearishAllTimeframe(ohlc_timeframe_arr,false,false)
+            // if(bearishall == true){
+            //     beep();
+            // }
+        
+            
+
+            let m1body = Math.abs(tfs_arr[0][0][0] - tfs_arr[0][0][1])
+            let m1stdbarpercent = Math.abs((((response.m1barsize[0] - m1body)/m1body)*100).toFixed(2))
+            let signm1 = '>';
+            if(m1body < response.m1barsize[0]) signm1 = '<'
+
+
+            // console.log(tfs_arr)
+
+            let m5body = Math.abs(tfs_arr[0][1][0] - tfs_arr[0][1][1])
+            let m5stdbarpercent = Math.abs((((response.m1barsize[1] - m5body)/m5body)*100).toFixed(2))
+            let signm5 = '>';
+            if(m5body < response.m1barsize[1]) signm5 = '<'
+
+            let m15body = Math.abs(tfs_arr[0][2][0] - tfs_arr[0][2][1])
+            let m15stdbarpercent = Math.abs((((response.m1barsize[2] - m15body)/m15body)*100).toFixed(2))
+            let signm15 = '>';
+            if(m15body < response.m1barsize[2]) signm15 = '<'
+
+            let m30body = Math.abs(tfs_arr[0][3][0] - tfs_arr[0][3][1])
+            let m30stdbarpercent = Math.abs((((response.m1barsize[3] - m30body)/m30body)*100).toFixed(2))
+            let signm30 = '>';
+            if(m30body < response.m1barsize[3]) signm30 = '<'
+
+            let h1body = Math.abs(tfs_arr[0][4][0] - tfs_arr[0][4][1])
+            let h1stdbarpercent = Math.abs((((response.m1barsize[4] - h1body)/h1body)*100).toFixed(2))
+            let signh1 = '>';
+            if(h1body < response.m1barsize[4]) signh1 = '<'
+
+            // let h4body = Math.abs(tfs_arr[0][5][0] - tfs_arr[0][5][1])
+            // let h4stdbarpercent = Math.abs((((response.m1barsize[5] - h4body)/h4body)*100).toFixed(2))
+            // let signh4 = '>';
+            // if(h4body < response.m1barsize[5]) signh4 = '<'
+
+
+            
+
+            // let d1body = Math.abs(tfs_arr[0][4][0] - tfs_arr[0][4][1])
+            // let d1stdbarpercent = Math.abs((((response.m1barsize[4] - d1body)/d1body)*100).toFixed(2))
+            // let signd1 = '>';
+            // if(d1body < response.m1barsize[4]) signd1 = '<'
+
+          
+
+            MarkDataTF = [];
+
+            MarkDataTF.push({
+                name: signm1 + m1stdbarpercent + '%',
+                value: tfs_arr[0][0][3],
+                xAxis: 0,
+                yAxis: (tfs_arr[0][0][3]),
+                color: "#000",
+            });
+
+            MarkDataTF.push({
+                name: signm5 + m5stdbarpercent + '%',
+                value: tfs_arr[0][1][3],
+                xAxis: 1,
+                yAxis: (tfs_arr[0][1][3]),
+                color: "#000",
+            });
+
+            MarkDataTF.push({
+                name: signm15 + m15stdbarpercent + '%',
+                value: tfs_arr[0][2][3],
+                xAxis: 2,
+                yAxis: (tfs_arr[0][2][3]),
+                color: "#000",
+            });
+            MarkDataTF.push({
+                name: signm30 + m30stdbarpercent + '%',
+                value: tfs_arr[0][3][3],
+                xAxis: 3,
+                yAxis: tfs_arr[0][3][3],
+                color: "#000",
+            });
+            MarkDataTF.push({
+                name: signh1 + h1stdbarpercent + '%',
+                value: tfs_arr[0][4][3],
+                xAxis: 4,
+                yAxis: tfs_arr[0][4][3],
+                color: "#f00",
+            });
+            // MarkDataTF.push({
+            //     name: signh4 + h4stdbarpercent + '%',
+            //     value: tfs_arr[0][5][3],
+            //     xAxis: 5,
+            //     yAxis: tfs_arr[0][5][3],
+            //     color: "#fff",
+            // });
+
+
+            // canndle_stick_tf_all.setOption({
+            //     series : [
+            //         {
+            //             name: 'OHLC',
+            //             data: tfs_arr[0],
+            //             markPoint: {
+            //                 label: {
+            //                     normal: {
+            //                         formatter: function (param) {
+            //                             return param != null ? param.data['name'] : '';
+            //                         }
+            //                     }
+            //                 },
+            //                 itemStyle: {
+            //                     color: 'rgba(255,255,255,1)',
+            //                 },
+            //                 // symbol: 'none',
+            //                 symbol: 'circle',
+            //                 symbolOffset: [20, -10],
+            //                 data: MarkDataTF,
+            //                 symbolColor: 'blue',
+            //                 symbolSize :0
+            //             },
+            //         }
+            //     ],                
+            //     xAxis : [
+            //         {
+            //             data : tfs_arr[1]
+            //         }
+            //     ]
+            // });
+
+
+
+ 
+
+
+        }
+    
+
+        // option = {
+        //     backgroundColor: '#21202D',
+        //     title : {
+        //         // text: 'OHLC',
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     tooltip : {
+        //         trigger: 'axis',
+        //         axisPointer: {
+        //             type: 'cross'
+        //         },
+        //         showDelay: 0,             // delay ms
+        //         // formatter: function (params) {
+        //         //     var res = params[0].name;
+        //         //     res += '<br/>' + params[0].seriesName;
+        //         //     res += '<br/>  Open : ' + params[0].value[1] + '  High : ' + params[0].value[4];
+        //         //     res += '<br/>  Close : ' + params[0].value[2] + '  Low : ' + params[0].value[3];
+        //         //     return res;
+        //         // }
+        //     },
+        //     legend: {
+        //         data:['OHLC'],
+        //         selected:{'SSMA20':false},
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     toolbox: {
+        //         show : true,
+        //         feature : {
+        //             // mark : {show: true},
+        //             // dataZoom : {show: true},
+        //             // magicType : {show: true, type: ['line', 'bar']},
+        //             // restore : {show: true},
+        //             saveAsImage : {
+        //                 show: true,
+        //                 title: 'Save As picture'
+        //             }
+        //         }
+        //     },            
+        //     dataZoom : 
+        //         {
+        //             show : true,
+        //             realtime: true,
+        //             start : Math.round((data.length-90)/(data.length)*100),
+        //             end : 100,
+        //             handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+        //             handleSize: '80%',
+        //             textStyle: {
+        //                 color: '#fff'
+        //             },
+        //             handleStyle: {
+        //                 color: '#fff',
+        //                 shadowBlur: 3,
+        //                 shadowColor: 'rgba(0, 0, 0, 0.6)',
+        //                 shadowOffsetX: 2,
+        //                 shadowOffsetY: 2
+        //             }
+        //         },
+        //     grid: {
+        //         left: 80,
+        //         top: 40,
+        //         right: 20,
+        //         bottom: 85
+        //     },
+        //     xAxis : [
+        //         {
+        //             type : 'category',
+        //             boundaryGap : true,
+        //             axisTick: {onGap:false},
+        //             splitLine: {show:false},
+        //             data : axisData,
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     yAxis : [
+        //         {
+        //             type : 'value',
+        //             scale:true,
+        //             boundaryGap: [0.05, 0.05],
+        //             splitArea : {show : true},
+                    
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     series : [
+        //         {
+        //             name:'OHLC',
+        //             type:'candlestick',
+        //             data: data,
+        //             markPoint: {
+        //                 label: {
+        //                     normal: {
+        //                         formatter: function (param) {
+        //                             return param != null ? param.data['name'] : '';
+        //                         }
+        //                     }
+        //                 },
+        //                 data: MarkData,
+        //             },
+        //             itemStyle: {
+        //                 color: upColor,
+        //                 color0: downColor,
+        //                 borderColor: null,
+        //                 borderColor0: null
+        //             },
+        //         }, 
+         
+        //     ]
+        // };
+
+      
+        // option_zoom = {
+        //     backgroundColor: '#21202D',
+        //     title : {
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     tooltip : {
+        //         trigger: 'axis',
+        //         showDelay: 0,  
+        //     },
+        //     legend: {
+        //         data:['OHLC-ZOOM','MA100'],
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     toolbox: {
+        //         show : true,
+        //         feature : {
+        //             saveAsImage : {
+        //                 show: true,
+        //                 title: 'Save As picture'
+        //             }
+        //         }
+        //     },            
+        //     dataZoom : {
+        //         y: 250,
+        //         show : false,
+        //         realtime: true,
+        //         start : Math.round((data.length-300)/(data.length)*100),
+        //         end : 100
+        //     },
+        //     grid: {
+        //         left: 80,
+        //         top: 40,
+        //         right: 20,
+        //         bottom: 85
+        //     },
+        //     xAxis : [
+        //         {
+        //             type : 'category',
+        //             boundaryGap : true,
+        //             axisTick: {onGap:false},
+        //             splitLine: {show:false},
+        //             data : axisData,                        
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     yAxis : [
+        //         {
+        //             type : 'value',
+        //             scale:true,
+        //             boundaryGap: [0.05, 0.05],
+        //             splitArea : {show : true},
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     series : [
+        //         {
+        //             name:'OHLC-ZOOM',
+        //             type:'candlestick',
+        //             data: data,
+        //             markLine : {
+        //                 data: [
+        //                     [{
+        //                         coord: markMA100LineCord[0],
+        //                         symbol : 'none',
+        //                         lineStyle: {
+        //                             color: 'white'
+        //                         }
+        //                         }, {
+        //                         coord: markMA100LineCord[1],
+        //                         lineStyle: {
+        //                             color: 'white'
+        //                         }
+        //                     }]
+        //                 ],
+        //             },
+        //             itemStyle: {
+        //                 color: upColor,
+        //                 color0: downColor,
+        //                 borderColor: null,
+        //                 borderColor0: null
+        //             },
+        //         }, 
+        //         {
+        //             name: 'MA100',
+        //             type: 'line',
+        //             data: dataMA100,
+        //             smooth: true,
+        //             showSymbol: false,
+        //             lineStyle: {
+        //                 width: 1
+        //             }
+        //         }
+        //     ]
+        // };
+      
+        // option_canndle_stick_tf_all = {
+        //     backgroundColor: '#21202D',
+        //     title : {
+        //         // text: 'OHLC',
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     tooltip : {
+        //         trigger: 'axis',
+        //         axisPointer: {
+        //             type: 'cross'
+        //         },
+        //         showDelay: 0,             // delay ms
+
+        //     },
+        //     legend: {
+        //         data:['M1'],
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     toolbox: {
+        //         show : true,
+        //         feature : {
+        //             // mark : {show: true},
+        //             // dataZoom : {show: true},
+        //             // magicType : {show: true, type: ['line', 'bar']},
+        //             // restore : {show: true},
+        //             saveAsImage : {
+        //                 show: true,
+        //                 title: 'Save As picture'
+        //             }
+        //         }
+        //     },            
+        //     grid: {
+        //         left: 80,
+        //         top: 40,
+        //         right: 20,
+        //         bottom: 85
+        //     },
+        //     xAxis : [
+        //         {
+        //             type : 'category',
+        //             boundaryGap : true,
+        //             axisTick: {onGap:false},
+        //             splitLine: {show:false},
+        //             data : axisData,
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     yAxis : [
+        //         {
+        //             type : 'value',
+        //             scale:true,
+        //             boundaryGap: [0.05, 0.05],
+        //             splitArea : {show : true},
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     series : [
+        //         {
+        //             name:'OHLC',
+        //             type:'candlestick',
+        //             data: data,
+        //             markPoint: {
+        //                 label: {
+        //                     normal: {
+        //                         formatter: function (param) {
+        //                             return param != null ? param.data['name'] : '';
+        //                         }
+        //                     }
+        //                 },
+        //                 data: MarkDataTF,
+        //             },
+   
+        //             itemStyle: {
+        //                 color: upColor,
+        //                 color0: downColor,
+        //                 borderColor: null,
+        //                 borderColor0: null
+        //             },
+        //         }
+        //     ]
+        // };
+
+
+        // canndleStickChart.setOption(option);
+        // macdChart.setOption(option_macd);
+        // canndleStickChartZoom.setOption(option_zoom);
+        // canndle_stick_tf_all.setOption(option_canndle_stick_tf_all);
+        // $('#canndle_stick_tf_all').hide()
+
+        // canndle_stick_tf_m5.setOption(option_canndle_stick_tf_m5);
+   ;
+        
+        // echarts.connect([canndleStickChart,macdChart,canndleStickChartZoom,canndle_stick_tf_m5]);
+
+        if(responseData.length !== 0){
+            createData(responseData);
+            window.onresize = function () {
+                // canndleStickChart.resize();
+                // macdChart.resize();
+                // canndleStickChartZoom.resize();
+                // canndle_stick_tf_all.resize();
+                // 
+            }
+        }
+
+
+    $(document).on('click','#openorder',function(){
+        $('#btnGetSingleOhlc').removeClass('start').addClass('stop');
+        $('#btnGetSingleOhlc').html('Start Search');
+        clearInterval(searchTimer);
+        if(bullishall == true){
+            $("#ordertype option[value='0']").attr("selected","selected");
+            $('#price').val(calculationinfo.bid)
+        }else if(bearishall == true){
+            $("#ordertype option[value='1']").attr("selected","selected");
+            $('#price').val(calculationinfo.ask)
+        }
+        $('#openorder_modal').modal('show');
+        // console.log('ok')
+    })
+
+    $(document).on('click','#ordering',function(){
+        let order_type = 'sell'
+        if (parseInt($('#ordertype option:selected').val()) == 0){
+            order_type = 'buy'
+        }
+        // console.log(calculationinfo.symbol)
+        // console.log(order_type)
+        openOrder(calculationinfo.symbol,order_type,parseFloat($('#lotsize').val())).then(data => { //0=order on Buy 1=order on Sell
+
+        }).catch(error => {})
+    })
+
+    
+
+    function openOrder(symbol,ordertype,lot){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    ordertype: ordertype,
+                    lot: lot,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'openorder' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       $(document).on('click','.closeorder',function(){
+            closeOrder($(this).data('symbol'),$(this).data('ticket'),parseInt($(this).data('type')),parseFloat($(this).data('lot'))).then(data => { //0=order on Buy 1=order on Sell
+                location.reload(true);
+            }).catch(error => {})
+        })
+
+       function closeOrder(symbol,position,type,lot){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    position: position,
+                    type: type,
+                    lot: lot,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'manualcloseorder' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+    </script>
+
+{% endblock %} 

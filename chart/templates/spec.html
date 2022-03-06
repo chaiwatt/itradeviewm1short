@@ -1,0 +1,363 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0">Symbol setting</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Symbol setting</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+  
+      <!-- Main content -->
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-lg-10">
+              <!-- <label for="">Clone to All</label> -->
+              <div class="form-group">
+                <select class="form-control" name="" id="symbol">
+                  <option value="">==Select Symbol for cloning==</option>
+                  {% for symbol in symbols %}
+                    <option value="{{symbol.id}}">{{symbol.name}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+            </div>
+            <div class="col-lg-2">
+              <div class="form-group">
+                <button id = "clonetoall" class="btn btn-primary w-100">Clone to All</button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            {% csrf_token %}
+            <div class="col-lg-12">
+
+              <div class="card card-success">
+                <div class="card-header">
+                  <h3 class="card-title">Entry Point Spec</h3>
+                  
+                </div>
+                <div class="card-body p-0">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Symbol</th>
+                        <th  style="text-align: right;">Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody> 
+                      {% for symbol in symbols %}
+                      <tr>
+                        <td class="align-middle">{{symbol.name}}</td>
+                        <td class="align-middle "><button type="button" class="btn btn-info float-right editentryspec" data-name="{{symbol.name}}" data-id="{{symbol.id}}" data-toggle="modal" >Edit</button></td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+              </div>
+
+  
+            </div>
+          
+     
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+
+
+        <div class="modal fade" id="specModal">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title" id="modal_header"></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="card card-tabs">
+                  <div class="card-header p-0 pt-1">
+                    <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="orderbuy_tab" data-toggle="pill" href="#custom-tabs-one-home" role="tab" aria-controls="custom-tabs-one-home" aria-selected="true">Order Buy Spec</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" id="ordersale_tab" data-toggle="pill" href="#custom-tabs-one-profile" role="tab" aria-controls="custom-tabs-one-profile" aria-selected="false">Order Sale Spec</a>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="card-body">
+                    <div class="tab-content" id="custom-tabs-one-tabContent">
+                      <div class="tab-pane fade active show" id="custom-tabs-one-home" role="tabpanel" aria-labelledby="orderbuy_tab">
+                        <table class="table table-sm">
+                          <thead>
+                            <tr>
+                              <th>Usage</th>
+                              <th>Parameter</th>
+                              <th>Spec</th>
+                            </tr>
+                          </thead>
+                          <tbody id="orderbuyspec_table">  
+        
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="tab-pane fade" id="custom-tabs-one-profile" role="tabpanel" aria-labelledby="ordersale_tab">
+                        <table class="table table-sm">
+                          <thead>
+                            <tr>
+                              <th>Usage</th>
+                              <th>Parameter</th>
+                              <th>Spec</th>
+                            </tr>
+                          </thead>
+                          <tbody id="ordersellspec_table">  
+        
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- /.card -->
+                </div>
+              </div>
+              <div class="modal-footer justify-content-right">
+                <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+            <!-- /.modal-content -->
+          </div>
+          <!-- /.modal-dialog -->
+        </div>
+        <!-- /.modal -->
+
+      </div>
+      <!-- /.content -->
+
+      <script>
+
+        $(document).on('change', '.specusage', function(e) {
+              console.log('ok');
+              let status = ($(this).is(":checked")) ? 1:0  
+              // console.log($(this).data('symbol'))
+              // return;
+              changeSpecUsage($(this).attr("id"),status,$(this).data('symbol')).then(data => {
+                  toastr.info(`Spec ${$(this).data('name')} usage status has been updated`)
+              }).catch(error => {})
+          })
+
+          function changeSpecUsage(id,status,symbol){  
+              data = {
+                    id: id,
+                    status: status,
+                    symbol: symbol,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                } 
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'changespecusage' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+          }
+
+          
+          $(document).on('change', '.specentrypointvalue', function(e) {
+              changeSpecEntryPointValue($(this).data('id'),$(this).val(),$(this).data('symbol')).then(data => {
+                  toastr.info(`Spec ${$(this).data('name')} value status has been updated`)
+              }).catch(error => {})
+          })
+
+          function changeSpecEntryPointValue(id,value,symbol){  
+              data = {
+                    id: id,
+                    value: value,
+                    symbol: symbol,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                } 
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'changespecentrypointvalue' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+          }
+
+                    
+          $(document).on('click', '#clonetoall', function(e) {   
+              let symbolid = $('#symbol').val()
+              if(symbolid === '') return;
+              console.log(symbolid);
+              Swal.fire({
+                title: 'Clone Spec?',
+                html: `<h4>Do you REALLY need to clone spec form</h4> <h2>${$('#symbol option:selected').text()}</h2> <h4>to all symbols?</h4>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'CONFIRM'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                  cloneSpec(symbolid).then(data => {
+                    window.location.href = window.location.href
+                  }).catch(error => {})
+                }
+            })
+          })
+
+          function cloneSpec(id){  
+              data = {
+                    id: id,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                } 
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'clonespec' %}",
+                    dataType : "json",
+                    data: data,
+                    beforeSend: function(){
+                        $('#loader').show();
+                    },
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    complete:function(data){
+                        $('#loader').hide();
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+          }
+
+                              
+          $(document).on('click', '.editentryspec', function(e) {   
+              let symbolid = $(this).data('id')
+              let orderbuy_html = '';
+              let ordersell_html = '';
+              if(symbolid === '') return;
+
+              getEntrySpec(symbolid).then(data => {
+                    JSON.parse(data.spec).filter(x => x.fields.order_type == 0).forEach(spec => {
+                      let chkStatus = 'checked';
+                      let specInputValue = `<input type="text" data-id="${spec.pk}" data-symbol="${spec.fields.symbol}" class="form-control specentrypointvalue" value="${spec.fields.entry_value}" >`;
+                      if(spec.fields.parameter_type === 'equal'){
+                        specInputValue = `<select class="form-control specentrypointvalue" data-symbol="${spec.fields.symbol}" data-id="${spec.pk}" data-type="equal">
+                                          <option value="${spec.fields.entry_value}" 
+                                            >${spec.fields.entry_value}</option>
+                                          <option value="${spec.fields.exit_value}"
+                                          >${spec.fields.exit_value}</option>
+                                      </select>`
+                      }
+                      if(spec.fields.status !== '1') chkStatus = ''
+                      orderbuy_html += `
+                        <tr>
+                          <td class="align-middle">
+                            <div class="icheck-primary d-inline">
+                                  <input type="checkbox" class="specusage" data-symbol="${spec.fields.symbol}" data-name="${spec.fields.name}" data-type="compare" id="${spec.pk}" ${chkStatus}>
+                                      <label for="${spec.pk}">
+                                  </label>
+                              </div>
+                            </td>
+                          <td class="align-middle">${spec.fields.name}</td>
+                          <td class="align-middle">${specInputValue}</td>
+                        </tr>`
+                    });
+
+                    JSON.parse(data.spec).filter(x => x.fields.order_type == 1).forEach(spec => {
+                      let chkStatus = 'checked';
+                      let specInputValue = `<input type="text" data-id="${spec.pk}" data-symbol="${spec.fields.symbol}" class="form-control specentrypointvalue" value="${spec.fields.entry_value}" >`;
+                      if(spec.fields.parameter_type === 'equal'){
+                        specInputValue = `<select class="form-control specentrypointvalue" data-symbol="${spec.fields.symbol}" data-id="${spec.pk}" data-type="equal">
+                                          <option value="${spec.fields.entry_value}" 
+                                            >${spec.fields.entry_value}</option>
+                                          <option value="${spec.fields.exit_value}"
+                                          >${spec.fields.exit_value}</option>
+                                      </select>`
+                      }
+                      if(spec.fields.status !== '1') chkStatus = ''
+                      ordersell_html += `
+                        <tr>
+                          <td class="align-middle">
+                            <div class="icheck-primary d-inline">
+                                  <input type="checkbox" class="specusage" data-symbol="${spec.fields.symbol}" data-name="${spec.fields.name}" data-type="compare" id="${spec.pk}" ${chkStatus}>
+                                      <label for="${spec.pk}">
+                                  </label>
+                              </div>
+                            </td>
+                          <td class="align-middle">${spec.fields.name}</td>
+                          <td class="align-middle">${specInputValue}</td>
+                        </tr>`
+                    });
+
+                    $('#orderbuyspec_table').html(orderbuy_html);
+                    $('#ordersellspec_table').html(ordersell_html);
+                    $('#modal_header').html($(this).data('name'));
+                    $('#specModal').modal('show')
+              }).catch(error => {})
+           
+          })
+
+          function getEntrySpec(id){  
+              data = {
+                    id: id,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                } 
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getentryspec' %}",
+                    dataType : "json",
+                    data: data,
+                    beforeSend: function(){
+                        $('#loader').show();
+                    },
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    complete:function(data){
+                        $('#loader').hide();
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+          }
+
+      </script>
+
+ 
+{% endblock %} 

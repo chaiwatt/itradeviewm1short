@@ -1,0 +1,2135 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0 " ><span id="symbol"></span> <span id="timeframe"></span>  </h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Search</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+  
+      <!-- Main content -->
+      <div class="content">
+        {% csrf_token %}
+        <div class="container-fluid">
+     
+          <div class="row">
+            <div class="col-lg-9">
+
+                <div class="row">
+
+                    <!-- /.col -->
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <div class="info-box bg-primary">
+                            <span class="info-box-icon"><i class="fas fa-sort-amount-up-alt"></i></span>
+            
+                            <div class="info-box-content">
+                            <span class="info-box-text" style="font-size: 20px;">SPREAD (POINTS)</span>
+                            <span class="info-box-number" id="spread" style="font-size: 26px;"></span>
+            
+                            
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-md-4 col-sm-6 col-12">
+                          <div class="info-box bg-success">
+                            <span class="info-box-icon"><i class="far fa-money-bill-alt"></i></span>
+              
+                            <div class="info-box-content">
+                              <span class="info-box-text" style="font-size: 20px;">SPREAD PRICE/LOT</span>
+                              <span class="info-box-number" id="spreadprice" style="font-size: 26px;"></span>
+              
+                           
+                            </div>
+                            <!-- /.info-box-content -->
+                          </div>
+                          <!-- /.info-box -->
+                        </div>
+             
+                        <div class="col-md-4 col-sm-6 col-12">
+                          <div class="info-box bg-info">
+                            <span class="info-box-icon"><i class="fas fa-search-dollar"></i></span>
+              
+                            <div class="info-box-content">
+                              <span class="info-box-text" style="font-size: 20px;">PIP PRICE/LOT</span>
+                              <span class="info-box-number" id="pipprice" style="font-size: 26px;"></span>
+              
+                            </div>
+                            <!-- /.info-box-content -->
+                          </div>
+                          <!-- /.info-box -->
+                        </div>
+                      </div>
+               
+              <div class="card">
+                <div class="card-body">
+                    <!-- <div id="canndle_stick_tf_m5" style="width: 98%; "></div> -->
+                    <div id="canndle_stick_tf_from_m1data" ></div>
+                    <div id="canndle_stick_tf_all" ></div>
+                    <div id="canndle_stick_chart"></div>
+                    <div id="canndle_stick_chart_zoom"></div>
+                    <!-- <div id="macd_chart"></div> -->
+                </div>
+              </div>
+         
+  
+            </div>
+            <!-- /.col-md-6 -->
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">UTC Time</h3>
+                      </div>
+                    <div class="card-body" style="margin-bottom: -40px;margin-top: -40px;">
+                        <div id="clockcontainer" style="height: 300px;"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monitoring</h3>
+                      </div>
+                    <div class="card-body" >
+                        <table class="table table-sm">
+                            <thead>
+                              <tr>
+                                <th>#</th>
+                                
+                                <th>Symbol</th>
+                                <!-- <th>View</th> -->
+                                <th class="text-right">Order</th>
+                              </tr>
+                            </thead>
+                            <tbody id="monitoring_table">   
+    
+                            </tbody>
+                          </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Orders</h3>
+                      </div>
+                    <div class="card-body" >
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group float-right">
+
+                                    <button type="button" id="btnGetSingleOhlc" class="btn btn-primary">Start Search</button>
+                                    <button type="button" id="uploadImage" class="btn btn-primary">Upload Image</button>
+                                    <!-- <button type="button" id="openorder" data-dismiss="modal" class="btn btn-success">Open Order</button> -->
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- /.col-md-6 -->
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+
+      <div class="modal fade" id="openorder_modal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">OPEN ORDER</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        
+                        <div class="form-group">
+                            <label for="stoplost">Symbol</label>
+                            <input type="text" class="form-control" id="symbolname" value="" readonly>
+                        </div>
+                     </div>
+                    <div class="col-md-12">
+                        
+                        <div class="form-group">
+                            <label for="stoplost">Stop Lost (0.01%)</label>
+                            <input type="text" class="form-control" id="stoplost" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="takeprofit">Take Profit (2xSL)</label>
+                            <input type="text" class="form-control" id="takeprofit" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="lotsize">Lot size</label>
+                            <input type="text" class="form-control" id="lotsize" value=""  >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="text" class="form-control" id="price" value="" readonly >
+                        </div>
+                     </div>
+
+                     <div class="col-md-12">
+                        <label for="ordertype">Order Type</label>
+                        <select class="form-control" name="ordertype" id="ordertype" >
+                            <option value="0" >Order Buy</option>
+                            <option value="1" >Order Sell</option>
+                        </select>
+                     </div>
+
+                     <div class="col-md-12">
+                         <div class="form-group d-flex justify-content-between align-items-center">
+                            <button type="button" id="viewalltimeframe" class="btn btn-primary mt-3">View All TIMEFRAME</button>
+                            <button type="button" id="ordering" data-dismiss="modal" class="btn btn-info mt-3">Open Order</button>
+                         </div>
+                        
+                     </div>
+                     
+                </div>
+               
+            </div>
+       
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+
+      <div class="modal fade" id="modal-viewtimeframe">
+        <div class="modal-dialog" style="max-width: 80%;">
+          <div class="modal-content" >
+            <div class="modal-header">
+              <h4 class="modal-title" >TIMEFRAME: <span id="tfviewer"></span> </h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="canndle_stick_tf"></div>
+                     </div>
+                     <div class="col-md-12">
+                         <div class="form-group float-right">
+                            <button type="button" data-dismiss="modal" class="btn btn-default mt-3">close</button>
+                         </div>
+                     </div> 
+                </div>
+               
+            </div>
+       
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+
+
+      <!-- /.modal -->
+      <!-- /.modal -->
+      <!-- /.content -->
+      <script>
+
+        // //Initialize Select2 Elements
+        $('.select2').select2();
+
+        // //Initialize Select2 Elements
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        })
+        var searchTimer;
+        var timerInterval = 5000;
+        var testRange = 250;
+        var count = 0;
+        var _rawData = [];
+        var slopeSpec = 0.00001;
+
+        var canndle_stick_tf_all = echarts.init(document.getElementById('canndle_stick_tf_all'));  
+        var canndle_stick_tf_from_m1data = echarts.init(document.getElementById('canndle_stick_tf_from_m1data'));  
+        var canndle_stick_tf = echarts.init(document.getElementById('canndle_stick_tf'));  
+        var canndleStickChart = echarts.init(document.getElementById('canndle_stick_chart'));  
+        var canndleStickChartZoom = echarts.init(document.getElementById('canndle_stick_chart_zoom')); 
+  
+        var apisymbols = JSON.parse("{{apisymbols|escapejs}}"); 
+        var isMarketClose = "{{isMarketClose|escapejs}}"
+        // console.log(apisymbols)
+
+        var updateapisymbols = []
+        var searchType = JSON.parse("{{searchtype|escapejs}}")[0].fields; 
+        var responseData = [] ; 
+        var orderbuy_entry_specs = [];
+        var ordersale_entry_specs = [];
+
+        var orderbuy_close_specs = [];
+        var ordersell_close_specs = [];
+        var data = []
+        var data_tf_m1 = []
+        // var data_tf_m5 = []
+
+        var axisData = [];
+        var SSMA20Arr = [];
+        var SSMA50Arr = [];
+        var SSMA100Arr = [];
+        
+        var dataMA100 = [];
+        var MarkData = [];
+        var MarkDataTF = [];
+        var MarkDataTF_FromM1 = []
+        var MarkDataTFViewser = [];
+        var MacdCrossData  = [];
+        var markMA100LineCord = [];
+        var MarkMA100Slope  = [];
+        var sma100Trend = [];
+        var dataResult = null
+        var sma100ArrowLevel = null
+        var sma100PresentLevel = null
+        var orderBuyEntryPointflag = false;
+        var orderSellEntryPointflag = false;
+        var testResult = [];
+        var tmpDataIn = null;
+        var lineLenght = 10;
+        var momenttumBar = false;
+        var trendPattern = false;
+        var barSize = 0;
+        var selectedTimeframe = '';
+        var calculationinfo = null;
+        var orderStatus = false;
+        var orderinfo = null;
+        var accumulateprice = 0;
+        var presentBarInfo = null;
+        var currentselecteddate = '';
+        var measurepip = false;
+        var measurepipvalue = [];
+        var countfromorderposition = 0;
+        let positionmark = 0;
+        let usdbase = 1;
+        let _ohlc_timeframe = []
+        var allstdbarsizes = []
+        var symbolCountId = 0;
+        var bullishall = false;
+        var bearishall = false
+        
+
+        var dom = document.getElementById("clockcontainer");
+            var clock = echarts.init(dom);
+            var app = {};
+
+            var clock_option;
+
+            clock_option = {
+              series: [
+                {
+                  name: 'hour',
+                  type: 'gauge',
+                  startAngle: 90,
+                  endAngle: -270,
+                  min: 0,
+                  max: 24,
+                  splitNumber: 24,
+                  clockwise: true,
+                  axisLine: {
+                    lineStyle: {
+                      width: 15,
+                      color: [[1, 'rgba(0,0,0,0.7)']],
+                      shadowColor: 'rgba(0, 0, 0, 0.5)',
+                      shadowBlur: 15
+                    }
+                  },
+                  splitLine: {
+                    lineStyle: {
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 3,
+                      shadowOffsetX: 1,
+                      shadowOffsetY: 2
+                    }
+                  },
+
+                  pointer: {
+                    icon: 'path://M2.9,0.7L2.9,0.7c1.4,0,2.6,1.2,2.6,2.6v115c0,1.4-1.2,2.6-2.6,2.6l0,0c-1.4,0-2.6-1.2-2.6-2.6V3.3C0.3,1.9,1.4,0.7,2.9,0.7z',
+                    width: 12,
+                    length: '55%',
+                    offsetCenter: [0, '8%'],
+                    itemStyle: {
+                      color: '#C0911F',
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 8,
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 4
+                    }
+                  },
+                  detail: {
+                    show: false
+                  },
+                  title: {
+                    offsetCenter: [0, '30%']
+                  },
+                  data: [
+                    {
+                      value: 0
+                    }
+                  ]
+                },
+                {
+                  name: 'minute',
+                  type: 'gauge',
+                  startAngle: 90,
+                  endAngle: -270,
+                  min: 0,
+                  max: 60,
+                  clockwise: true,
+                  axisLine: {
+                    show: false
+                  },
+                  splitLine: {
+                    show: false
+                  },
+                  axisTick: {
+                    show: false
+                  },
+                  axisLabel: {
+                    show: false
+                  },
+                  pointer: {
+                    icon: 'path://M2.9,0.7L2.9,0.7c1.4,0,2.6,1.2,2.6,2.6v115c0,1.4-1.2,2.6-2.6,2.6l0,0c-1.4,0-2.6-1.2-2.6-2.6V3.3C0.3,1.9,1.4,0.7,2.9,0.7z',
+                    width: 8,
+                    length: '70%',
+                    offsetCenter: [0, '8%'],
+                    itemStyle: {
+                      color: '#C0911F',
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 8,
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 4
+                    }
+                  },
+                  anchor: {
+                    show: false,
+                    size: 20,
+                    showAbove: false,
+                    itemStyle: {
+                      borderWidth: 15,
+                      borderColor: '#C0911F',
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 8,
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 4
+                    }
+                  },
+                  detail: {
+                    show: false
+                  },
+                  title: {
+                    offsetCenter: ['0%', '-40%']
+                  },
+                  data: [
+                    {
+                      value: 0
+                    }
+                  ]
+                },
+                
+              ]
+            };
+
+
+            if (clock_option && typeof clock_option === 'object') {
+                clock.setOption(clock_option);
+            }
+
+
+        function autoSearch(){
+            function searching(){
+                searchMarket();
+            }
+            searchTimer = setInterval(searching,timerInterval);
+        }
+
+        $(document).on('click','#btnGetSingleOhlc', function(){
+            // if (this.classList.contains('start')) {
+            //     this.classList.remove('start');
+            //     this.textContent = "Start Search";
+            //     clearInterval(searchTimer);
+            // } else {
+            //     this.classList.add('start');
+            //     this.textContent = "Stop Search";
+            //     autoSearch();
+            // }
+            
+            searchMarket();
+        })
+
+        $( document ).ready(function () {   
+            $( "#btnGetSingleOhlc" ).trigger( "click" );
+            setInterval(function(){
+               
+                searchMarket();
+             },5000)
+        });
+        function beep() {
+        (new Audio("data:audio/wav;base64,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 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU="
+            )).play();
+        }
+
+        function searchMarket(){
+            if(apisymbols.length == 0){
+                getApiSymbols().then(data_item => {
+                    let _apisymbols = JSON.parse(data_item.apisymbols)
+                    console.log(_apisymbols)
+                    if(_apisymbols.length > 0){
+                        apisymbols = _apisymbols
+                    }
+                }).catch(error => {})
+            }else{
+                let symbol = parseInt(apisymbols[symbolCountId].pk);
+                let timeframe = 1;
+                let html_entrypoint_testspecs = ``
+                let html_openbuy_testspecs = ``
+                let html_opensell_testspecs = ``
+                getSingleOhlc(symbol,timeframe).then(data_item => {
+                    usdbase = data_item.usdbase
+                    calculationinfo = data_item.calculationInfo;
+                    let stdbarsize = JSON.parse(data_item.barsize)[0].fields
+
+                    updateapisymbols = JSON.parse(data_item.apisymbols)
+                    isMarketClose = data_item.isMarketClose
+                    let html_monitoring_symbol = ''
+                    updateapisymbols.forEach((symbol,i) => {
+                        html_monitoring_symbol += `<tr>
+                            <td>${ i+1}</td>
+                            <td>${ symbol.fields.name}</td>
+                            <td class="text-right"><button type="button" class="btn btn-sm btn-primary mr-1 viewtimeframe" data-timeframe="1" data-symbol="${symbol.pk}">View</button><button type="button" class="btn btn-sm btn-info openorder" data-symbol="${symbol.fields.name}">Open</button></td>
+                            </tr>`;
+                    });
+
+                    let pippriceperlotsize = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,1,usdbase)*10;
+                    let stoplossprice = parseFloat(stopLossPrice(stdbarsize.stoplostpercent,parseFloat(calculationinfo.balance)))
+                    let lotsize = getLotSize(stoplossprice,stdbarsize.stoplostpip,pippriceperlotsize).toFixed(5)*stdbarsize.lotsizeoffset
+                    let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
+                    $('#pipprice').html(pippriceperlotsize.toFixed(5));
+                    $('#spreadprice').html(-spreadprice+'$');
+                    $('#spread').html(calculationinfo.spread);
+                    $('#monitoring_table').html(html_monitoring_symbol);
+    
+                    createData(data_item);
+                }).catch(error => {})
+
+                symbolCountId++;            
+                if(symbolCountId == apisymbols.length) {
+                    apisymbols = updateapisymbols
+                    symbolCountId= 0
+                }
+            }
+        }
+
+        function getSingleOhlc(symbol,timeframe){
+            return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    timeframe: timeframe,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getsingleohlc' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+
+        function getApiSymbols(){
+            return new Promise((resolve, reject) => {
+                data = {
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getapisymbols' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        const sumArray = arr =>
+        (arr || Array.of(arr))
+            .sort((a, b) => a - b)
+            .slice(1, (arr && (arr.length - 1)))
+            .reduce((sum, n) => sum + n, 0)
+
+        function createData(response){
+            _forexData = response.ohlc;
+           
+            $("#timeframe").html("("+response.timeframe+")");
+            $("#symbol").html(response.symbol);
+            
+            data = getData(_forexData);
+
+
+
+            closedPrice = getClosedPrice(_forexData);
+            lowPrice = getLowPrice(_forexData);
+            highPrice = getHighPrice(_forexData);
+            axisData = getDateLabel(_forexData); 
+
+            SSMA100Arr = SSMA_Calc(closedPrice,100);
+
+            var nullSmoth_SSMA100 = Array(closedPrice.length - SSMA100Arr.length).fill(null);
+
+            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr);  //calculateMA(100, data); 
+
+            let regressiveEq = genRegressionLine(dataMA100,lineLenght)
+            markMA100LineCord = getCoord(regressiveEq,dataMA100.length-1-lineLenght,dataMA100.length-1,lineLenght)
+
+            sma100Trend = isUpTrend(regressiveEq[0],data,dataMA100,lineLenght,slopeSpec)
+
+            sma100ArrowLevel = {
+                sma100_arrow_below : sma100ArrowBelow(data,dataMA100,lineLenght),
+                sma100_arrow_above : sma100ArrowAbove(data,dataMA100,lineLenght),
+            }
+
+            sma100PresentLevel = {
+                sma100_present_below : sma100PresentBelow(data,dataMA100),
+                sma100_present_above : sma100PresentAbove(data,dataMA100),
+            }
+           
+            
+            var ohlc_timeframe_arr = response.ohlctimeframe
+            // console.log('AHA')
+            // console.log(data)
+           
+            let tfs_from_m1data_arr =  createTfDataSearchFromM1(getOhlcTimeframesDataFromM1(data))
+           
+        //    console.log (tfs_from_m1data_arr)
+
+        //    console.log(tfs_from_m1data_arr[0][0])
+
+            var tfs_arr = createTfDataSearch(ohlc_timeframe_arr)
+            // console.log(tfs_arr)
+            
+
+            // let bullish_ladder = bullishLadder(data,4)
+            // let bearish_ladder = bearishLadder(data,4)
+            // let bearish_trend = bearishTrend(data,response.m1barsize[0],1.2,3)
+            // let bullish_trend = bullishTrend(data,response.m1barsize[0],1.2,3)
+            // console.log('bullish_ladder: ' + bullish_ladder)
+            // console.log('bearish_ladder: ' + bearish_ladder)
+            // console.log('bearish_trend: ' + bearish_trend)
+            // console.log('bullish_trend: ' + bullish_trend)
+            // console.log('==============')
+            // if(bearish_trend == true || bullish_trend == true || bearish_ladder == true || bullish_ladder == true){
+            //     beep()
+            // }
+
+            // bullishall = bullishAllTimeframe(ohlc_timeframe_arr,false,false)
+                    
+            // if(bullishall == true){
+            //     beep();
+            // }
+
+            // bearishall = bearishAllTimeframe(ohlc_timeframe_arr,false,false)
+            // if(bearishall == true){
+            //     beep();
+            // }
+        
+            let bigenough = true
+            let allgreen = true
+            let allred = true
+
+            if (tfs_arr[0][0][0] > tfs_arr[0][0][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            
+            
+            let m1body = Math.abs(tfs_arr[0][0][0] - tfs_arr[0][0][1])
+            let m1stdbarpercent = Math.abs((((response.m1barsize[0] - m1body)/m1body)*100).toFixed(2))
+            let signm1 = '>';
+            if(m1body < response.m1barsize[0]) signm1 = '<'
+
+
+            if (tfs_arr[0][1][0] > tfs_arr[0][1][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            let m5body = Math.abs(tfs_arr[0][1][0] - tfs_arr[0][1][1])
+            let m5stdbarpercent = Math.abs((((response.m1barsize[1] - m5body)/m5body)*100).toFixed(2))
+            let signm5 = '>';
+            if(m5body < response.m1barsize[1]) {
+                signm5 = '<'
+                bigenough = false
+            }
+
+            if (tfs_arr[0][2][0] > tfs_arr[0][2][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            let m15body = Math.abs(tfs_arr[0][2][0] - tfs_arr[0][2][1])
+            let m15stdbarpercent = Math.abs((((response.m1barsize[2] - m15body)/m15body)*100).toFixed(2))
+            let signm15 = '>';
+            if(m15body < response.m1barsize[2]) {
+                signm15 = '<'
+                bigenough = false
+            }
+
+            if (tfs_arr[0][3][0] > tfs_arr[0][3][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            let m30body = Math.abs(tfs_arr[0][3][0] - tfs_arr[0][3][1])
+            let m30stdbarpercent = Math.abs((((response.m1barsize[3] - m30body)/m30body)*100).toFixed(2))
+            let signm30 = '>';
+            if(m30body < response.m1barsize[3]) {
+                signm30 = '<'
+                bigenough = false
+            }
+
+            
+
+            // if (tfs_arr[0][4][0] > tfs_arr[0][4][1]){
+            //     allgreen = false
+            // }else{
+            //     allred = false
+            // }
+
+            // let h1body = Math.abs(tfs_arr[0][4][0] - tfs_arr[0][4][1])
+            // let h1stdbarpercent = Math.abs((((response.m1barsize[4] - h1body)/h1body)*100).toFixed(2))
+            // let signh1 = '>';
+            // if(h1body < response.m1barsize[4]) {
+            //     signh1 = '<'
+            //     bigenough = false
+            // }
+            
+
+            MarkDataTF = [];
+
+            MarkDataTF.push({
+                name: signm1 + m1stdbarpercent + '%',
+                value: tfs_arr[0][0][3],
+                xAxis: 0,
+                yAxis: (tfs_arr[0][0][3]),
+                color: "#000",
+            });
+
+            MarkDataTF.push({
+                name: signm5 + m5stdbarpercent + '%',
+                value: tfs_arr[0][1][3],
+                xAxis: 1,
+                yAxis: (tfs_arr[0][1][3]),
+                color: "#000",
+            });
+
+            MarkDataTF.push({
+                name: signm15 + m15stdbarpercent + '%',
+                value: tfs_arr[0][2][3],
+                xAxis: 2,
+                yAxis: (tfs_arr[0][2][3]),
+                color: "#000",
+            });
+            MarkDataTF.push({
+                name: signm30 + m30stdbarpercent + '%',
+                value: tfs_arr[0][3][3],
+                xAxis: 3,
+                yAxis: tfs_arr[0][3][3],
+                color: "#000",
+            });
+            // MarkDataTF.push({
+            //     name: signh1 + h1stdbarpercent + '%',
+            //     value: tfs_arr[0][4][3],
+            //     xAxis: 4,
+            //     yAxis: tfs_arr[0][4][3],
+            //     color: "#f00",
+            // });
+
+            // if(isMarketClose == 0){  
+            //     let bullish_ladder = bullishLadder(data,4)
+            //     let bearish_ladder = bearishLadder(data,4)
+            //     let bearish_trend = bearishTrend(data,response.m1barsize[0],1.2,3)
+            //     let bullish_trend = bullishTrend(data,response.m1barsize[0],1.2,3)
+            //     let bullish_momentum = bullishMomentum(data,response.m1barsize[0],0.5,2)
+            //     let bearish_momentum = bearishMomentum(data,response.m1barsize[0],300,300)
+            //     if(bearish_trend == true || bullish_trend == true || bearish_ladder == true || bullish_ladder == true){
+            //         if(bigenough == true && allgreen == true){
+            //         result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
+            //         console.log('open order buy' + data[data.length-1] + ' ' + response.symbol)
+            //     }
+
+            //     if(bigenough == true && allred == true){
+            //         result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [SELL]'
+            //         console.log('open order sell' + data[data.length-1] + ' ' + response.symbol)
+            //     }
+            //     }
+            // }
+    
+            
+            let bigenough_fromm1 = true
+            let allgreen_fromm1 = true
+            let allred_fromm1 = true
+            let allbig = true
+
+            if (tfs_from_m1data_arr[0][0][0] > tfs_from_m1data_arr[0][0][1]){
+                allgreen_fromm1 = false
+            }else{
+                allred_fromm1 = false
+            }
+
+            let m1body_fromm1 = Math.abs(tfs_from_m1data_arr[0][0][0] - tfs_from_m1data_arr[0][0][1])
+            let m1stdbarpercent_fromm1 = Math.abs((((response.m1barsize[0] - m1body_fromm1)/m1body_fromm1)*100).toFixed(2))
+            let signm1_fromm1 = '>';
+            if(m1body_fromm1 < response.m1barsize[0]) {
+                signm1_fromm1 = '<'
+                // allbig = false
+            }
+            
+            if (tfs_from_m1data_arr[0][1][0] > tfs_from_m1data_arr[0][1][1]){
+                    allgreen_fromm1 = false
+            }else{
+                allred_fromm1 = false
+            }
+
+            let m5body_fromm1 = Math.abs(tfs_from_m1data_arr[0][1][0] - tfs_from_m1data_arr[0][1][1])
+            let m5stdbarpercent_fromm1 = Math.abs((((response.m1barsize[1] - m5body_fromm1)/m5body_fromm1)*100).toFixed(2))
+            let signm5_fromm1 = '>';
+            if(m5body_fromm1 < response.m1barsize[1]) {
+                signm5_fromm1 = '<'
+                allbig = false
+            }
+
+            if (tfs_from_m1data_arr[0][2][0] > tfs_from_m1data_arr[0][2][1]){
+                    allgreen_fromm1 = false
+            }else{
+                allred_fromm1 = false
+            }
+
+            let m15body_fromm1 = Math.abs(tfs_from_m1data_arr[0][2][0] - tfs_from_m1data_arr[0][2][1])
+            let m15stdbarpercent_fromm1 = Math.abs((((response.m1barsize[2]  - m15body_fromm1)/m15body_fromm1)*100).toFixed(2))
+            let signm15_fromm1 = '>';
+            if(m15body_fromm1 < response.m1barsize[2] ) {
+                signm15_fromm1 = '<'
+                bigenough_fromm1 = false
+                allbig = false
+            }
+
+            
+            if (tfs_from_m1data_arr[0][3][0] > tfs_from_m1data_arr[0][3][1]){
+                    allgreen_fromm1 = false
+            }else{
+                allred_fromm1 = false
+            }
+            let m30body_fromm1 = Math.abs(tfs_from_m1data_arr[0][3][0] - tfs_from_m1data_arr[0][3][1])
+            let m30stdbarpercent_fromm1 = Math.abs((((response.m1barsize[3] - m30body_fromm1)/m30body_fromm1)*100).toFixed(2))
+            let signm30_fromm1 = '>';
+            if(m30body_fromm1 < response.m1barsize[3]) {
+                signm30_fromm1 = '<'
+                bigenough_fromm1 = false
+                allbig = false
+            }
+
+            // if (tfs_from_m1data_arr[0][4][0] > tfs_from_m1data_arr[0][4][1]){
+            //         allgreen_fromm1 = false
+            // }else{
+            //     allred_fromm1 = false
+            // }
+
+            // let h1body_fromm1 = Math.abs(tfs_from_m1data_arr[0][4][0] - tfs_from_m1data_arr[0][4][1])
+            // let h1stdbarpercent_fromm1 = Math.abs((((response.m1barsize[4] - h1body_fromm1)/h1body_fromm1)*100).toFixed(2))
+            // let signmh1_fromm1 = '>';
+            // if(h1body_fromm1 < response.m1barsize[4]) {
+            //     signmh1_fromm1 = '<'
+            //     bigenough_fromm1 = false
+            //     allbig = false
+            // }
+
+
+
+            MarkDataTF_FromM1 = [];
+                MarkDataTF_FromM1.push({
+                    name: signm1_fromm1 + m1stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[0][0][3],
+                    xAxis: 0,
+                    yAxis: (tfs_from_m1data_arr[0][0][3]),
+                    color: "#000",
+                });
+                MarkDataTF_FromM1.push({
+                    name: signm5_fromm1 + m5stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[0][1][3],
+                    xAxis: 1,
+                    yAxis: tfs_from_m1data_arr[0][1][3],
+                    color: "#000",
+                });
+
+                MarkDataTF_FromM1.push({
+                    name: signm15_fromm1 + m15stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[0][2][3],
+                    xAxis: 2,
+                    yAxis: tfs_from_m1data_arr[0][2][3],
+                    color: "#f00",
+                });
+                MarkDataTF_FromM1.push({
+                    name: signm30_fromm1 + m30stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[0][3][3],
+                    xAxis: 3,
+                    yAxis: tfs_from_m1data_arr[0][3][3],
+                    color: "#fff",
+                });
+                // MarkDataTF_FromM1.push({
+                //     name: signmh1_fromm1 + h1stdbarpercent_fromm1 + '%',
+                //     value: tfs_from_m1data_arr[0][4][3],
+                //     xAxis: 4,
+                //     yAxis: tfs_from_m1data_arr[0][4][3],
+                //     color: "#000",
+                // });
+
+                // let bearish_curve = bearishCurve(tfs_from_m1data_arr[0])
+                // let bullish_curve = bullishCurve(tfs_from_m1data_arr[0])
+                // // console.log('here')
+
+                // if(bearish_curve == true){
+                //     if(allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //         console.log('bearish_curve' + data[data.length-1] + ' ' + response.symbol)
+                //         result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [SELL]'
+                //         lineNotification(result).then(data => {
+                //             beep();
+                //         }).catch(error => {})
+                //     }
+                    
+                // }
+                // if(bullish_curve == true){
+                //     if(allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //         console.log('bullish_curve' + data[data.length-1] + ' ' + response.symbol)
+                //         result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
+                //         lineNotification(result).then(data => {
+                //             beep();
+                //         }).catch(error => {})
+                //     }
+                // }
+
+        // console.log(MarkDataTF)
+
+            canndle_stick_tf_all.setOption({
+                series : [
+                    {
+                        name: 'OHLC',
+                        data: tfs_arr[0],
+                        markPoint: {
+                            label: {
+                                normal: {
+                                    formatter: function (param) {
+                                        return param != null ? param.data['name'] : '';
+                                    }
+                                }
+                            },
+                            itemStyle: {
+                                color: 'rgba(255,255,255,1)',
+                            },
+                            // symbol: 'none',
+                            symbol: 'circle',
+                            symbolOffset: [20, -10],
+                            data: MarkDataTF,
+                            symbolColor: 'blue',
+                            symbolSize :0
+                        },
+                    }
+                ],                
+                xAxis : [
+                    {
+                        data : tfs_arr[1]
+                    }
+                ]
+            });
+
+            canndle_stick_tf_from_m1data.setOption({
+                    series : [
+                        {
+                            name: 'OHLC',
+                            data: tfs_from_m1data_arr[0],
+                            markPoint: {
+                                label: {
+                                    normal: {
+                                        formatter: function (param) {
+                                            return param != null ? param.data['name'] : '';
+                                        }
+                                    }
+                                },
+                                itemStyle: {
+                                    color: 'rgba(255,255,255,1)',
+                                },
+                                symbol: 'circle',
+                                symbolOffset: [20, -10],
+                                data: MarkDataTF_FromM1,
+                                symbolColor: 'blue',
+                                symbolSize :0
+                            },
+                        }
+                    ],                
+                    xAxis : [
+                        {
+                            data : tfs_arr[1]
+                        }
+                    ]
+                });
+
+
+
+            let d = new Date(data[data.length-1][5]);
+
+            let minute = d.getUTCMinutes()
+            let hour = d.getUTCHours();
+            clock_option.animationDurationUpdate = 300;
+            clock.setOption({
+            series: [
+                {
+                name: 'hour',
+                animation: hour !== 0,
+                data: [{ value: hour }]
+                },
+                {
+                name: 'minute',
+                animation: minute !== 0,
+                data: [{ value: minute }]
+                }
+            ]
+            });
+
+
+
+            canndleStickChart.setOption({
+                series : [
+                    
+                    {
+                        name: 'OHLC',
+                        data: data,
+                        // markPoint: {
+                        //     label: {
+                        //         normal: {
+                        //             formatter: function (param) {
+                        //                 return param != null ? param.data['name'] : '';
+                        //             }
+                        //         }
+                        //     },
+                        //     data: MarkData,
+                        // },
+                    }, 
+   
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    start : 90.5,
+                    end : 100
+                },
+            });
+
+            canndleStickChartZoom.setOption({
+                series : [
+                    {
+                        name: 'OHLC-ZOOM',
+                        data: data,
+                        markPoint: {
+                            label: {
+                                normal: {
+                                    formatter: function (param) {
+                                        return param != null ? param.data['name'] : '';
+                                    }
+                                }
+                            },
+                            data: MarkData,
+                        },
+                        markLine : {
+                            data: [
+                                [{
+                                    coord: markMA100LineCord[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: 'white'
+                                    }
+                                    }, {
+                                    coord: markMA100LineCord[1],
+                                    lineStyle: {
+                                        color: 'white'
+                                    }
+                                }]
+                            ],
+                        },
+                    }, 
+                    {
+                        name: 'MA100',
+                        data: dataMA100,
+                    }
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    start : Math.round((data.length-300)/(data.length)*100),
+                    end : 100
+                },
+
+            });
+
+            let bearish_curve = bearishCurve(tfs_from_m1data_arr[0])
+            let bullish_curve = bullishCurve(tfs_from_m1data_arr[0])
+            
+            let std_lot = (calculationinfo.balance/2500).toFixed(2)
+            // console.log(std_lot)
+
+            // console.log(data[data.length-1][5])
+            let currentDate = new Date(data[data.length-1][5]);
+            let currentHour = currentDate.getUTCHours()
+
+            if(isMarketClose == 0 && (currentHour > 3 && currentHour < 21) && parseInt($('#spread').html()) < 15){  
+                if(bearish_curve == true){
+                    // if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                    if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                        if (threeBearishLadder(data) == true){
+                            // console.log('bearish_curve' + data[data.length-1] + ' ' + response.symbol)
+                            fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
+                            var img_tf_from_m1 = new Image();
+                            var img_tf_all = new Image();
+                            var img_ohlc = new Image();
+                            var img_ohlc_zoom = new Image();
+                            img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
+           
+                            img_tf_all.src = canndle_stick_tf_all.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
+
+                            img_ohlc.src = canndleStickChart.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
+
+                            img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
+
+                            uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
+                                result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [SELL]'
+                                openOrder(response.symbol,'sell',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+                                    lineNotification(result).then(data => {
+                                        beep();
+                                        location.reload(true);
+                                    }).catch(error => {})
+                                }).catch(error => {})
+                            }).catch(error => {})
+                        }
+                    }    
+                }
+                // if(bullish_curve == true){
+                //     // if(allgreen == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //     if(allgreen == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //         if (threeBullishLadder(data) == true){
+                //             console.log('bullish_curve' + data[data.length-1] + ' ' + response.symbol)
+                //             fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
+                //             var img_tf_from_m1 = new Image();
+                //             var img_tf_all = new Image();
+                //             var img_ohlc = new Image();
+                //             var img_ohlc_zoom = new Image();
+                //             img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
+
+                //             img_tf_all.src = canndle_stick_tf_all.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
+
+                //             img_ohlc.src = canndleStickChart.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
+
+                //             img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
+
+                //             uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
+                //                 result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
+                //                 openOrder(response.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+                //                     lineNotification(result).then(data => {
+                //                         beep();
+                //                         location.reload(true);
+                //                     }).catch(error => {})
+                //                 }).catch(error => {})
+                //             }).catch(error => {})
+                //         }
+
+                //     }
+                // }
+     
+            }
+           
+        }
+
+
+        
+        function createDataViewer(response){
+            _forexData = response.ohlc;
+           
+      
+            var ohlc_timeframe_arr = response.ohlctimeframe
+          
+            var tfs_arr = createTfDataSearch(ohlc_timeframe_arr)
+            
+           
+
+            // bullishall = bullishAllTimeframe(ohlc_timeframe_arr,false,false)
+                    
+            // if(bullishall == true){
+            //     beep();
+            // }
+
+            // bearishall = bearishAllTimeframe(ohlc_timeframe_arr,false,false)
+            // if(bearishall == true){
+            //     beep();
+            // }
+        
+            let bigenough = true
+            let allgreen = true
+            let allred = true
+
+            if (tfs_arr[0][0][0] > tfs_arr[0][0][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+            
+            let m1body = Math.abs(tfs_arr[0][0][0] - tfs_arr[0][0][1])
+            let m1stdbarpercent = Math.abs((((response.m1barsize[0] - m1body)/m1body)*100).toFixed(2))
+            let signm1 = '>';
+            if(m1body < response.m1barsize[0]) signm1 = '<'
+
+
+            if (tfs_arr[0][1][0] > tfs_arr[0][1][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            let m5body = Math.abs(tfs_arr[0][1][0] - tfs_arr[0][1][1])
+            let m5stdbarpercent = Math.abs((((response.m1barsize[1] - m5body)/m5body)*100).toFixed(2))
+            let signm5 = '>';
+            if(m5body < response.m1barsize[1]) signm5 = '<'
+
+            if (tfs_arr[0][2][0] > tfs_arr[0][2][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            let m15body = Math.abs(tfs_arr[0][2][0] - tfs_arr[0][2][1])
+            let m15stdbarpercent = Math.abs((((response.m1barsize[2] - m15body)/m15body)*100).toFixed(2))
+            let signm15 = '>';
+            if(m15body < response.m1barsize[2]) {
+                signm15 = '<'
+                bigenough = false
+            }
+
+            if (tfs_arr[0][3][0] > tfs_arr[0][3][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            let m30body = Math.abs(tfs_arr[0][3][0] - tfs_arr[0][3][1])
+            let m30stdbarpercent = Math.abs((((response.m1barsize[3] - m30body)/m30body)*100).toFixed(2))
+            let signm30 = '>';
+            if(m30body < response.m1barsize[3]) {
+                signm30 = '<'
+                bigenough = false
+            }
+
+            if (tfs_arr[0][4][0] > tfs_arr[0][4][1]){
+                allgreen = false
+            }else{
+                allred = false
+            }
+
+            // let h1body = Math.abs(tfs_arr[0][4][0] - tfs_arr[0][4][1])
+            // let h1stdbarpercent = Math.abs((((response.m1barsize[4] - h1body)/h1body)*100).toFixed(2))
+            // let signh1 = '>';
+            // if(h1body < response.m1barsize[4]) {
+            //     signh1 = '<'
+            //     bigenough = false
+            // }
+
+
+            MarkDataTFViewser = [];
+
+            MarkDataTFViewser.push({
+                name: signm1 + m1stdbarpercent + '%',
+                value: tfs_arr[0][0][3],
+                xAxis: 0,
+                yAxis: (tfs_arr[0][0][3]),
+                color: "#000",
+            });
+
+            MarkDataTFViewser.push({
+                name: signm5 + m5stdbarpercent + '%',
+                value: tfs_arr[0][1][3],
+                xAxis: 1,
+                yAxis: (tfs_arr[0][1][3]),
+                color: "#000",
+            });
+
+            MarkDataTFViewser.push({
+                name: signm15 + m15stdbarpercent + '%',
+                value: tfs_arr[0][2][3],
+                xAxis: 2,
+                yAxis: (tfs_arr[0][2][3]),
+                color: "#000",
+            });
+            MarkDataTFViewser.push({
+                name: signm30 + m30stdbarpercent + '%',
+                value: tfs_arr[0][3][3],
+                xAxis: 3,
+                yAxis: tfs_arr[0][3][3],
+                color: "#000",
+            });
+            // MarkDataTFViewser.push({
+            //     name: signh1 + h1stdbarpercent + '%',
+            //     value: tfs_arr[0][4][3],
+            //     xAxis: 4,
+            //     yAxis: tfs_arr[0][4][3],
+            //     color: "#f00",
+            // });
+
+
+
+
+            canndle_stick_tf.setOption({
+                series : [
+                    {
+                        name: 'OHLC',
+                        data: tfs_arr[0],
+                        markPoint: {
+                            label: {
+                                normal: {
+                                    formatter: function (param) {
+                                        return param != null ? param.data['name'] : '';
+                                    }
+                                }
+                            },
+                            itemStyle: {
+                                color: 'rgba(255,255,255,1)',
+                            },
+                            // symbol: 'none',
+                            symbol: 'circle',
+                            symbolOffset: [20, -10],
+                            data: MarkDataTFViewser,
+                            symbolColor: 'blue',
+                            symbolSize :0
+                        },
+                    }
+                ],                
+                xAxis : [
+                    {
+                        data : tfs_arr[1]
+                    }
+                ]
+            });
+            canndle_stick_tf.resize();
+
+
+        }
+    
+
+        option = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+                // formatter: function (params) {
+                //     var res = params[0].name;
+                //     res += '<br/>' + params[0].seriesName;
+                //     res += '<br/>  Open : ' + params[0].value[1] + '  High : ' + params[0].value[4];
+                //     res += '<br/>  Close : ' + params[0].value[2] + '  Low : ' + params[0].value[3];
+                //     return res;
+                // }
+            },
+            legend: {
+                data:['OHLC'],
+                selected:{'SSMA20':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+         
+            ]
+        };
+
+      
+        option_zoom = {
+            backgroundColor: '#21202D',
+            title : {
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                showDelay: 0,  
+            },
+            legend: {
+                data:['OHLC-ZOOM','MA100'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : {
+                y: 250,
+                show : false,
+                realtime: true,
+                start : Math.round((data.length-300)/(data.length)*100),
+                end : 100
+            },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,                        
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC-ZOOM',
+                    type:'candlestick',
+                    data: data,
+                    markLine : {
+                        data: [
+                            [{
+                                coord: markMA100LineCord[0],
+                                symbol : 'none',
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                                }, {
+                                coord: markMA100LineCord[1],
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                            }]
+                        ],
+                    },
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'MA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }
+            ]
+        };
+
+        option_canndle_stick_tf_from_m1data = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+              
+            },
+            legend: {
+                data:['M5'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }
+            ]
+        };
+
+
+      
+        option_canndle_stick_tf_all = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['M1'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkDataTF,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }
+            ]
+        };
+
+        option_canndle_stick_tf = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['M1'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkDataTFViewser,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }
+            ]
+        };
+
+
+        canndleStickChart.setOption(option);
+        // macdChart.setOption(option_macd);
+        canndleStickChartZoom.setOption(option_zoom);
+        canndle_stick_tf_all.setOption(option_canndle_stick_tf_all);
+        canndle_stick_tf_from_m1data.setOption(option_canndle_stick_tf_from_m1data);
+        canndle_stick_tf.setOption(option_canndle_stick_tf);
+        // $('#canndle_stick_tf_all').hide()
+
+        // canndle_stick_tf_m5.setOption(option_canndle_stick_tf_m5);
+   ;
+        
+        // echarts.connect([canndleStickChart,macdChart,canndleStickChartZoom,canndle_stick_tf_m5]);
+
+        if(responseData.length !== 0){
+            createData(responseData);
+            window.onresize = function () {
+                canndleStickChart.resize();
+                // macdChart.resize();
+                canndleStickChartZoom.resize();
+                canndle_stick_tf_all.resize();
+                canndle_stick_tf_from_m1data.resize();
+                // 
+            }
+        }
+
+
+    $(document).on('click','.openorder',function(){
+        $('#btnGetSingleOhlc').removeClass('start').addClass('stop');
+        $('#btnGetSingleOhlc').html('Start Search');
+        clearInterval(searchTimer);
+        console.log($(this).data('symbol'))
+        getSymbolInfo($(this).data('symbol')).then(data => { //0=order on Buy 1=order on Sell
+            let _calculationinfo = data.calculationInfo;
+            let _stdbarsize = JSON.parse(data.barsize)[0].fields
+
+            var ohlc_timeframe_arr = data.ohlctimeframe
+           
+
+            let pippriceperlotsize = pipPricePerLotsize(_calculationinfo.symbol,_calculationinfo.degit,_calculationinfo.ask,_calculationinfo.trade_contract_size,1,usdbase)*10;
+            let stoplossprice = parseFloat(stopLossPrice(_stdbarsize.stoplostpercent,parseFloat(_calculationinfo.balance)))
+            let lotsize = getLotSize(stoplossprice,_stdbarsize.stoplostpip,pippriceperlotsize).toFixed(5)*_stdbarsize.lotsizeoffset
+
+            // let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
+
+            bullishall = bullishAllTimeframe(ohlc_timeframe_arr)
+            bearishall = bearishAllTimeframe(ohlc_timeframe_arr)
+
+            // console.log('bullishall: ' + bullishall)
+            // console.log('bearishall: ' + bearishall)
+      
+            // console.log(ohlc_timeframe_arr)
+
+            $('#stoplost').val(stoplossprice)
+            $('#takeprofit').val(2*stoplossprice)
+            $('#lotsize').val(lotsize)
+            if(bullishall == true){
+                $("#ordertype option[value='0']").attr("selected","selected");
+                $('#price').val(_calculationinfo.bid)
+            }else if(bearishall == true){
+                $("#ordertype option[value='1']").attr("selected","selected");
+                $('#price').val(_calculationinfo.ask)
+            }
+            
+            $('#symbolname').val(_calculationinfo.symbol)
+        }).catch(error => {})
+
+        $('#openorder_modal').modal('show');
+
+    })
+
+    $(document).on('click','#ordering',function(){
+        let order_type = 'sell'
+        if (parseInt($('#ordertype option:selected').val()) == 0){
+            order_type = 'buy'
+        }
+        // console.log($('#symbolname').val())
+        openOrder($('#symbolname').val(),order_type,parseFloat($('#lotsize').val()),'M1').then(data => { //0=order on Buy 1=order on Sell
+            // console.log(data)
+            location.reload(true);
+            // Swal.fire({
+            //     icon: 'info',
+            //     title: 'Result',
+            //     html: `<h2>${data.result[7]}</h2>` 
+            // })
+        }).catch(error => {})
+    })
+
+    function getSymbolInfo(symbol){   
+        return new Promise((resolve, reject) => {
+            data = {
+                symbol: symbol,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+            }
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getsymbolinfo' %}",
+                dataType : "json",
+                data: data,
+                success: function(data) {
+                    resolve(data)
+                },
+                error: function(error) {
+                    reject(error)
+                },
+            })
+        })
+    }
+
+    function openOrder(symbol,ordertype,lot,comment){   
+        return new Promise((resolve, reject) => {
+            data = {
+                symbol: symbol,
+                ordertype: ordertype,
+                lot: lot,
+                comment: comment,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+            }
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'openorder' %}",
+                dataType : "json",
+                data: data,
+                success: function(data) {
+                    resolve(data)
+                },
+                error: function(error) {
+                    reject(error)
+                },
+            })
+        })
+    }
+
+       function lineNotification(message){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    message: message,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'lineNotification' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       var viewsymbol = '';
+       
+       $(document).on('click','.viewtimeframe',function(){
+        viewsymbol = $(this).data('symbol')
+
+            $('#modal-viewtimeframe').modal('show')
+        })
+
+
+        $('#modal-viewtimeframe').on('shown.bs.modal', function (e) {
+            getSingleOhlc(viewsymbol,1).then(data_item => {
+                createDataViewer(data_item);
+            }).catch(error => {})
+        })
+
+        // let timestamp = null
+        $(document).on('click','#uploadImage',function(){
+            fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
+            var img_tf_from_m1 = new Image();
+            var img_tf_all = new Image();
+            var img_ohlc = new Image();
+            var img_ohlc_zoom = new Image();
+            img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+            
+            img_tf_all.src = canndle_stick_tf_all.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+            img_ohlc.src = canndleStickChart.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+
+            img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+
+            uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
+                
+            }).catch(error => {})
+        })
+
+        function uploadImage(fname,base64_tf_from_m1,base64_tf_all,base64_ohlc,base64_ohlc_zoom){   
+           return new Promise((resolve, reject) => {
+                _data = {
+                    fname : fname,
+                    base64_tf_from_m1: base64_tf_from_m1,
+                    base64_tf_all: base64_tf_all,
+                    base64_ohlc: base64_ohlc,
+                    base64_ohlc_zoom : base64_ohlc_zoom,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'uploadimage' %}",
+                   dataType : "json",
+                   data: _data,
+                   success: function(_data) {
+                       resolve(_data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+    </script>
+
+{% endblock %} 

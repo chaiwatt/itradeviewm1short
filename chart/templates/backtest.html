@@ -1,0 +1,3875 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0 " >Back Testing: <span id="symbol"></span> <span id="timeframe"></span> <span id="headerinfo" > </span> <span id="closeorder_wrapper"></span>  </h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Back Testing</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+  
+      <!-- Main content -->
+      <div class="content">
+        <div class="container-fluid">
+     
+          <div class="row">
+            <div class="col-lg-9">
+                <div class="row">
+
+                    <!-- /.col -->
+                    <div class="col-md-3 col-sm-6 col-12">
+                        <div class="info-box bg-primary">
+                            <span class="info-box-icon"><i class="fas fa-sort-amount-up-alt"></i></span>
+            
+                            <div class="info-box-content">
+                            <span class="info-box-text" style="font-size: 20px;">SPREAD (POINTS)</span>
+                            <span class="info-box-number" id="spread" style="font-size: 26px;"></span>
+            
+                            
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-md-3 col-sm-6 col-12">
+                          <div class="info-box bg-success">
+                            <span class="info-box-icon"><i class="far fa-money-bill-alt"></i></span>
+              
+                            <div class="info-box-content">
+                              <span class="info-box-text" style="font-size: 20px;">SPREAD PRICE/LOT</span>
+                              <span class="info-box-number" id="spreadprice" style="font-size: 26px;"></span>
+              
+                           
+                            </div>
+                            <!-- /.info-box-content -->
+                          </div>
+                          <!-- /.info-box -->
+                        </div>
+             
+                        <div class="col-md-3 col-sm-6 col-12">
+                          <div class="info-box bg-info">
+                            <span class="info-box-icon"><i class="fas fa-search-dollar"></i></span>
+              
+                            <div class="info-box-content">
+                              <span class="info-box-text" style="font-size: 20px;">PIP PRICE/LOT</span>
+                              <span class="info-box-number" id="pipprice" style="font-size: 26px;"></span>
+              
+                            </div>
+                            <!-- /.info-box-content -->
+                          </div>
+                          <!-- /.info-box -->
+                        </div>
+
+                        <div class="col-md-3 col-sm-6 col-12">
+                            <div id="pricechange_wrapper" class="info-box bg-danger">
+                              <span class="info-box-icon"><i id="pricechange_icon" class="far fa-arrow-alt-circle-down"></i></span>
+                              <div class="info-box-content">
+                                <span class="info-box-text" style="font-size: 20px;">PRICE CHANGE</span>
+                                <span class="info-box-number" id="pricechange" style="font-size: 26px;"></span>
+                
+                              </div>
+                              <!-- /.info-box-content -->
+                            </div>
+                            <!-- /.info-box -->
+                          </div>
+                        <!-- /.col -->
+                      </div>
+              <div class="card">
+                <div class="card-body">
+                    <!-- <div id="canndle_stick_tf_m5" style="width: 98%; "></div> -->
+                    <div id="canndle_stick_tf_from_m1data" ></div>
+                    <div id="canndle_stick_tf_all" ></div>
+                    <div id="canndle_stick_chart"></div>
+                    <div id="canndle_stick_chart_zoom"></div>
+                    <!-- <div id="macd_chart"></div> -->
+                    
+                
+                </div>
+              </div>
+  
+            </div>
+            <!-- /.col-md-6 -->
+            <div class="col-lg-3">
+           
+        
+                <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Back Test setting</h3>
+                    </div>
+                        {% csrf_token %}
+                      <div class="card-body">
+                          <div class="row">
+                              <div class="col-md-12">
+                                <div class="form-group">
+                                    <div class="form-group">
+                                        <label>Symbol</label>
+                                        <select class="form-control"  name="selectedSymbol" id="symbols" >
+                                            {% for symbol in symbols %}
+                                                <option value="{{ symbol.id }}"
+                                                        {% if symbol.id  == backtest.symbol_id %}
+                                                            selected
+                                                        {% endif %}
+                                                    >{{ symbol.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                      </div>
+                                    
+                                  </div>
+                              </div>
+
+                              <div class="col-md-6">
+                                <div class="form-group"> 
+                                    <label for="backtesttimeframe">Time frame</label>
+                                    <select class="form-control" name="selectedTimeframe" id="backtesttimeframe" >
+                                        {% for timeframe in timeframes %}
+                                            <option value="{{ timeframe.id }}"
+                                                {% if backtest.timeframe_id  == timeframe.id %}
+                                                    selected
+                                                {% endif %}
+                                            >{{ timeframe.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                              </div>
+                              <div class="col-md-6">
+                                <div class="form-group"> 
+                                    <label for="timeframe">Back test size</label>
+                                    <select class="form-control" name="backtestSize" id="backtestSize" >
+                                        {% for backtestsize in backtestsizes %}
+                                            <option value="{{ backtestsize.id }}"
+                                                {% if backtest.backtestsize_id  == backtestsize.id %}
+                                                    selected
+                                                {% endif %}
+                                            >{{ backtestsize.size }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                              </div>
+                              <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="interval">Interval</label>
+                                    <select class="form-control" name="interval" id="interval" >
+                                        {% for backtestinterval in backtestintervals %}
+                                            <option value="{{ backtestinterval.id }}"
+                                                {% if backtest.interval_id  == backtestinterval.id %}
+                                                    selected
+                                                {% endif %}
+                                            >{{ backtestinterval.interval }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                              </div>
+                          </div>
+                      </div>
+                      <!-- /.card-body -->
+      
+                      <div class="card-footer ">
+                        <div class="form-group float-right">
+                            <button type="button" id="deleteallbacktest" class="btn btn-danger mr-1">Delete All</button>
+                            <button type="button" id="btnSaveSetting" class="btn btn-success mr-1">New Job</button>
+                          
+                        </div>                        
+                      </div>
+                    <!-- </form> -->
+                  </div>
+
+              
+
+                  <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Testing Job 
+                            
+                     
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group"> 
+                                    <div class="icheck-success d-inline ml-2">
+                                        <input type="checkbox" id="timeframesync">
+                                        <label for="timeframesync">
+                                        <small>Timeframe Sync</small> 
+                                        </label>
+                                    </div>
+        
+                                    <div class="icheck-success d-inline ml-2">
+                                        <input type="checkbox" id="checkMeasurePip">
+                                        <label for="checkMeasurePip">
+                                        <small>Measure pip</small> 
+                                        </label>
+                                    </div>
+
+                                    <div class="icheck-success d-inline ml-2">
+                                        <input type="checkbox" id="checkAutotune">
+                                        <label for="checkAutotune">
+                                        <small>Auto tune</small> 
+                                        </label>
+                                    </div>
+                                    <hr>
+                                </div>
+
+                                <div class="form-group"> 
+                                    <label for="selectedBacktestJob">Select Job</label>
+                                    <select class="form-control" name="selectedBacktestJob" id="selectedBacktestJob" >
+                                        <option value="">== select job ==</option>
+                                        {% for backtestjob in backtestjobs %}
+                                            <option value="{{ backtestjob.id }}" data-timeframe="{{ backtestjob.timeframename }}" data-id="{{ backtestjob.symbol_id }}" data-name="{{ backtestjob.symbolname }}">{{ backtestjob.symbolname }} {{ backtestjob.timeframename }} {{ backtestjob.code }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group float-right">
+                                    
+                                    <button type="button" id="deletebacktest" class="btn btn-danger mr-1">Delete</button>
+                                    <button type="button" id="btnviewtimeframe" class="btn btn-primary mr-1">View All TF</button>
+                                    <button type="button" id="jogtest" class="btn btn-primary mr-1">Search</button>
+                                    <button type="button" id="autotest" class="btn btn-primary ">Auto Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">UTC Time</h3>
+                      </div>
+                    <div class="card-body" style="margin-bottom: -40px;margin-top: -40px;">
+                        <div id="clockcontainer" style="height: 300px;"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Order Buy Test Spec <span id="symbolname"></span></h3>
+                    </div>
+                    <div class="card-body p-0">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Spec</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody  id="orderbuy_spec_table">   
+    
+                        </tbody>
+                      </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                      <h3 class="card-title">Order Sell Test Spec </h3>
+                    </div>
+                    <div class="card-body p-0">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Parameter</th>
+                            <th>Spec</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody  id="ordersell_spec_table">   
+    
+                        </tbody>
+                      </table>
+                    </div>
+                </div>
+            </div>
+            <!-- /.col-md-6 -->
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+
+      <div class="modal fade" id="modal-default">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title text-danger blink" id="modaltext">ON ORDER</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="stoplost">Stop Lost (0.01%)</label>
+                            <input type="text" class="form-control" id="stoplost" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="takeprofit">Take Profit (2xSL)</label>
+                            <input type="text" class="form-control" id="takeprofit" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="lotsize">Lot size</label>
+                            <input type="text" class="form-control" id="lotsize" value=""  >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="text" class="form-control" id="price" value="" readonly >
+                        </div>
+                     </div>
+
+                     <div class="col-md-12">
+                        <label for="ordertype">Order Type</label>
+                        <select class="form-control" name="ordertype" id="ordertype" >
+                            <option value="0" >Order Buy</option>
+                            <option value="1" >Order Sell</option>
+                        </select>
+                     </div>
+                     <div class="col-md-12">
+                         <div class="form-group d-flex justify-content-between align-items-center">
+                            <button type="button" id="viewalltimeframe" class="btn btn-primary mt-3">View All TIMEFRAME</button>
+                            <button type="button" id="ordering" data-dismiss="modal" class="btn btn-info mt-3">Open Order</button>
+                         </div>
+                     </div>        
+                </div>      
+            </div>     
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+
+      <div class="modal fade" id="modal-viewtimeframe">
+        <div class="modal-dialog" style="max-width: 80%;">
+          <div class="modal-content" >
+            <div class="modal-header">
+              <h4 class="modal-title" >TIMEFRAME: <span id="tfviewer"></span> </h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="canndle_stick_tf_m1"></div>
+                     </div>
+                    <div class="col-md-12">
+                        <div id="canndle_stick_tf_m5"></div>
+                     </div>
+                     <div class="col-md-12">
+                        <div id="canndle_stick_tf_m15"></div>
+                     </div>
+                     <div class="col-md-12">
+                        <div id="canndle_stick_tf_m30"></div>
+                     </div>
+                     <div class="col-md-12">
+                        <div id="canndle_stick_tf_h1"></div>
+                     </div>
+                     <div class="col-md-12">
+                        <div id="canndle_stick_tf_h4"></div>
+                     </div>
+                     <!-- <div class="col-md-12">
+                        <div id="canndle_stick_tf_d1"></div>
+                     </div> -->
+          
+                     <div class="col-md-12">
+                         <div class="form-group float-right">
+                            <button type="button" data-dismiss="modal" class="btn btn-default mt-3">close</button>
+                         </div>
+                     </div> 
+                </div>
+               
+            </div>
+       
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+
+      <div class="modal fade" id="modal-updatebalance">
+        <div class="modal-dialog">
+          <div class="modal-content" >
+            <div class="modal-header">
+              <h4 class="modal-title" >Balance</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="balance">Balance</label>
+                            <input type="text" class="form-control" id="balance" value="" >
+                        </div>
+                     </div>
+          
+                     <div class="col-md-12">
+                         <div class="form-group float-right">
+                            <button type="button" id="updatebalance" data-dismiss="modal" class="btn btn-info mt-3">Update</button>
+                         </div>
+                     </div> 
+                </div>
+               
+            </div>
+       
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+      <!-- /.modal -->
+      <!-- /.modal -->
+      <!-- /.content -->
+      <script>
+
+        // //Initialize Select2 Elements
+        $('.select2').select2();
+
+        // //Initialize Select2 Elements
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        })
+        var backtestTimer;
+        var backtestTimerInterval = 500;
+        var testRange = 250;
+        var count = 0;
+        var _rawData = [];
+        var slopeSpec = 0.00001;
+
+        var canndle_stick_tf_all = echarts.init(document.getElementById('canndle_stick_tf_all'));  
+        var canndle_stick_tf_from_m1data = echarts.init(document.getElementById('canndle_stick_tf_from_m1data'));  
+        var canndleStickChart = echarts.init(document.getElementById('canndle_stick_chart'));  
+        var canndleStickChartZoom = echarts.init(document.getElementById('canndle_stick_chart_zoom')); 
+
+        var canndle_stick_tf_m1 = echarts.init(document.getElementById('canndle_stick_tf_m1'));  
+        var canndle_stick_tf_m5 = echarts.init(document.getElementById('canndle_stick_tf_m5'));  
+        var canndle_stick_tf_m15 = echarts.init(document.getElementById('canndle_stick_tf_m15'));  
+        var canndle_stick_tf_m30 = echarts.init(document.getElementById('canndle_stick_tf_m30'));  
+        var canndle_stick_tf_h1 = echarts.init(document.getElementById('canndle_stick_tf_h1'));         
+        var canndle_stick_tf_h4 = echarts.init(document.getElementById('canndle_stick_tf_h4'));    
+        // var canndle_stick_tf_d1 = echarts.init(document.getElementById('canndle_stick_tf_d1'));    
+
+        var searchType = JSON.parse("{{searchtype|escapejs}}")[0].fields; 
+        var responseData = [] ; 
+        var orderbuy_entry_specs = [];
+        var ordersale_entry_specs = [];
+
+        var orderbuy_close_specs = [];
+        var ordersell_close_specs = [];
+        var data = []
+        var data_tf_m1 = []
+        // var data_tf_m5 = []
+        var data_tf_m15 = []
+        var data_tf_m30 = []
+        var data_tf_h1 = []
+        var data_tf_h4 = []
+        var data_tf_d1 = []
+        var data_tf_w1 = []
+        var axisData = [];
+        var SSMA20Arr = [];
+        var SSMA100Arr = [];
+        var dataMA100 = [];
+        var MarkData = [];
+        var markMA100LineCord = [];
+        var MarkMA100Slope  = [];
+        var sma100Trend = [];
+        var MarkDataTF = []
+        var MarkDataTF_FromM1 = []
+        var dataResult = null
+        var sma100ArrowLevel = null
+        var sma100PresentLevel = null
+        var orderBuyEntryPointflag = false;
+        var orderSellEntryPointflag = false;
+        var testResult = [];
+        var tmpDataIn = null;
+        var lineLenght = 10;
+        var momenttumBar = false;
+        var trendPattern = false;
+        var barSize = 0;
+        var selectedTimeframe = '';
+        var calculationinfo = null;
+        var orderStatus = false;
+        var orderinfo = null;
+        var accumulateprice = 0;
+        var presentBarInfo = null;
+        var currentselecteddate = '';
+        var measurepip = false;
+        var measurepipvalue = [];
+        var countfromorderposition = 0;
+        let positionmark = 0;
+        let usdbase = 1;
+        let _ohlc_timeframe = []
+        var allstdbarsizes = []
+        var isOrderPlace = false;
+
+
+        var dom = document.getElementById("clockcontainer");
+            var clock = echarts.init(dom);
+            var app = {};
+
+            var clock_option;
+
+            clock_option = {
+              series: [
+                {
+                  name: 'hour',
+                  type: 'gauge',
+                  startAngle: 90,
+                  endAngle: -270,
+                  min: 0,
+                  max: 24,
+                  splitNumber: 24,
+                  clockwise: true,
+                  axisLine: {
+                    lineStyle: {
+                      width: 15,
+                      color: [[1, 'rgba(0,0,0,0.7)']],
+                      shadowColor: 'rgba(0, 0, 0, 0.5)',
+                      shadowBlur: 15
+                    }
+                  },
+                  splitLine: {
+                    lineStyle: {
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 3,
+                      shadowOffsetX: 1,
+                      shadowOffsetY: 2
+                    }
+                  },
+
+                  pointer: {
+                    icon: 'path://M2.9,0.7L2.9,0.7c1.4,0,2.6,1.2,2.6,2.6v115c0,1.4-1.2,2.6-2.6,2.6l0,0c-1.4,0-2.6-1.2-2.6-2.6V3.3C0.3,1.9,1.4,0.7,2.9,0.7z',
+                    width: 12,
+                    length: '55%',
+                    offsetCenter: [0, '8%'],
+                    itemStyle: {
+                      color: '#C0911F',
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 8,
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 4
+                    }
+                  },
+                  detail: {
+                    show: false
+                  },
+                  title: {
+                    offsetCenter: [0, '30%']
+                  },
+                  data: [
+                    {
+                      value: 0
+                    }
+                  ]
+                },
+                {
+                  name: 'minute',
+                  type: 'gauge',
+                  startAngle: 90,
+                  endAngle: -270,
+                  min: 0,
+                  max: 60,
+                  clockwise: true,
+                  axisLine: {
+                    show: false
+                  },
+                  splitLine: {
+                    show: false
+                  },
+                  axisTick: {
+                    show: false
+                  },
+                  axisLabel: {
+                    show: false
+                  },
+                  pointer: {
+                    icon: 'path://M2.9,0.7L2.9,0.7c1.4,0,2.6,1.2,2.6,2.6v115c0,1.4-1.2,2.6-2.6,2.6l0,0c-1.4,0-2.6-1.2-2.6-2.6V3.3C0.3,1.9,1.4,0.7,2.9,0.7z',
+                    width: 8,
+                    length: '70%',
+                    offsetCenter: [0, '8%'],
+                    itemStyle: {
+                      color: '#C0911F',
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 8,
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 4
+                    }
+                  },
+                  anchor: {
+                    show: false,
+                    size: 20,
+                    showAbove: false,
+                    itemStyle: {
+                      borderWidth: 15,
+                      borderColor: '#C0911F',
+                      shadowColor: 'rgba(0, 0, 0, 0.3)',
+                      shadowBlur: 8,
+                      shadowOffsetX: 2,
+                      shadowOffsetY: 4
+                    }
+                  },
+                  detail: {
+                    show: false
+                  },
+                  title: {
+                    offsetCenter: ['0%', '-40%']
+                  },
+                  data: [
+                    {
+                      value: 0
+                    }
+                  ]
+                },
+                
+              ]
+            };
+
+
+            if (clock_option && typeof clock_option === 'object') {
+                clock.setOption(clock_option);
+            }
+
+        $( document ).ready(function () {   
+            //  setInterval(function(){
+            //     $.ajax({
+            //         type: 'GET',
+            //         url: "{% url 'getohlc' %}",
+            //         success: function (response){
+            //             createData(response);
+            //             ////console.log(response);
+            //         },
+            //         error: function(response){
+            //             ////console.log("Error occured")
+            //             location.reload(true);
+            //         }
+            //     })
+            //  },20000)
+        });
+
+        const sumArray = arr =>
+        (arr || Array.of(arr))
+            .sort((a, b) => a - b)
+            .slice(1, (arr && (arr.length - 1)))
+            .reduce((sum, n) => sum + n, 0)
+
+        function createData(response){
+            _forexData = response;
+            
+            data = getData(_forexData);
+            // console.log(data[data.length-1])
+            // console.log(data)
+
+            // console.log(convertOhlcTimeframe(_ohlc_timeframe,data[data.length-1][5]))
+
+            closedPrice = getClosedPrice(_forexData);
+            lowPrice = getLowPrice(_forexData);
+            highPrice = getHighPrice(_forexData);
+            axisData = getDateLabel(_forexData); 
+
+            SSMA100Arr = SSMA_Calc(closedPrice,100);
+
+            var nullSmoth_SSMA100 = Array(closedPrice.length - SSMA100Arr.length).fill(null);
+
+            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr);  //calculateMA(100, data); 
+
+            let regressiveEq = genRegressionLine(dataMA100,lineLenght)
+            markMA100LineCord = getCoord(regressiveEq,dataMA100.length-1-lineLenght,dataMA100.length-1,lineLenght)
+
+            sma100Trend = isUpTrend(regressiveEq[0],data,dataMA100,lineLenght,slopeSpec)
+
+            sma100ArrowLevel = {
+                sma100_arrow_below : sma100ArrowBelow(data,dataMA100,lineLenght),
+                sma100_arrow_above : sma100ArrowAbove(data,dataMA100,lineLenght),
+            }
+
+            sma100PresentLevel = {
+                sma100_present_below : sma100PresentBelow(data,dataMA100),
+                sma100_present_above : sma100PresentAbove(data,dataMA100),
+            }
+
+            dataResult = createResult()
+            
+            setDom(dataResult, orderbuy_entry_specs,ordersell_entry_specs,1)
+            
+
+            if($('#lotsize').val() != '' && $('#price').val() != ''){
+                let pipchange = pipChange(parseFloat(data[data.length-2][1]),parseFloat(data[data.length-1][1]),calculationinfo.degit)
+                let pippriceperlot = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,parseFloat($('#lotsize').val()),usdbase)*10
+                // console.log(orderStatus)
+                if(orderStatus == true){
+                    countfromorderposition++;
+                    // console.log(orderinfo.ordertype )
+                    positionmark = 249 - countfromorderposition
+                    // console.log(positionmark)
+                    MarkData = [];
+                    MarkData.push({
+                        name: "Entry",
+                        value: orderinfo.price,
+                        xAxis: positionmark,
+                        yAxis: orderinfo.price,
+                        color: "#fff",
+                    });
+
+                    let calprice = calculationinfo.ask;
+                    if(orderinfo.ordertype == 0){
+                        calprice = calculationinfo.bid;
+                    }
+                    
+                    let _pippriceperlot = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calprice,calculationinfo.trade_contract_size,parseFloat(orderinfo.lotsize),usdbase)*10
+                    
+                    let currentprice =  (pipchange*_pippriceperlot)
+                    if(orderinfo.ordertype == 1){
+                        currentprice = currentprice*-1
+                    }
+                    
+                    accumulateprice += currentprice
+
+                    if(isOrderPlace == false){
+                        accumulateprice = accumulateprice + parseFloat($('#pricechange').html())*2
+                        isOrderPlace = true
+                    }
+                   
+                    // console.log(currentprice)
+                    // console.log(accumulateprice)
+                    if(accumulateprice >= 0){
+                        $("#pricechange_wrapper").addClass("bg-success").removeClass("bg-danger");
+                        $("#pricechange_icon").addClass("fa-arrow-alt-circle-up").removeClass("fa-arrow-alt-circle-down");
+                    }else{
+                        $("#pricechange_wrapper").addClass("bg-danger").removeClass("bg-success");
+                        $("#pricechange_icon").addClass("fa-arrow-alt-circle-down").removeClass("fa-arrow-alt-circle-up");
+                    }
+                    $('#pricechange').html(accumulateprice.toFixed(2))
+                    // console.log(orderinfo)
+                    if(accumulateprice.toFixed(5) > orderinfo.takeprofit){
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Sell',
+                            text: 'Profit greater than Take profit',
+                        })
+                        $('#autotest').removeClass('start');
+                        $('#autotest').text("Auto Test") ;
+                        clearInterval(backtestTimer);
+                    }else if(accumulateprice.toFixed(5) < (orderinfo.stoploss*-1)){
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Sell',
+                            text: 'Lost than stop lost',
+                        })
+                        $('#autotest').removeClass('start');
+                        $('#autotest').text("Auto Test") ;
+                        clearInterval(backtestTimer);
+                    }
+                   
+                }
+            }
+
+            // bearishTrend
+            let bullish_ladder = bullishLadder(data,5)
+            let bearish_ladder = bearishLadder(data,5)
+            let bearish_trend = bearishTrend(data,allstdbarsizes[0].fields.value,1.2,3)
+            let bullish_trend = bullishTrend(data,allstdbarsizes[0].fields.value,1.2,3)
+            // console.log(allstdbarsizes[0].fields.value)
+            // if(bearish_trend == true || bullish_trend == true || bearish_ladder == true || bullish_ladder == true){
+            //         $('#autotest').removeClass('start');
+            //             $('#autotest').text("Auto Test") ;
+            //             clearInterval(backtestTimer);
+            // }
+
+            if($('#timeframesync').is(":checked")){
+            
+
+                let ohlc_timeframe = convertOhlcTimeframe(_ohlc_timeframe,data[data.length-1][5])
+
+                let ohlc_timeframe_arr = ohlc_timeframe[0]
+                let ohlc_timeframe_from_m1data_arr = ohlc_timeframe[1]
+
+
+                let tfs_arr = createTfData(ohlc_timeframe_arr) 
+                let tfs_from_m1data_arr = createTfFromM15Data(ohlc_timeframe_from_m1data_arr)
+
+                // let bullishall = bullishAllTimeframe(ohlc_timeframe_arr,false,false)
+                        
+                // if(bullishall == true){
+                //     // console.log('bullish')
+                // }
+
+                // let bearishall = bearishAllTimeframe(ohlc_timeframe_arr,false,false)
+
+                // if(bearishall == true){
+                //     // console.log('bearish')
+                // }
+
+
+                let bigenough = true
+                let allgreen = true
+                let allred = true
+
+                if (tfs_arr[0][0][0] > tfs_arr[0][0][1]){
+                    allgreen = false
+                }else{
+                    allred = false
+                }
+                let m1body = Math.abs(tfs_arr[0][0][0] - tfs_arr[0][0][1])
+                let m1stdbarpercent = Math.abs((((allstdbarsizes[0].fields.value - m1body)/m1body)*100).toFixed(2))
+                let signm1 = '>';
+                if(m1body < allstdbarsizes[0].fields.value) {
+                    signm1 = '<'
+                    bigenough = false
+                }
+
+                if (tfs_arr[0][1][0] > tfs_arr[0][1][1]){
+                    allgreen = false
+                }else{
+                    allred = false
+                }
+                let m5body = Math.abs(tfs_arr[0][1][0] - tfs_arr[0][1][1])
+                let m5stdbarpercent = Math.abs((((allstdbarsizes[1].fields.value - m5body)/m5body)*100).toFixed(2))
+                let signm5 = '>';
+                if(m5body < allstdbarsizes[1].fields.value) {
+                    signm5 = '<'
+                    bigenough = false
+                }
+
+
+                if (tfs_arr[0][2][0] > tfs_arr[0][2][1]){
+                    allgreen = false
+                }else{
+                    allred = false
+                }
+
+                let m15body = Math.abs(tfs_arr[0][2][0] - tfs_arr[0][2][1])
+                let m15stdbarpercent = Math.abs((((allstdbarsizes[2].fields.value - m15body)/m15body)*100).toFixed(2))
+                let signm15 = '>';
+                if(m15body < allstdbarsizes[2].fields.value) {
+                    signm15 = '<'
+                    bigenough = false
+                }
+
+                if (tfs_arr[0][3][0] > tfs_arr[0][3][1]){
+                    allgreen = false
+                }else{
+                    allred = false
+                }
+                let m30body = Math.abs(tfs_arr[0][3][0] - tfs_arr[0][3][1])
+                let m30stdbarpercent = Math.abs((((allstdbarsizes[3].fields.value - m30body)/m30body)*100).toFixed(2))
+                let signm30 = '>';
+                if(m30body < allstdbarsizes[3].fields.value) {
+                    signm30 = '<'
+                    bigenough = false
+                }
+
+                if (tfs_arr[0][4][0] > tfs_arr[0][4][1]){
+                    allgreen = false
+                }else{
+                    allred = false
+                }
+                let h1body = Math.abs(tfs_arr[0][4][0] - tfs_arr[0][4][1])
+                let h1stdbarpercent = Math.abs((((allstdbarsizes[4].fields.value - h1body)/h1body)*100).toFixed(2))
+                let signh1 = '>';
+                if(h1body < allstdbarsizes[4].fields.value) {
+                    signh1 = '<'
+                    bigenough = false
+                }
+
+
+
+                // if($('#checkAutotune').is(":checked")){
+                //     if(bigenough == true &&  allred == true){
+                //         console.log('AHA1')
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+
+                //     if(bigenough == true && allgreen == true ){
+                //         console.log('AHA2')
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // }
+
+                MarkDataTF = [];
+                MarkDataTF.push({
+                    name: signm1 + m1stdbarpercent + '%',
+                    value: tfs_arr[0][0][3],
+                    xAxis: 0,
+                    yAxis: (tfs_arr[0][0][3]),
+                    color: "#000",
+                });
+                MarkDataTF.push({
+                    name: signm5 + m5stdbarpercent + '%',
+                    value: tfs_arr[0][1][3],
+                    xAxis: 1,
+                    yAxis: tfs_arr[0][1][3],
+                    color: "#000",
+                });
+
+                MarkDataTF.push({
+                    name: signm15 + m15stdbarpercent + '%',
+                    value: tfs_arr[0][2][3],
+                    xAxis: 2,
+                    yAxis: tfs_arr[0][2][3],
+                    color: "#f00",
+                });
+                MarkDataTF.push({
+                    name: signm30 + m30stdbarpercent + '%',
+                    value: tfs_arr[0][3][3],
+                    xAxis: 3,
+                    yAxis: tfs_arr[0][3][3],
+                    color: "#fff",
+                });
+                MarkDataTF.push({
+                    name: signh1 + h1stdbarpercent + '%',
+                    value: tfs_arr[0][4][3],
+                    xAxis: 4,
+                    yAxis: tfs_arr[0][4][3],
+                    color: "#000",
+                });
+                // MarkDataTF.push({
+                //     name: signh4 + h4stdbarpercent + '%',
+                //     value: tfs_arr[0][5][3],
+                //     xAxis: 5,
+                //     yAxis: tfs_arr[0][5][3],
+                //     color: "#000",
+                // });
+
+                let bigenough_fromm1 = true
+                let allgreen_fromm1 = true
+                let allred_fromm1 = true
+                let allbig = true
+
+                if (tfs_from_m1data_arr[0][0] > tfs_from_m1data_arr[0][1]){
+                    allgreen_fromm1 = false
+                }else{
+                    allred_fromm1 = false
+                }
+
+                let m1body_fromm1 = Math.abs(tfs_from_m1data_arr[0][0] - tfs_from_m1data_arr[0][1])
+                let m1stdbarpercent_fromm1 = Math.abs((((allstdbarsizes[0].fields.value - m1body_fromm1)/m1body_fromm1)*100).toFixed(2))
+                let signm1_fromm1 = '>';
+                if(m1body_fromm1 < allstdbarsizes[0].fields.value) {
+                    signm1_fromm1 = '<'
+                    // allbig = false
+                }
+
+                if (tfs_from_m1data_arr[1][0] > tfs_from_m1data_arr[1][1]){
+                    allgreen_fromm1 = false
+                }else{
+                    allred_fromm1 = false
+                }
+
+                let m5body_fromm1 = Math.abs(tfs_from_m1data_arr[1][0] - tfs_from_m1data_arr[1][1])
+                let m5stdbarpercent_fromm1 = Math.abs((((allstdbarsizes[1].fields.value - m5body_fromm1)/m5body_fromm1)*100).toFixed(2))
+                let signm5_fromm1 = '>';
+                if(m5body_fromm1 < allstdbarsizes[1].fields.value) {
+                    signm5_fromm1 = '<'
+                    // allbig = false
+                }
+
+                if (tfs_from_m1data_arr[2][0] > tfs_from_m1data_arr[2][1]){
+                    allgreen_fromm1 = false
+                }else{
+                    allred_fromm1 = false
+                }
+
+                let m15body_fromm1 = Math.abs(tfs_from_m1data_arr[2][0] - tfs_from_m1data_arr[2][1])
+                let m15stdbarpercent_fromm1 = Math.abs((((allstdbarsizes[2].fields.value - m15body_fromm1)/m15body_fromm1)*100).toFixed(2))
+                let signm15_fromm1 = '>';
+                if(m15body_fromm1 < allstdbarsizes[2].fields.value) {
+                    signm15_fromm1 = '<'
+                    bigenough_fromm1 = false
+                    allbig = false
+                }
+
+                if (tfs_from_m1data_arr[3][0] > tfs_from_m1data_arr[3][1]){
+                    allgreen_fromm1 = false
+                }else{
+                    allred_fromm1 = false
+                }
+                let m30body_fromm1 = Math.abs(tfs_from_m1data_arr[3][0] - tfs_from_m1data_arr[3][1])
+                let m30stdbarpercent_fromm1 = Math.abs((((allstdbarsizes[3].fields.value - m30body_fromm1)/m30body_fromm1)*100).toFixed(2))
+                let signm30_fromm1 = '>';
+                if(m30body_fromm1 < allstdbarsizes[3].fields.value) {
+                    signm30_fromm1 = '<'
+                    bigenough_fromm1 = false
+                    allbig = false
+                }
+
+                if (tfs_from_m1data_arr[4][0] > tfs_from_m1data_arr[4][1]){
+                    allgreen_fromm1 = false
+                }else{
+                    allred_fromm1 = false
+                }
+                let h1body_fromm1 = Math.abs(tfs_from_m1data_arr[4][0] - tfs_from_m1data_arr[4][1])
+                let h1stdbarpercent_fromm1 = Math.abs((((allstdbarsizes[4].fields.value - h1body_fromm1)/h1body_fromm1)*100).toFixed(2))
+                let signmh1_fromm1 = '>';
+                if(h1body_fromm1 < allstdbarsizes[4].fields.value) {
+                    signmh1_fromm1 = '<'
+                    bigenough_fromm1 = false
+                    allbig = false
+                }
+                
+                MarkDataTF_FromM1 = [];
+                MarkDataTF_FromM1.push({
+                    name: signm1_fromm1 + m1stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[0][3],
+                    xAxis: 0,
+                    yAxis: (tfs_from_m1data_arr[0][3]),
+                    color: "#000",
+                });
+                MarkDataTF_FromM1.push({
+                    name: signm5_fromm1 + m5stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[1][3],
+                    xAxis: 1,
+                    yAxis: tfs_from_m1data_arr[1][3],
+                    color: "#000",
+                });
+
+                MarkDataTF_FromM1.push({
+                    name: signm15_fromm1 + m15stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[2][3],
+                    xAxis: 2,
+                    yAxis: tfs_from_m1data_arr[2][3],
+                    color: "#f00",
+                });
+                MarkDataTF_FromM1.push({
+                    name: signm30_fromm1 + m30stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[3][3],
+                    xAxis: 3,
+                    yAxis: tfs_from_m1data_arr[3][3],
+                    color: "#fff",
+                });
+                MarkDataTF_FromM1.push({
+                    name: signmh1_fromm1 + h1stdbarpercent_fromm1 + '%',
+                    value: tfs_from_m1data_arr[4][3],
+                    xAxis: 4,
+                    yAxis: tfs_from_m1data_arr[4][3],
+                    color: "#000",
+                });
+
+
+                let bearish_curve = bearishCurve(tfs_from_m1data_arr)
+                let bullish_curve = bullishCurve(tfs_from_m1data_arr)
+                if(bearish_curve == true){
+                    console.log('bearish')
+                    // if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){
+                    if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){    
+                        if (threeBearishLadder(data) == true){
+                            console.log('bearish_curve')
+                            $('#autotest').removeClass('start');
+                            $('#autotest').text("Auto Test") ;
+                            clearInterval(backtestTimer);
+                        }
+                      
+                    }
+                    
+                }
+                if(bullish_curve == true){
+                    console.log('bullish')
+                    // if(allgreen ==true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){
+                    if( allgreen ==true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){
+                        if(threeBullishLadder(data) == true){
+                            console.log('bullish_curve')
+                            $('#autotest').removeClass('start');
+                            $('#autotest').text("Auto Test") ;
+                            clearInterval(backtestTimer);
+                        }
+
+                    }
+   
+                }
+
+                // if($('#checkAutotune').is(":checked")){
+                //     if(bigenough == true &&  allred == true){
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+
+                //     if(bigenough == true && allgreen == true ){
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // }
+
+            
+
+                // if($('#checkAutotune').is(":checked")){
+                //     if(bigenough_fromm1 == true &&  allred_fromm1 == true){
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+
+                //     if(bigenough_fromm1 == true && allgreen_fromm1 == true ){
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // }
+                
+
+                canndle_stick_tf_all.setOption({
+                    series : [
+                        {
+                            name: 'OHLC',
+                            data: tfs_arr[0],
+                            markPoint: {
+                                label: {
+                                    normal: {
+                                        formatter: function (param) {
+                                            return param != null ? param.data['name'] : '';
+                                        }
+                                    }
+                                },
+                                itemStyle: {
+                                    color: 'rgba(255,255,255,1)',
+                                },
+                                symbol: 'circle',
+                                symbolOffset: [20, -10],
+                                data: MarkDataTF,
+                                symbolColor: 'blue',
+                                symbolSize :0
+                            },
+                        }
+                    ],                
+                    xAxis : [
+                        {
+                            data : tfs_arr[1]
+                        }
+                    ]
+                });
+
+
+                canndle_stick_tf_from_m1data.setOption({
+                    series : [
+                        {
+                            name: 'OHLC',
+                            data: tfs_from_m1data_arr,
+                            markPoint: {
+                                label: {
+                                    normal: {
+                                        formatter: function (param) {
+                                            return param != null ? param.data['name'] : '';
+                                        }
+                                    }
+                                },
+                                itemStyle: {
+                                    color: 'rgba(255,255,255,1)',
+                                },
+                                symbol: 'circle',
+                                symbolOffset: [20, -10],
+                                data: MarkDataTF_FromM1,
+                                symbolColor: 'blue',
+                                symbolSize :0
+                            },
+                        }
+                    ],                
+                    xAxis : [
+                        {
+                            data : tfs_arr[1]
+                        }
+                    ]
+                });
+
+            }
+
+
+            let d = new Date(data[data.length-1][5]);
+
+            let minute = d.getUTCMinutes()
+            let hour = d.getUTCHours();
+            clock_option.animationDurationUpdate = 300;
+            clock.setOption({
+            series: [
+                {
+                name: 'hour',
+                animation: hour !== 0,
+                data: [{ value: hour }]
+                },
+                {
+                name: 'minute',
+                animation: minute !== 0,
+                data: [{ value: minute }]
+                }
+            ]
+            });
+
+
+            canndleStickChart.setOption({
+                series : [
+                    {
+                        name: 'OHLC',
+                        data: data,
+                        markPoint: {
+                            label: {
+                                normal: {
+                                    formatter: function (param) {
+                                        return param != null ? param.data['name'] : '';
+                                    }
+                                }
+                            },
+                            data: MarkData,
+                        },
+
+                    }, 
+   
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    start : 83,
+                    end : 100
+                },
+            });
+
+            canndleStickChartZoom.setOption({
+                series : [
+                    {
+                        name: 'OHLC-ZOOM',
+                        data: data,
+                        markPoint: {
+                            label: {
+                                normal: {
+                                    formatter: function (param) {
+                                        return param != null ? param.data['name'] : '';
+                                    }
+                                }
+                            },
+                            data: MarkData,
+                        },
+                        markLine : {
+                            data: [
+                                [{
+                                    coord: markMA100LineCord[0],
+                                    symbol : 'none',
+                                    lineStyle: {
+                                        color: 'white'
+                                    }
+                                    }, {
+                                    coord: markMA100LineCord[1],
+                                    lineStyle: {
+                                        color: 'white'
+                                    }
+                                }]
+                            ],
+                        },
+                    }, 
+                    {
+                        name: 'MA100',
+                        data: dataMA100,
+                    }
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    start : Math.round((data.length-300)/(data.length)*100),
+                    end : 100
+                },
+
+            });
+
+
+            function isFirstFound(inorder,state,ordertype){
+                if(inorder == true) return
+                if(state == true){
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Found',
+                        text: 'First Found exit is enable. Searching is paused',
+                    })
+                    $('#autotest').removeClass('start');
+                    $('#autotest').text("Auto Test") ;
+                    // $('#price').val(data[data.length-1][1])
+
+                    $("#ordertype option[value='" + ordertype +"']").attr("selected","selected");
+                    clearInterval(backtestTimer);
+                }
+
+                return ;
+            }
+
+            function setDom(_reading,_orderbuy_rawSpec,_ordersell_rawSpec,_type){
+                _orderbuy_rawSpec.filter(x => x.fields.order_type == 0).forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    
+                    if(typeof reading !== 'undefined'){
+                        const dom = document.querySelector(`#td_orderbuy_reading_${spec.fields.parameter}`);
+                        if(_type == 1){ // entry point
+                            if(isNaN(reading.reading) === true){
+                                if(reading.reading === spec.fields.entry_value){
+                                    dom.innerHTML = `<span class="badge bg-success" >${reading.reading}</span>`
+                                }else{
+                                    dom.innerHTML = `<span class="badge bg-danger" >${reading.reading}</span>`
+                                }
+                            }else{ 
+                                if(spec.fields.compare_reverse == 1){
+                                    if(reading.reading > spec.fields.entry_value){
+                                        dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }else{
+                                        dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }
+                                }else{
+                                    if(reading.reading < spec.fields.entry_value){
+                                        dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }else{
+                                        dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                _ordersell_rawSpec.filter(x => x.fields.order_type == 1).forEach(spec => {
+                    let reading = _reading.find(x => x.parameter === spec.fields.parameter)
+                    if(typeof reading !== 'undefined'){
+                        const dom = document.querySelector(`#td_ordersell_reading_${spec.fields.parameter}`);
+                        if(_type == 1){ // entry point
+                            if(isNaN(reading.reading) === true){
+                                if(reading.reading === spec.fields.entry_value){
+                                    dom.innerHTML = `<span class="badge bg-success" >${reading.reading}</span>`
+                                }else{
+                                    dom.innerHTML = `<span class="badge bg-danger" >${reading.reading}</span>`
+                                }
+                            }
+                            else{ 
+                                if(spec.fields.compare_reverse == 1){
+                                    
+                                    if(reading.reading > spec.fields.entry_value){
+                                        dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }else{
+                                        dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                    }
+                                }else{
+                                    if(spec.fields.entry_value < 0){
+                                        if(reading.reading*-1 > spec.fields.entry_value*-1){
+                                            dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }else{
+                                            dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }
+                                    }else{
+                                        if(reading.reading < spec.fields.entry_value){
+                                            dom.innerHTML = `<span class="badge bg-success" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }else{
+                                            dom.innerHTML = `<span class="badge bg-danger" >${parseFloat(reading.reading).toFixed(8)}</span>`
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                });
+
+            }
+            
+
+            function createResult(){
+                return [
+   
+                    {
+                        parameter: 'ma100_slope',
+                        reading: regressiveEq[0].toFixed(10)
+                    },
+                    {
+                        parameter: 'sma100_arrow_below',
+                        reading: sma100ArrowLevel.sma100_arrow_below ? 'True' : 'False'
+                    },
+                    {
+                        parameter: 'sma100_arrow_above',
+                        reading: sma100ArrowLevel.sma100_arrow_above ?  'True' : 'False'
+                    },
+
+                    {
+                        parameter: 'sma100_present_below',
+                        reading: sma100PresentLevel.sma100_present_below ? 'True' : 'False'
+                    },
+                    {
+                        parameter: 'sma100_present_above',
+                        reading: sma100PresentLevel.sma100_present_above ?  'True' : 'False'
+                    },
+                ];
+            }
+
+     
+        }
+    
+
+        function createDataAllTimeframe(response){
+            let data_tf_m1 = getData(response.ohlcs_m1);
+            let data_tf_m5 = getData(response.ohlcs_m5);
+            let data_tf_m15 = getData(response.ohlcs_m15);
+            let data_tf_m30 = getData(response.ohlcs_m30);
+            let data_tf_h1 = getData(response.ohlcs_h1);
+            let data_tf_h4 = getData(response.ohlcs_h4);
+            // let data_tf_d1 = getData(response.ohlcs_d1);
+
+            let closedPrice_tf_m1 = getClosedPrice(response.ohlcs_m1);
+            let closedPrice_tf_m5 = getClosedPrice(response.ohlcs_m5);
+            let closedPrice_tf_m15 = getClosedPrice(response.ohlcs_m15);
+            let closedPrice_tf_m30 = getClosedPrice(response.ohlcs_m30);
+            let closedPrice_tf_h1 = getClosedPrice(response.ohlcs_h1);
+            let closedPrice_tf_h4 = getClosedPrice(response.ohlcs_h4);
+            // let closedPrice_tf_d1 = getClosedPrice(response.ohlcs_d1);
+
+            let axisData_tf_m1 = getDateLabel(response.ohlcs_m1); 
+            let axisData_tf_m5 = getDateLabel(response.ohlcs_m5); 
+            let axisData_tf_m15 = getDateLabel(response.ohlcs_m15); 
+            let axisData_tf_m30 = getDateLabel(response.ohlcs_m30); 
+            let axisData_tf_h1 = getDateLabel(response.ohlcs_h1); 
+            let axisData_tf_h4 = getDateLabel(response.ohlcs_h4); 
+            // let axisData_tf_d1 = getDateLabel(response.ohlcs_d1); 
+
+            let SSMA100Arr_tf_m1 = SSMA_Calc(closedPrice_tf_m1,100);
+            let SSMA100Arr_tf_m5 = SSMA_Calc(closedPrice_tf_m5,100);
+            let SSMA100Arr_tf_m15 = SSMA_Calc(closedPrice_tf_m15,100);
+            let SSMA100Arr_tf_m30 = SSMA_Calc(closedPrice_tf_m30,100);
+            let SSMA100Arr_tf_h1 = SSMA_Calc(closedPrice_tf_h1,100);
+            let SSMA100Arr_tf_h4 = SSMA_Calc(closedPrice_tf_h4,100);
+            // let SSMA100Arr_tf_d1 = SSMA_Calc(closedPrice_tf_d1,100);
+
+            let nullSmoth_SSMA100_tf_m1 = Array(closedPrice_tf_m1.length - SSMA100Arr_tf_m1.length).fill(null);
+            let nullSmoth_SSMA100_tf_m5 = Array(closedPrice_tf_m5.length - SSMA100Arr_tf_m5.length).fill(null);
+            let nullSmoth_SSMA100_tf_m15 = Array(closedPrice_tf_m15.length - SSMA100Arr_tf_m15.length).fill(null);
+            let nullSmoth_SSMA100_tf_m30 = Array(closedPrice_tf_m30.length - SSMA100Arr_tf_m30.length).fill(null);
+            let nullSmoth_SSMA100_tf_h1 = Array(closedPrice_tf_h1.length - SSMA100Arr_tf_h1.length).fill(null);
+            let nullSmoth_SSMA100_tf_h4 = Array(closedPrice_tf_h4.length - SSMA100Arr_tf_h4.length).fill(null);
+            // let nullSmoth_SSMA100_tf_d1 = Array(closedPrice_tf_d1.length - SSMA100Arr_tf_d1.length).fill(null);
+
+            let dataMA100_tf_m1  =  nullSmoth_SSMA100_tf_m1.concat(SSMA100Arr_tf_m1); 
+            let dataMA100_tf_m5  =  nullSmoth_SSMA100_tf_m5.concat(SSMA100Arr_tf_m5); 
+            let dataMA100_tf_m15  =  nullSmoth_SSMA100_tf_m15.concat(SSMA100Arr_tf_m15); 
+            let dataMA100_tf_m30  =  nullSmoth_SSMA100_tf_m30.concat(SSMA100Arr_tf_m30); 
+            let dataMA100_tf_h1  =  nullSmoth_SSMA100_tf_h1.concat(SSMA100Arr_tf_h1); 
+            let dataMA100_tf_h4  =  nullSmoth_SSMA100_tf_h4.concat(SSMA100Arr_tf_h4); 
+            // let dataMA100_tf_d1  =  nullSmoth_SSMA100_tf_d1.concat(SSMA100Arr_tf_d1); 
+
+            canndle_stick_tf_m1.setOption({
+                series : [{name: 'M1',data: data_tf_m1,},{name: 'SMA100', data: dataMA100_tf_m1,}],                
+                xAxis : [{data : axisData_tf_m1}],
+                dataZoom : {
+                    start : 90,
+                    end : 100
+                },
+            });
+            canndle_stick_tf_m1.resize();
+
+            canndle_stick_tf_m5.setOption({
+                series : [{name: 'M5',data: data_tf_m5,},{name: 'SMA100', data: dataMA100_tf_m5,}],                
+                xAxis : [{data : axisData_tf_m5}],
+                dataZoom : {
+                    start : 90,
+                    end : 100
+                },
+            });
+            canndle_stick_tf_m5.resize();
+
+            canndle_stick_tf_m15.setOption({
+                series : [{name: 'M15',data: data_tf_m15,},{name: 'SMA100', data: dataMA100_tf_m15,}],                
+                xAxis : [{data : axisData_tf_m15}],
+                dataZoom : {
+                    start : 90,
+                    end : 100
+                },
+            });
+            canndle_stick_tf_m15.resize();
+            
+            canndle_stick_tf_m30.setOption({
+                series : [{name: 'M30',data: data_tf_m30,},{name: 'SMA100', data: dataMA100_tf_m30,}],                
+                xAxis : [{data : axisData_tf_m30}],
+                dataZoom : {
+                    start : 90.8,
+                    end : 100
+                },
+            });
+            canndle_stick_tf_m30.resize();
+            
+            canndle_stick_tf_h1.setOption({
+                series : [{name: 'H1',data: data_tf_h1,},{name: 'SMA100', data: dataMA100_tf_h1,}],                
+                xAxis : [{data : axisData_tf_h1}],
+                dataZoom : {
+                    start : 90.8,
+                    end : 100
+                },
+            });
+            canndle_stick_tf_h1.resize();
+
+            
+            canndle_stick_tf_h4.setOption({
+                series : [{name: 'H4',data: data_tf_h4,},{name: 'SMA100', data: dataMA100_tf_h4,}],                
+                xAxis : [{data : axisData_tf_h4}],
+                dataZoom : {
+                    start : 90.8,
+                    end : 100
+                },
+            });
+            canndle_stick_tf_h4.resize();
+            
+            // canndle_stick_tf_d1.setOption({
+            //     series : [{name: 'D1',data: data_tf_d1,},{name: 'SMA100', data: dataMA100_tf_d1,}],                
+            //     xAxis : [{data : axisData_tf_d1}],
+            //     dataZoom : {
+            //         start : 90.8,
+            //         end : 100
+            //     },
+            // });
+            // canndle_stick_tf_d1.resize();
+
+        }
+
+        option = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+                // formatter: function (params) {
+                //     var res = params[0].name;
+                //     res += '<br/>' + params[0].seriesName;
+                //     res += '<br/>  Open : ' + params[0].value[1] + '  High : ' + params[0].value[4];
+                //     res += '<br/>  Close : ' + params[0].value[2] + '  Low : ' + params[0].value[3];
+                //     return res;
+                // }
+            },
+            legend: {
+                data:['OHLC'],
+                selected:{'SSMA20':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+         
+            ]
+        };
+
+      
+        option_zoom = {
+            backgroundColor: '#21202D',
+            title : {
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                showDelay: 0,  
+            },
+            legend: {
+                data:['OHLC-ZOOM','MA100'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : {
+                y: 250,
+                show : false,
+                realtime: true,
+                start : Math.round((data.length-300)/(data.length)*100),
+                end : 100
+            },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,                        
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC-ZOOM',
+                    type:'candlestick',
+                    data: data,
+                    markLine : {
+                        data: [
+                            [{
+                                coord: markMA100LineCord[0],
+                                symbol : 'none',
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                                }, {
+                                coord: markMA100LineCord[1],
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                            }]
+                        ],
+                    },
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'MA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }
+            ]
+        };
+      
+        option_canndle_stick_tf_all = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+                formatter: function (params) {
+                    let previuosbar = _ohlc_timeframe.filter(x => x.pk == (params[0].value[5]-1))[0];
+                    let type = `Bullish`
+                    let diffbodywick = 0;
+                    let diffbodytail = 0;
+                    let barSize = allstdbarsizes[params[0].dataIndex].fields.value
+                    
+                    let previousbody = previuosbar.fields.open - previuosbar.fields.close
+                    let percent = 0;
+                    let percentstd = 0;
+
+                    let openSubtractClose =params[0].value[1] - params[0].value[2] 
+                    if(openSubtractClose > 0){
+                        type = `Bearish`
+                        let wick = params[0].value[4] - params[0].value[1]
+                        diffbodywick = 100-((Math.abs(openSubtractClose) - Math.abs(wick))*100/Math.abs(openSubtractClose))
+                        let tail = params[0].value[3] - params[0].value[2]
+                        diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))
+
+                    }else{
+                        let wick = params[0].value[4] - params[0].value[2]
+                        diffbodywick = 100-((Math.abs(openSubtractClose) - Math.abs(wick))*100/Math.abs(openSubtractClose))
+                        let tail = params[0].value[3] - params[0].value[1]
+                        diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))
+
+                    }
+
+                    let word = '> '
+                    let wordstd = '> '
+                    if(Math.abs(openSubtractClose) > Math.abs(previousbody)){
+                        percent = (((Math.abs(openSubtractClose) - Math.abs(previousbody))/Math.abs(previousbody))*100).toFixed(2)
+                    }else{
+                        word = '< '
+                        wordstd = '< '
+                        percent = (((Math.abs(previousbody) - Math.abs(openSubtractClose))/Math.abs(openSubtractClose))*100).toFixed(2)
+                    }
+        
+
+                    percentstd = Math.abs((((Math.abs(barSize) - Math.abs(openSubtractClose))/Math.abs(openSubtractClose))*100).toFixed(2))
+
+                    let res = params[0].name;
+                    res += '<br/>TimeFrame : ' + allstdbarsizes[params[0].dataIndex].fields.timeframe + '<br/>Std Bar : ' + barSize;
+                    res += '<br/>Bar Size : ' + Math.abs(openSubtractClose).toFixed(5) + '<br/>Type : ' + type + '<br/>%Wick : ' + diffbodywick.toFixed(2)  + '<br/>%Tail  : ' + diffbodytail.toFixed(2) ;
+                    res += '<br/>Previous Comp : ' + word + percent + '<br/>STD Comp  : ' + wordstd + percentstd;
+                    res += '<br/>Open : ' + params[0].value[1] + '<br/>High : ' + params[0].value[4];
+                    res += '<br/>Low : ' + params[0].value[3]  + '<br/>Close : ' + params[0].value[2];
+                    // res += '<br/>  STD Bar : ' + d1_stdbar_size ;
+
+                    return res;
+                }
+
+            },
+            legend: {
+                data:['M5'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }
+            ]
+        };
+
+        option_canndle_stick_tf_from_m1data = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+              
+            },
+            legend: {
+                data:['M5'],
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }
+            ]
+        };
+
+
+        option_canndle_stick_tf_m1 = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['M1','SMA100'],
+                selected:{'SMA100':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'SMA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+            ]
+        };
+
+
+        option_canndle_stick_tf_m5 = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['M5','SMA100'],
+                selected:{'SMA100':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'SMA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+            ]
+        };
+
+
+        option_canndle_stick_tf_m15 = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['M15','SMA100'],
+                selected:{'SMA100':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'SMA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+            ]
+        };
+
+        option_canndle_stick_tf_m30 = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['M30','SMA100'],
+                selected:{'SMA100':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'SMA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+            ]
+        };
+
+        option_canndle_stick_tf_h1 = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['H1','SMA100'],
+                selected:{'SMA100':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'SMA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+            ]
+        };
+
+        option_canndle_stick_tf_h4 = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+
+            },
+            legend: {
+                data:['H4','SMA100'],
+                selected:{'SMA100':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'OHLC',
+                    type:'candlestick',
+                    data: data,
+                    markPoint: {
+                        label: {
+                            normal: {
+                                formatter: function (param) {
+                                    return param != null ? param.data['name'] : '';
+                                }
+                            }
+                        },
+                        data: MarkData,
+                    },
+   
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                {
+                    name: 'SMA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+            ]
+        };
+
+        // option_canndle_stick_tf_d1 = {
+        //     backgroundColor: '#21202D',
+        //     title : {
+        //         // text: 'OHLC',
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     tooltip : {
+        //         trigger: 'axis',
+        //         axisPointer: {
+        //             type: 'cross'
+        //         },
+        //         showDelay: 0,             // delay ms
+
+        //     },
+        //     legend: {
+        //         data:['D1','SMA100'],
+        //         selected:{'SMA100':false},
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     toolbox: {
+        //         show : true,
+        //         feature : {
+        //             // mark : {show: true},
+        //             // dataZoom : {show: true},
+        //             // magicType : {show: true, type: ['line', 'bar']},
+        //             // restore : {show: true},
+        //             saveAsImage : {
+        //                 show: true,
+        //                 title: 'Save As picture'
+        //             }
+        //         }
+        //     },            
+        //     dataZoom : 
+        //         {
+        //             show : true,
+        //             realtime: true,
+        //             start : Math.round((data.length-90)/(data.length)*100),
+        //             end : 100,
+        //             handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+        //             handleSize: '80%',
+        //             textStyle: {
+        //                 color: '#fff'
+        //             },
+        //             handleStyle: {
+        //                 color: '#fff',
+        //                 shadowBlur: 3,
+        //                 shadowColor: 'rgba(0, 0, 0, 0.6)',
+        //                 shadowOffsetX: 2,
+        //                 shadowOffsetY: 2
+        //             }
+        //         },
+        //     grid: {
+        //         left: 80,
+        //         top: 40,
+        //         right: 20,
+        //         bottom: 85
+        //     },
+        //     xAxis : [
+        //         {
+        //             type : 'category',
+        //             boundaryGap : true,
+        //             axisTick: {onGap:false},
+        //             splitLine: {show:false},
+        //             data : axisData,
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     yAxis : [
+        //         {
+        //             type : 'value',
+        //             scale:true,
+        //             boundaryGap: [0.05, 0.05],
+        //             splitArea : {show : true},
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     series : [
+        //         {
+        //             name:'OHLC',
+        //             type:'candlestick',
+        //             data: data,
+        //             markPoint: {
+        //                 label: {
+        //                     normal: {
+        //                         formatter: function (param) {
+        //                             return param != null ? param.data['name'] : '';
+        //                         }
+        //                     }
+        //                 },
+        //                 data: MarkData,
+        //             },
+   
+        //             itemStyle: {
+        //                 color: upColor,
+        //                 color0: downColor,
+        //                 borderColor: null,
+        //                 borderColor0: null
+        //             },
+        //         }, 
+        //         {
+        //             name: 'SMA100',
+        //             type: 'line',
+        //             data: dataMA100,
+        //             smooth: true,
+        //             showSymbol: false,
+        //             lineStyle: {
+        //                 width: 1
+        //             }
+        //         }, 
+        //     ]
+        // };
+
+
+        canndleStickChart.setOption(option);
+        // macdChart.setOption(option_macd);
+        canndleStickChartZoom.setOption(option_zoom);
+        canndle_stick_tf_all.setOption(option_canndle_stick_tf_all);
+        canndle_stick_tf_from_m1data.setOption(option_canndle_stick_tf_from_m1data);
+        $('#canndle_stick_tf_all').hide()
+        $('#canndle_stick_tf_from_m1data').hide()
+
+        canndle_stick_tf_m1.setOption(option_canndle_stick_tf_m1);
+        canndle_stick_tf_m5.setOption(option_canndle_stick_tf_m5);
+        canndle_stick_tf_m15.setOption(option_canndle_stick_tf_m15);
+        canndle_stick_tf_m30.setOption(option_canndle_stick_tf_m30);
+        canndle_stick_tf_h1.setOption(option_canndle_stick_tf_h1);
+        canndle_stick_tf_h4.setOption(option_canndle_stick_tf_h4);
+        // canndle_stick_tf_d1.setOption(option_canndle_stick_tf_d1);
+        
+
+        if(responseData.length !== 0){
+            createData(responseData);
+            window.onresize = function () {
+                canndleStickChart.resize();
+                // macdChart.resize();
+                canndleStickChartZoom.resize();
+                canndle_stick_tf_all.resize();
+                canndle_stick_tf_from_m1data.resize();
+                // 
+            }
+        }
+
+        canndleStickChart.on('contextmenu', function(params) {
+            var e = window.event
+            e.preventDefault();
+            // console.log(params)
+            if(orderStatus == true){
+                
+                $("#closeorder_wrapper").html('<button class="btn btn-danger" id="closeorder">Close Order</button>');
+                $("#headerinfo").html('(ON ORDER)').addClass("text-danger").addClass("blink");
+                $("#modaltext").html('ON ORDER').addClass("text-danger").addClass("blink");
+                $('#ordering').html('Close Order').addClass("btn-danger").removeClass("btn-primary");
+
+                $('#stoplost').val(orderinfo.stoploss)
+                $('#takeprofit').val(orderinfo.takeprofit)
+                $('#price').val(orderinfo.price)
+                $('#lotsize').val(orderinfo.lotsize)
+                $("#ordertype option[value='" + orderinfo.ordertype +"']").attr("selected","selected");
+        
+            }else{
+
+                MarkData.push({
+                    name: "Entry",
+                        value: params.data[2],
+                        xAxis: params.data[0],
+                        yAxis: params.data[2],
+                        color: "#fff",
+                    });
+                
+                $("#closeorder_wrapper").html('');
+                $("#headerinfo").html('').removeClass("text-danger").removeClass("blink");
+                $("#modaltext").html('ORDER').removeClass("text-danger").removeClass("blink");
+                $('#ordering').html('Open Order').addClass("btn-primary").removeClass("btn-danger");
+                $('#price').val(params.data[2])
+                
+                $("#ordertype option[selected]").removeAttr("selected");   
+                $("#ordertype option[value='0']").attr("selected","selected");
+                
+                if(SSMA100Arr[SSMA100Arr.length-1] < params.data[4]){
+                    $("#ordertype option[value='0']").attr("selected","selected");
+                }else{
+                    $("#ordertype option[value='1']").attr("selected","selected");
+                }
+            }
+
+            presentBarInfo = {
+                symbol: $('#selectedBacktestJob option:selected').data('name'),
+                currentdate: params.data[6]
+            }
+            
+            $('#modal-default').modal('show');
+        })
+
+
+        var zr = canndleStickChart.getZr();
+        zr.on('click', function (params) {
+            var pointInPixel = [params.offsetX, params.offsetY];
+            var pointInGrid = canndleStickChart.convertFromPixel('grid', pointInPixel);
+
+            if(!isNaN(pointInGrid[0])){
+                measurepipvalue.push(pointInGrid[1])
+                
+                if (measurepipvalue.length == 2 && $('#checkMeasurePip').is(":checked") == true){
+                    // console.log($('#lotsize').val())
+                    
+                    let pipchange= pipChange(parseFloat(Math.min.apply(Math, measurepipvalue)),parseFloat(Math.max.apply(Math, measurepipvalue)),calculationinfo.degit)
+                    let pippriceperlot = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,parseFloat($('#lotsize').val()),usdbase)*10
+                    
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Pip Change',
+                        html: `<h3>Lot Size: <strong>${(parseFloat($('#lotsize').val())).toFixed(5)}</strong><br>Upper Price: <strong>${Math.max.apply(Math, measurepipvalue).toFixed(5)}</strong><br>Lower Price:  <strong>${Math.min.apply(Math, measurepipvalue).toFixed(5)}</strong><br>Pip Change: <strong>${pipchange.toFixed(5)}</strong><br>Price:  <strong>${parseFloat(  pipchange * pippriceperlot ).toFixed(2)}$</strong><h3>`  
+                    })
+                    measurepipvalue = []
+                }
+            }
+        });
+
+        $(document).on('change','#checkMeasurePip',function(){
+            measurepipvalue = []
+        })
+
+        zr.on('mousemove', function (params) {
+            if($('#checkMeasurePip').is(":checked") == true){
+                canndleStickChart.getZr().setCursorStyle('pointer')
+            }
+        });
+
+        canndleStickChart.on('click', function(params) {
+            let type = `Bullish`;
+            let body = 0;
+            let diffbodywick = 0;
+            let diffbodytail = 0;
+            // console.log(params)
+
+            let openSubtractClose = params.data[1] - params.data[2]
+            if(openSubtractClose > 0){
+                type = `Bearish`
+                let wick = params.data[4] - params.data[1]
+                diffbodywick = 100-((Math.abs(openSubtractClose) - Math.abs(wick))*100/Math.abs(openSubtractClose))
+                let tail = params.data[3] - params.data[2]
+                diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))
+                // console.log(diffbodywick + ' ' + diffbodytail)
+            }else{
+                let wick = params.data[4] - params.data[2]
+                diffbodywick = 100-((Math.abs(openSubtractClose) - Math.abs(wick))*100/Math.abs(openSubtractClose))
+                let tail = params.data[3] - params.data[1]
+                diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))
+                // console.log(diffbodywick + ' ' + diffbodytail)
+            }
+
+            let previousbody = data[params.data[0]-1][0] - data[params.data[0]-1][1]
+            let percent = 0;
+            let percentstd = 0;
+
+            let word = '<i class="fas fa-arrow-alt-circle-up text-success"></i>'
+            let wordstd = '<i class="fas fa-arrow-alt-circle-up text-success"></i>'
+            if(Math.abs(openSubtractClose) > Math.abs(previousbody)){
+                percent = (((Math.abs(openSubtractClose) - Math.abs(previousbody))/Math.abs(previousbody))*100).toFixed(2)
+                ////console.log('bigger than previous')
+            }else{
+                ////console.log('smaller than previous')
+                word = '<i class="fas fa-arrow-alt-circle-down text-danger"></i>'
+                percent = (((Math.abs(previousbody) - Math.abs(openSubtractClose))/Math.abs(openSubtractClose))*100).toFixed(2)
+            }
+ 
+            if(Math.abs(openSubtractClose) > Math.abs(barSize)){
+                percentstd = (((Math.abs(openSubtractClose) - Math.abs(barSize))/Math.abs(barSize))*100).toFixed(2)
+         
+            }else{
+              
+                wordstd = '<i class="fas fa-arrow-alt-circle-down text-danger"></i>'
+                percentstd = ((( Math.abs(barSize)-Math.abs(openSubtractClose))/Math.abs(openSubtractClose))*100).toFixed(2)
+            }
+
+            let pipchange = pipChange(parseFloat(params.data[1]),parseFloat(params.data[2]),calculationinfo.degit)
+            // console.log(openSubtractClose)
+            // console.log(pipchange)
+            let pippriceperlot = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,1,usdbase)*10
+
+            let currentprice =  (pipchange*pippriceperlot)
+            // console.log(currentprice)
+
+            Swal.fire({
+                title: `${$('#selectedBacktestJob option:selected').data('name')} ${$('#selectedBacktestJob option:selected').data('timeframe')}`,
+                html: `<h3>STD Bar size: ${barSize} 
+                    <br>Type : ${type} 
+                    <br>Bar size: ${parseFloat(Math.abs(openSubtractClose).toFixed(6))} 
+                    <br>Body Price (1Lot): ${currentprice.toFixed(2)} 
+                    <br>% Wick: ${diffbodywick.toFixed(2)} 
+                    <br>% Tail: ${diffbodytail.toFixed(2)} 
+                    <br>Previous compare: ${word} ${Math.abs(percent)}%
+                    <br>STD compare: ${wordstd} ${Math.abs(percentstd)}%
+                    <h3>`,
+                showDenyButton: true,
+                showCancelButton: true,
+                showConfirmButton:false,
+                confirmButtonText: 'Save',
+                denyButtonText: `Change STD Bar size`,
+                }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isDenied) {
+                    Swal.fire({
+                    title: 'Enter New STD Bar size',
+                    input: 'text',
+                    inputValue: parseFloat(Math.abs(openSubtractClose).toFixed(6)),
+                    inputAttributes: {
+                        autocapitalize: 'off'
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'Save',
+                    showLoaderOnConfirm: true,
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if (isNaN(result.value) === false) {
+                                updateStdarsize($('#selectedBacktestJob option:selected').data("id"),$('#selectedBacktestJob option:selected').data('timeframe'),result.value).then(data => {
+                                    toastr.info(`STD Bar size has been updated to ${result.value}`)
+                                }).catch(error => {})
+                            }else{
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Error',
+                                    text: 'STD bar size is not correct',
+                                })
+                            }    
+                            
+                        }
+                    })
+                }
+            })
+
+        });
+        
+
+        $(document).on("click","#btnSaveSetting",function() {
+            Swal.fire({
+                title: 'Create Job?',
+                text: "Confirm to create new job!",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    
+                    addBackTestSetting($('#symbols').val(),$('#backtesttimeframe').val(),$('#backtestSize').val(),$('#interval').val()).then(data => {
+                        Swal.fire({
+                            //position: 'top-end',
+                            icon: 'success',
+                            html: `<h2>Job name <br><strong>${JSON.parse(data.backtest)[0].fields.symbolname} ${JSON.parse(data.backtest)[0].fields.timeframename} ${JSON.parse(data.backtest)[0].fields.code}</strong> <br>has been created<h2>`,
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(function (result) {
+                            renderBacktestJobLists(data.backtestjobs)
+                        })
+                    }).catch(error => {})
+                }
+            })
+        });
+
+        function renderBacktestJobLists(jobs){
+            let html = `<option value="">== select job ==</option>`;
+            JSON.parse(jobs).forEach(job => {
+                html += `<option value="${job.pk}" data-timeframe="${job.fields.timeframename}"  data-id="${job.fields.symbol}" data-name="${job.fields.symbolname}">${job.fields.symbolname} ${job.fields.timeframename} ${job.fields.code}</option>`
+            });
+            $('#selectedBacktestJob').html(html);
+        }
+
+        function addBackTestSetting(symbol,timeframe,size,interval){
+            return new Promise((resolve, reject) => {
+                data = {
+                    backtestsymbol: symbol,
+                    timeframe: timeframe,
+                    size: size,
+                    interval: interval,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'createbacktest' %}",
+                    dataType : "json",
+                    data: data,
+                    beforeSend: function(){
+                        $('#loader').show();
+                    },
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    complete:function(data){
+                        $('#loader').hide();
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        
+        $(document).on("click","#deleteallbacktest",function() {
+            resetCounter()
+            if($('#selectedBacktestJob > option').length < 2) return
+            Swal.fire({
+                title: 'Delete All?',
+                text: "Confirm to delete all jobs!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteAllBacktest().then(data => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'All Jobs have been deleted',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(function (result) {
+                            // renderBacktestJobLists(data.backtestjobs)
+                            window.location.href = window.location.href
+                        })
+                    }).catch(error => {})
+                }
+            })
+
+        })
+
+        
+        function deleteAllBacktest(){   
+           return new Promise((resolve, reject) => {
+               $.ajax({
+                   type: 'GET',
+                   url: "{% url 'deleteallbacktest' %}",
+                   dataType : "json",
+                   data: '',
+                   beforeSend: function(){
+                        $('#loader').show();
+                    },
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   complete:function(data){
+                        $('#loader').hide();
+                    },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       $(document).on("click","#deletebacktest",function() {
+            resetCounter()
+            let selectedOption = $('#selectedBacktestJob option:selected');
+            if(selectedOption.val() === '') return
+            Swal.fire({
+                title: 'Delete Job?',
+                text: "Confirm to delete job " + selectedOption.text(),
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteBacktest(selectedOption.val()).then(data => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Job has been deleted',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(function (result) {
+                            renderBacktestJobLists(data.backtestjobs)
+                        })
+                    }).catch(error => {})
+                }
+            })
+
+        })
+
+        function deleteBacktest(id){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    id: id,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'deletebacktest' %}",
+                   dataType : "json",
+                   data: data,
+                   beforeSend: function(){
+                        $('#loader').show();
+                    },
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   complete:function(data){
+                        $('#loader').hide();
+                    },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+       
+       $(document).on("click","#jogtest",function() {
+        // var jun = moment("2014-06-01T12:00:00Z");
+        // console.log(moment("2022-02-11T14:37.00Z", "Asia/Bangkok").format("DD MMM, YYYY hh:mm"))
+
+            let selectedOption = $('#selectedBacktestJob option:selected');
+            if(selectedOption.val() === '') {
+                Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Job not selected yet!.',
+                    })
+                return
+            }
+
+                    
+        if($('#timeframesync').is(":checked")){
+            if($('#selectedBacktestJob option:selected').data('timeframe') != "M1"){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Timeframe Error',
+                    text: 'Timeframe sync only available on M15',
+                })
+                return
+            }
+        }
+
+            if(_rawData.length === 0) return 
+            if(count == _rawData.length  - testRange +1 ){
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Finished',
+                    text: 'Back testing is finished!',
+                })
+                // showFinish();
+                return
+            }
+            let _count = count++;
+            let arraySet = _rawData.slice(_count,_count + testRange)
+            createData(arraySet);
+            currentselecteddate = data[data.length-1][5]
+        })
+
+        $(document).on("click","#autotest",function() {
+            // $('#report_table').html('');
+            let selectedOption = $('#selectedBacktestJob option:selected');
+            if(selectedOption.val() === '') {
+                Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Job not selected yet!.',
+                    })
+                return
+            }
+
+            if(_rawData.length === 0) return 
+
+            if (this.classList.contains('start')) {
+                this.classList.remove('start');
+                this.textContent = "Auto Test";
+                clearInterval(backtestTimer);
+            } else {
+                this.classList.add('start');
+                this.textContent = "Stop";
+                autoTest();
+            }
+        })
+
+        function autoTest(){
+            if($('#timeframesync').is(":checked")){
+                if($('#selectedBacktestJob option:selected').data('timeframe') != "M1"){
+                    clearInterval(backtestTimer);
+                    $('#autotest').removeClass('start');
+                    $('#autotest').text("Auto Test") ;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Timeframe Error',
+                        text: 'Timeframe sync only available on M15',
+                    })
+                    return
+                }
+            }
+            function testing(){
+                if(count == _rawData.length  - testRange +1 ){
+                    clearInterval(backtestTimer);
+                    $('#autotest').removeClass('start');
+                    $('#autotest').text("Auto Test") ;
+                    // resetCounter();
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Finished',
+                        text: 'Back testing is finished!',
+                    })
+                    // showFinish();
+                    return
+                }
+                let _count = count++;
+                let arraySet = _rawData.slice(_count,_count + testRange)
+                createData(arraySet);
+                currentselecteddate = data[data.length-1][5]
+            }
+            backtestTimer = setInterval(testing,backtestTimerInterval);
+            var c = 0;
+        }
+
+        function showFinish(){
+            let firstIndex = _rawData[0].index;
+            testResult.forEach((result,key )=> {
+                let entryindex = result.entry - firstIndex;
+                let entryvalue = _rawData[entryindex]
+                let exitindex = result.exit - firstIndex;
+                let exitvalue = _rawData[exitindex]
+                MarkData.push({
+                    name: result.type,
+                    value: entryvalue.close,
+                    xAxis: entryindex,
+                    yAxis: entryvalue.close,
+                    color: "#fff",
+                });
+                // MarkData.push({
+                //     name: "Exit",
+                //     value: exitvalue.close,
+                //     xAxis: exitindex,
+                //     yAxis: exitvalue.close,
+                //     color: "#fff",
+                // });
+            })
+
+            createData(_rawData);
+            canndleStickChart.dispatchAction({
+                type: 'dataZoom',
+                start: 0,
+                end: 100
+            });
+        }
+
+        function resetCounter(){
+            count = 0;
+            _rawData = [];
+        }
+
+        $(document).on("change","#selectedBacktestJob",function() {
+            MarkData = [];
+            orderBuyEntryPointflag = false;
+            orderSellEntryPointflag = false;
+            testResult = [];
+            tmpDataIn = null;
+            countResult = 0;
+            resetCounter()
+            let selectedOption = $('#selectedBacktestJob option:selected');
+            if(selectedOption.val() === '') return
+            let html_symbol = ``
+            let html_timeframe = ``
+            let html_backtestsize = ``
+            let html_interval = ``
+            let html_openbuy_testspecs = ``
+            let html_opensell_testspecs = ``
+            selectedTimeframe = $(this).find(':selected').data('timeframe')
+            // console.log(selectedTimeframe)
+
+            getBacktestJob(selectedOption.val(),$(this).find(':selected').data('id'),$(this).find(':selected').data('timeframe')).then(data => {
+                let backtest = JSON.parse(data.backtest)[0].fields;
+                let setting = JSON.parse(data.setting)[0].fields
+                let stdbarsize = JSON.parse(data.barsize)[0].fields
+                allstdbarsizes = JSON.parse(data.barsizes)
+                let _orderbuy_entry_specs = JSON.parse(data.entryspecs).filter(x => x.fields.order_type == 0);
+                let _ordersell_entry_specs = JSON.parse(data.entryspecs).filter(x => x.fields.order_type == 1);
+                _ohlc_timeframe = JSON.parse(data.ohlctimeframes)
+              
+            //    ////console.log(_ohlc_timeframe)
+
+                let _orderbuy_close_specs = JSON.parse(data.exitspecs).filter(x => x.fields.order_type == 0);
+                let _ordersell_close_specs = JSON.parse(data.exitspecs).filter(x => x.fields.order_type == 1);
+
+                orderbuy_close_specs = _orderbuy_close_specs;
+                ordersell_close_specs = _ordersell_close_specs;
+
+                orderbuy_entry_specs = _orderbuy_entry_specs;
+                ordersell_entry_specs = _ordersell_entry_specs;
+                calculationinfo = data.calculationInfo;
+                
+                
+                let lotsizefactor = data.lotsizefactor.factor
+                usdbase = data.usdbase
+                // console.log(usdbase)
+
+                let pippriceperlotsize = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,1,usdbase)*10;
+                let stoplossprice = parseFloat(stopLossPrice(stdbarsize.stoplostpercent,parseFloat($('#presentbalance').html())))
+                let lotsize = getLotSize(stoplossprice,stdbarsize.stoplostpip,pippriceperlotsize).toFixed(5)*stdbarsize.lotsizeoffset
+
+                // console.log(pippriceperlotsize)
+
+                $('#stoplost').val(stoplossprice)
+                $('#takeprofit').val(2*stoplossprice)
+                // $('#takeprofit').val(2*stoplossprice)
+                $('#lotsize').val(lotsize)
+
+                barSize = stdbarsize.value
+              
+                // console.log(barSize)
+                if(JSON.parse(data.entryspecs).length == 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Not found Test spec',
+                        text: `Not found Test spec for ${$(this).find(':selected').data('name')}`,
+                    })
+                }
+                if(barSize == 1000) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'STD Bar error',
+                        text: `STD Bar size for ${$(this).find(':selected').data('name')} is not set yet`,
+                    })
+                }
+                _rawData =  createRawData(data.ohlcs);
+
+                _orderbuy_entry_specs.forEach(spec_item => {
+                    html_openbuy_testspecs += `<tr>
+                        <td>${ spec_item.fields.name}</td>
+                        <td id="td_orderbuy_spec_${spec_item.fields.parameter}">${spec_item.fields.entry_value}</td>
+                        <td id="td_orderbuy_reading_${spec_item.fields.parameter}"></td>
+                        </tr>`;
+                });
+
+                _ordersell_entry_specs.forEach(spec_item => {
+                    html_opensell_testspecs += `<tr>
+                        <td>${ spec_item.fields.name}</td>
+                        <td id="td_ordersell_spec_${spec_item.fields.parameter}">${spec_item.fields.entry_value}</td>
+                        <td id="td_ordersell_reading_${spec_item.fields.parameter}"></td>
+                        </tr>`;
+                });
+
+                JSON.parse(data.symbols).forEach(symbol_item => {
+                    let _selectText = '';
+                    if(symbol_item.pk == backtest.symbol) {_selectText = 'selected'}
+                    html_symbol += `<option value="${symbol_item.pk}" ${_selectText}>${symbol_item.fields.name}</option>`
+                });
+
+                JSON.parse(data.timeframes).forEach(timeframe_item => {
+                    let _selectText = '';
+                    if(timeframe_item.pk == backtest.timeframe) 
+                    {
+                        _selectText = 'selected'
+                    }
+                    if(timeframe_item.pk == backtest.timeframe) _selectText = 'selected'
+                    html_timeframe += `<option value="${timeframe_item.pk}" ${_selectText}>${timeframe_item.fields.name}</option>`
+                });
+
+                JSON.parse(data.backtestsizes).forEach(backtestsize_item => {
+                    let _selectText = '';
+                    if(backtestsize_item.pk == backtest.backtestsize) _selectText = 'selected'
+                    html_backtestsize += `<option value="${backtestsize_item.pk}" ${_selectText}>${backtestsize_item.fields.size}</option>`
+                });
+
+                JSON.parse(data.intervals).forEach(interval_item => {
+                    let _selectText = '';
+                    if(interval_item.pk == backtest.interval) _selectText = 'selected'
+                    html_interval += `<option value="${interval_item.pk}" ${_selectText}>${interval_item.fields.interval}</option>`
+                });
+
+                if(orderStatus == true){
+                    orderinfo = null;
+                    orderStatus = false
+                    isOrderPlace = false 
+                    accumulateprice = 0;
+                    countfromorderposition = 0;
+                    MarkData = [];
+                    updateDemoBalance(parseFloat($('#pricechange').html())).then(data => {
+                        $('#presentbalance').html(data.balance.toFixed(2))
+                    }).catch(error => {})
+                    $('#pricechange').html(0);
+                    $("#closeorder_wrapper").html('');
+                    $("#headerinfo").html('').addClass("text-danger").removeClass("blink");
+                    $("#modaltext").html('ORDER').removeClass("text-danger").removeClass("blink");
+                    $('#ordering').html('Open Order').addClass("btn-primary").removeClass("btn-danger");
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Order was closed',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function (result) {
+                    })
+                }
+                let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
+                $('#spread').html(calculationinfo.spread);
+                $('#spreadprice').html(-spreadprice+'$');
+                $('#pricechange').html(0);
+                $('#pipprice').html(pippriceperlotsize.toFixed(5));
+                $('#symbolname').html(`(${$(this).find(':selected').data('name')})`);
+                $('#symbols').html(html_symbol);
+                $('#backtesttimeframe').html(html_timeframe);
+                $('#backtestSize').html(html_backtestsize);
+                $('#interval').html(html_interval);
+                $('#orderbuy_spec_table').html(html_openbuy_testspecs);
+                $('#ordersell_spec_table').html(html_opensell_testspecs);
+                $("#timeframe").html($('#backtesttimeframe option:selected').text());
+                $("#symbol").html($('#symbols option:selected').text());
+                backtestTimerInterval = parseInt($('#interval option:selected').text());
+                
+                $('#jogtest').trigger('click');
+
+                // console.log(JSON.parse(data.setting)[0].fields)
+                if(calculationinfo.spread > setting.spreadlimit || spreadprice > setting.spreadpricelimit ){
+                    Swal.fire({
+                            icon: 'warning',
+                            title: `${$('#symbols option:selected').text()} is over spread`,
+                            text: `Spread or Spread Price is over limitted (${setting.spreadlimit}points/${setting.spreadpricelimit}$)`,
+                        })
+                }
+               
+                
+
+            }).catch(error => {})
+        })
+
+        function getBacktestJob(id,symbol_id,timeframe){
+            return new Promise((resolve, reject) => {
+                data = {
+                    id: id,
+                    symbol_id : symbol_id,
+                    timeframe : timeframe,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getbacktestjob' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        function updateStdarsize(symbol_id,timeframe,value){
+            return new Promise((resolve, reject) => {
+                data = {
+                    symbol_id: symbol_id,
+                    timeframe : timeframe,
+                    value : value,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'updatestdbarsize' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+       function saveFirstFoundStatus(status){
+            return new Promise((resolve, reject) => {
+                data = {
+                    status : status,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'savefirstfoundstatus' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+       
+        $(document).on('click','#ordering',function(){          
+            if(orderStatus == true){
+                orderinfo = null;
+                orderStatus = false
+                isOrderPlace = false
+                accumulateprice = 0;
+                countfromorderposition = 0;
+                ////console.log('update balance')
+                MarkData = [];
+                updateDemoBalance(parseFloat($('#pricechange').html())).then(data => {
+                    $('#presentbalance').html(data.balance.toFixed(2))
+                }).catch(error => {})
+                $('#pricechange').html(0);
+                $("#closeorder_wrapper").html('');
+                $("#headerinfo").html('').addClass("text-danger").removeClass("blink");
+                $("#modaltext").html('ORDER').removeClass("text-danger").removeClass("blink");
+                $('#ordering').html('Open Order').addClass("btn-primary").removeClass("btn-danger");
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Order was closed',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(function (result) {
+                    
+                })
+
+            }else{
+                orderStatus = true
+
+                $("#pricechange_wrapper").removeClass("bg-success").addClass("bg-danger");
+                $("#pricechange_icon").removeClass("fa-arrow-alt-circle-up").addClass("fa-arrow-alt-circle-down");
+                $("#closeorder_wrapper").html('<button class="btn btn-danger" id="closeorder">Close Order</button>');
+                $("#headerinfo").html('(ON ORDER)').addClass("text-danger").addClass("blink");
+                $("#modaltext").html('ON ORDER').addClass("text-danger").addClass("blink");
+                $('#ordering').html('Close Order').addClass("btn-danger").removeClass("btn-primary");
+                spread = parseFloat($('#spreadprice').html()) * parseFloat($('#lotsize').val())
+                orderinfo = {
+                    stoploss : parseFloat($('#stoplost').val()),
+                    takeprofit: parseFloat($('#takeprofit').val()),
+                    lotsize: parseFloat($('#lotsize').val()),
+                    price: parseFloat($('#price').val()),
+                    ordertype: parseInt($('#ordertype option:selected').val()),
+                    spread: spread,
+                }
+                $("#pricechange").html(spread.toFixed(2));
+                accumulateprice = spread * -1
+            }
+        })
+
+
+        $(document).on('click','#closeorder', function(){
+            updateDemoBalance(parseFloat($('#pricechange').html())).then(data => {
+                $('#presentbalance').html(data.balance.toFixed(2))
+            }).catch(error => {})
+            accumulateprice = 0;
+            countfromorderposition = 0;
+            MarkData = [];
+            orderStatus = false;
+            isOrderPlace = false
+            $('#pricechange').html(0);
+            $("#closeorder_wrapper").html('');
+            $("#headerinfo").html('').addClass("text-danger").removeClass("blink");
+            $("#modaltext").html('ORDER').removeClass("text-danger").removeClass("blink");
+            $('#ordering').html('Open Order').addClass("btn-primary").removeClass("btn-danger");
+            Swal.fire({
+                icon: 'success',
+                title: 'Order was closed',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(function (result) {
+                
+            })
+        })
+       
+
+        function updateDemoBalance(profit){
+            return new Promise((resolve, reject) => {
+                data = {
+                    profit : profit,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'updatedemobalance' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        $(document).on('click','#btnviewtimeframe',function(){
+            if(typeof $('#selectedBacktestJob option:selected').data('name') == 'undefined'){
+                Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Job not selected yet!.',
+                    })
+                return
+            }
+
+            presentBarInfo = {
+                symbol: $('#selectedBacktestJob option:selected').data('name'),
+                currentdate: currentselecteddate
+            }
+            $('#modal-viewtimeframe').modal('show')
+        })
+
+        $(document).on('click','#viewalltimeframe', function(){
+            if(presentBarInfo == null) {
+                return
+            }
+            $('#modal-viewtimeframe').modal('show')
+        });
+
+        function getAllTimeframeData(currentdate,symbol){
+            return new Promise((resolve, reject) => {
+                data = {
+                    symbol : symbol,
+                    currentdate : currentdate,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getalltimeframedata' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        $('#modal-viewtimeframe').on('shown.bs.modal', function (e) {
+            // console.log(presentBarInfo.currentdate)
+            getAllTimeframeData(presentBarInfo.currentdate,presentBarInfo.symbol).then(data => {
+                $('#tfviewer').html($('#selectedBacktestJob option:selected').data('name'))
+                createDataAllTimeframe(data)
+            }).catch(error => {})
+        })
+
+        $(document).on('click','#showbalance',function(){
+            getDemoBalance().then(data => {
+               $('#balance').val(data.balance)
+            }).catch(error => {})
+            $('#modal-updatebalance').modal('show')
+        })
+
+        function getDemoBalance(){
+            return new Promise((resolve, reject) => {
+                data = {
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getdemobalance' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        
+        $(document).on('click','#updatebalance',function(){
+            changeDemoBalance($('#balance').val()).then(data => {
+                location.reload(true);
+            }).catch(error => {})
+            // $('#modal-updatebalance').modal('hide')
+        })
+
+        function changeDemoBalance(balance){
+            return new Promise((resolve, reject) => {
+                data = {
+                    balance : balance,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'changedemobalance' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        $(document).on('change','#timeframesync',function(){
+            $("#canndle_stick_tf_all").toggle();
+            $("#canndle_stick_tf_from_m1data").toggle();
+        })
+    
+
+    </script>
+
+{% endblock %} 

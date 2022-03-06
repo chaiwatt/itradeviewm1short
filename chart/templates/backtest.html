@@ -875,18 +875,18 @@
                     bigenough = false
                 }
 
-                if (tfs_arr[0][4][0] > tfs_arr[0][4][1]){
-                    allgreen = false
-                }else{
-                    allred = false
-                }
-                let h1body = Math.abs(tfs_arr[0][4][0] - tfs_arr[0][4][1])
-                let h1stdbarpercent = Math.abs((((allstdbarsizes[4].fields.value - h1body)/h1body)*100).toFixed(2))
-                let signh1 = '>';
-                if(h1body < allstdbarsizes[4].fields.value) {
-                    signh1 = '<'
-                    bigenough = false
-                }
+                // if (tfs_arr[0][4][0] > tfs_arr[0][4][1]){
+                //     allgreen = false
+                // }else{
+                //     allred = false
+                // }
+                // let h1body = Math.abs(tfs_arr[0][4][0] - tfs_arr[0][4][1])
+                // let h1stdbarpercent = Math.abs((((allstdbarsizes[4].fields.value - h1body)/h1body)*100).toFixed(2))
+                // let signh1 = '>';
+                // if(h1body < allstdbarsizes[4].fields.value) {
+                //     signh1 = '<'
+                //     bigenough = false
+                // }
 
 
 
@@ -936,13 +936,13 @@
                     yAxis: tfs_arr[0][3][3],
                     color: "#fff",
                 });
-                MarkDataTF.push({
-                    name: signh1 + h1stdbarpercent + '%',
-                    value: tfs_arr[0][4][3],
-                    xAxis: 4,
-                    yAxis: tfs_arr[0][4][3],
-                    color: "#000",
-                });
+                // MarkDataTF.push({
+                //     name: signh1 + h1stdbarpercent + '%',
+                //     value: tfs_arr[0][4][3],
+                //     xAxis: 4,
+                //     yAxis: tfs_arr[0][4][3],
+                //     color: "#000",
+                // });
                 // MarkDataTF.push({
                 //     name: signh4 + h4stdbarpercent + '%',
                 //     value: tfs_arr[0][5][3],
@@ -981,7 +981,7 @@
                 let signm5_fromm1 = '>';
                 if(m5body_fromm1 < allstdbarsizes[1].fields.value) {
                     signm5_fromm1 = '<'
-                    // allbig = false
+                    allbig = false
                 }
 
                 if (tfs_from_m1data_arr[2][0] > tfs_from_m1data_arr[2][1]){
@@ -1013,19 +1013,19 @@
                     allbig = false
                 }
 
-                if (tfs_from_m1data_arr[4][0] > tfs_from_m1data_arr[4][1]){
-                    allgreen_fromm1 = false
-                }else{
-                    allred_fromm1 = false
-                }
-                let h1body_fromm1 = Math.abs(tfs_from_m1data_arr[4][0] - tfs_from_m1data_arr[4][1])
-                let h1stdbarpercent_fromm1 = Math.abs((((allstdbarsizes[4].fields.value - h1body_fromm1)/h1body_fromm1)*100).toFixed(2))
-                let signmh1_fromm1 = '>';
-                if(h1body_fromm1 < allstdbarsizes[4].fields.value) {
-                    signmh1_fromm1 = '<'
-                    bigenough_fromm1 = false
-                    allbig = false
-                }
+                // if (tfs_from_m1data_arr[4][0] > tfs_from_m1data_arr[4][1]){
+                //     allgreen_fromm1 = false
+                // }else{
+                //     allred_fromm1 = false
+                // }
+                // let h1body_fromm1 = Math.abs(tfs_from_m1data_arr[4][0] - tfs_from_m1data_arr[4][1])
+                // let h1stdbarpercent_fromm1 = Math.abs((((allstdbarsizes[4].fields.value - h1body_fromm1)/h1body_fromm1)*100).toFixed(2))
+                // let signmh1_fromm1 = '>';
+                // if(h1body_fromm1 < allstdbarsizes[4].fields.value) {
+                //     signmh1_fromm1 = '<'
+                //     bigenough_fromm1 = false
+                //     allbig = false
+                // }
                 
                 MarkDataTF_FromM1 = [];
                 MarkDataTF_FromM1.push({
@@ -1057,21 +1057,21 @@
                     yAxis: tfs_from_m1data_arr[3][3],
                     color: "#fff",
                 });
-                MarkDataTF_FromM1.push({
-                    name: signmh1_fromm1 + h1stdbarpercent_fromm1 + '%',
-                    value: tfs_from_m1data_arr[4][3],
-                    xAxis: 4,
-                    yAxis: tfs_from_m1data_arr[4][3],
-                    color: "#000",
-                });
+                // MarkDataTF_FromM1.push({
+                //     name: signmh1_fromm1 + h1stdbarpercent_fromm1 + '%',
+                //     value: tfs_from_m1data_arr[4][3],
+                //     xAxis: 4,
+                //     yAxis: tfs_from_m1data_arr[4][3],
+                //     color: "#000",
+                // });
 
 
                 let bearish_curve = bearishCurve(tfs_from_m1data_arr)
                 let bullish_curve = bullishCurve(tfs_from_m1data_arr)
                 if(bearish_curve == true){
-                    console.log('bearish')
-                    // if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){
-                    if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){    
+                    // console.log('bearish')
+                    if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                    // if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){    
                         if (threeBearishLadder(data) == true){
                             console.log('bearish_curve')
                             $('#autotest').removeClass('start');
@@ -1083,9 +1083,9 @@
                     
                 }
                 if(bullish_curve == true){
-                    console.log('bullish')
-                    // if(allgreen ==true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){
-                    if( allgreen ==true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 && h1stdbarpercent_fromm1 > 0){
+                    // console.log('bullish')
+                    if(allgreen ==true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                    // if( allgreen ==true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
                         if(threeBullishLadder(data) == true){
                             console.log('bullish_curve')
                             $('#autotest').removeClass('start');

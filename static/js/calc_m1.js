@@ -497,9 +497,9 @@
             [_arr[5].m5.open,_arr[5].m5.close,_arr[5].m5.low,_arr[5].m5.high,_arr[5].m5.index],
             [_arr[4].m15.open,_arr[4].m15.close,_arr[4].m15.low,_arr[4].m15.high,_arr[4].m15.index],
             [_arr[3].m30.open,_arr[3].m30.close,_arr[3].m30.low,_arr[3].m30.high,_arr[3].m30.index],
-            [_arr[2].h1.open,_arr[2].h1.close,_arr[2].h1.low,_arr[2].h1.high,_arr[2].h1.index],
+            // [_arr[2].h1.open,_arr[2].h1.close,_arr[2].h1.low,_arr[2].h1.high,_arr[2].h1.index],
             // [_arr[1].h4.open,_arr[1].h4.close,_arr[1].h4.low,_arr[1].h4.high,_arr[1].h4.index],
-        ], [_arr[6].m1.time,_arr[5].m5.time,_arr[4].m15.time,_arr[3].m30.time,_arr[2].h1.time]] 
+        ], [_arr[6].m1.time,_arr[5].m5.time,_arr[4].m15.time,_arr[3].m30.time]] 
         //     [_arr[0].d1.open,_arr[0].d1.close,_arr[0].d1.low,_arr[0].d1.high,_arr[0].d1.index],
         // ], [_arr[6].m1.time,_arr[5].m5.time,_arr[4].m15.time,_arr[3].m30.time,_arr[2].h1.time,_arr[1].h4.time,_arr[0].d1.time]] 
     }
@@ -534,7 +534,7 @@
             [_arr[3].open,_arr[3].close,_arr[3].low,_arr[3].high],
             [_arr[2].open,_arr[2].close,_arr[2].low,_arr[2].high],
             [_arr[1].open,_arr[1].close,_arr[1].low,_arr[1].high],
-            [_arr[0].open,_arr[0].close,_arr[0].low,_arr[0].high],
+            // [_arr[0].open,_arr[0].close,_arr[0].low,_arr[0].high],
         ]
     }
 
@@ -1138,18 +1138,16 @@
         let m15_close = _data[2][1]
         let m30_open = _data[3][0]
         let m30_close = _data[3][1]
-        let h1_open = _data[4][0]
-        let h1_close = _data[4][1]
+        // let h1_open = _data[4][0]
+        // let h1_close = _data[4][1]
 
-        if(m1_close > m1_open || m5_close > m5_open || m15_close > m15_open || m30_close > m30_open || h1_close > h1_open){
+        if(m1_close > m1_open || m5_close > m5_open || m15_close > m15_open || m30_close > m30_open){
             return false
         }else{
             
-            if(m1_open < m5_open && m5_open < m15_open && m15_open < m30_open && m30_open < h1_open){
-                // console.log('yes ,bearish curve')
+            if(m1_open < m5_open && m5_open < m15_open && m15_open < m30_open){
                 return true
             }else{
-                // console.log('just bearish')
                 return false
             }
         }
@@ -1163,22 +1161,19 @@
         let m15_close = _data[2][1]
         let m30_open = _data[3][0]
         let m30_close = _data[3][1]
-        let h1_open = _data[4][0]
-        let h1_close = _data[4][1]
+        // let h1_open = _data[4][0]
+        // let h1_close = _data[4][1]
     
-        if(m1_close < m1_open || m5_close < m5_open || m15_close < m15_open || m30_close < m30_open || h1_close < h1_open){
+        if(m1_close < m1_open || m5_close < m5_open || m15_close < m15_open || m30_close < m30_open ){
             return false
         }else{
-            if(m1_open > m5_open && m5_open > m15_open && m15_open > m30_open && m30_open > h1_open){
-                // console.log('yes ,bullish curve')
+            if(m1_open > m5_open && m5_open > m15_open && m15_open > m30_open){
                 return true
                
             }else{
-                // console.log('just bullish')
                 return false
             }
         }
-    // console.log(m5_open + ' ' + m5_close)
     }
 
     function bearishMomentum(_data,barsize,_percent,_percentstd){

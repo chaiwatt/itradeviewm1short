@@ -229,7 +229,6 @@
             $( "#btnGetSingleOhlc" ).trigger( "click" );
             setInterval(function(){
                 // searchMarket();
-                
                 getOrderSymbols().then(data => { //0=order on Buy 1=order on Sell
                     let html_orders_list = ''
                     
@@ -357,8 +356,6 @@
                     symbolCountId= 0
                 }
             }
-
-
         }
 
         function getOrders(symbol,timeframe){

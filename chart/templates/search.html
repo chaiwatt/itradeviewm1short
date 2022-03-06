@@ -1127,8 +1127,8 @@
 
             if(isMarketClose == 0 && (currentHour > 3 && currentHour < 21) && parseInt($('#spread').html()) < 15){  
                 if(bearish_curve == true){
-                    // if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                    if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                    if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                    // if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
                         if (threeBearishLadder(data) == true){
                             // console.log('bearish_curve' + data[data.length-1] + ' ' + response.symbol)
                             fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
@@ -1168,49 +1168,49 @@
                         }
                     }    
                 }
-                // if(bullish_curve == true){
-                //     // if(allgreen == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                //     if(allgreen == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                //         if (threeBullishLadder(data) == true){
-                //             console.log('bullish_curve' + data[data.length-1] + ' ' + response.symbol)
-                //             fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
-                //             var img_tf_from_m1 = new Image();
-                //             var img_tf_all = new Image();
-                //             var img_ohlc = new Image();
-                //             var img_ohlc_zoom = new Image();
-                //             img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
-                //                 pixelRatio: 2,
-                //                 backgroundColor: '#fff'
-                //             });
+                if(bullish_curve == true){
+                    if(allgreen == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                    // if(allgreen == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                        if (threeBullishLadder(data) == true){
+                            console.log('bullish_curve' + data[data.length-1] + ' ' + response.symbol)
+                            fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
+                            var img_tf_from_m1 = new Image();
+                            var img_tf_all = new Image();
+                            var img_ohlc = new Image();
+                            var img_ohlc_zoom = new Image();
+                            img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
 
-                //             img_tf_all.src = canndle_stick_tf_all.getDataURL({
-                //                 pixelRatio: 2,
-                //                 backgroundColor: '#fff'
-                //             });
+                            img_tf_all.src = canndle_stick_tf_all.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
 
-                //             img_ohlc.src = canndleStickChart.getDataURL({
-                //                 pixelRatio: 2,
-                //                 backgroundColor: '#fff'
-                //             });
+                            img_ohlc.src = canndleStickChart.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
 
-                //             img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
-                //                 pixelRatio: 2,
-                //                 backgroundColor: '#fff'
-                //             });
+                            img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
+                                pixelRatio: 2,
+                                backgroundColor: '#fff'
+                            });
 
-                //             uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
-                //                 result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
-                //                 openOrder(response.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
-                //                     lineNotification(result).then(data => {
-                //                         beep();
-                //                         location.reload(true);
-                //                     }).catch(error => {})
-                //                 }).catch(error => {})
-                //             }).catch(error => {})
-                //         }
+                            uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
+                                result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
+                                openOrder(response.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+                                    lineNotification(result).then(data => {
+                                        beep();
+                                        location.reload(true);
+                                    }).catch(error => {})
+                                }).catch(error => {})
+                            }).catch(error => {})
+                        }
 
-                //     }
-                // }
+                    }
+                }
             }
            
         }

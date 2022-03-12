@@ -121,7 +121,7 @@
                     </div>
                 </div>
 
-                <div class="card">
+                <!-- <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Orders</h3>
                       </div>
@@ -132,13 +132,13 @@
 
                                     <button type="button" id="btnGetSingleOhlc" class="btn btn-primary">Start Search</button>
                                     <button type="button" id="uploadImage" class="btn btn-primary">Upload Image</button>
-                                    <!-- <button type="button" id="openorder" data-dismiss="modal" class="btn btn-success">Open Order</button> -->
+                                    <button type="button" id="openorder" data-dismiss="modal" class="btn btn-success">Open Order</button>
                                 </div>
                                
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
             </div>
             <!-- /.col-md-6 -->
@@ -293,6 +293,9 @@
         var SSMA50Arr = [];
         var SSMA100Arr = [];
         
+        var dataMA10 = [];
+        var dataMA20 = [];
+        var dataMA35 = [];
         var dataMA100 = [];
         var MarkData = [];
         var MarkDataTF = [];
@@ -485,7 +488,7 @@
             setInterval(function(){
                
                 searchMarket();
-             },3000)
+             },5000)
         });
         function beep() {
         (new Audio("data:audio/wav;base64,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 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU="
@@ -496,7 +499,7 @@
             if(apisymbols.length == 0){
                 getApiSymbols().then(data_item => {
                     let _apisymbols = JSON.parse(data_item.apisymbols)
-                    console.log(_apisymbols)
+                    // console.log(_apisymbols)
                     if(_apisymbols.length > 0){
                         apisymbols = _apisymbols
                     }
@@ -600,23 +603,31 @@
             
             data = getData(_forexData);
 
-
-
             closedPrice = getClosedPrice(_forexData);
             lowPrice = getLowPrice(_forexData);
             highPrice = getHighPrice(_forexData);
             axisData = getDateLabel(_forexData); 
 
+            let SSMA10Arr = SSMA_Calc(closedPrice,10);
+            let SSMA20Arr = SSMA_Calc(closedPrice,20);
+            let SSMA35Arr = SSMA_Calc(closedPrice,35);
             SSMA100Arr = SSMA_Calc(closedPrice,100);
 
+            var nullSmoth_SSMA10 = Array(closedPrice.length - SSMA10Arr.length).fill(null);
+            var nullSmoth_SSMA20 = Array(closedPrice.length - SSMA20Arr.length).fill(null);
+            var nullSmoth_SSMA35 = Array(closedPrice.length - SSMA35Arr.length).fill(null);
             var nullSmoth_SSMA100 = Array(closedPrice.length - SSMA100Arr.length).fill(null);
 
-            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr);  //calculateMA(100, data); 
+            dataMA10 =  nullSmoth_SSMA10.concat(SSMA10Arr);  //calculateMA(100, data); 
+            dataMA20 =  nullSmoth_SSMA20.concat(SSMA20Arr); 
+            dataMA35 =  nullSmoth_SSMA35.concat(SSMA35Arr); 
+            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr); 
 
             let regressiveEq = genRegressionLine(dataMA100,lineLenght)
             markMA100LineCord = getCoord(regressiveEq,dataMA100.length-1-lineLenght,dataMA100.length-1,lineLenght)
 
             sma100Trend = isUpTrend(regressiveEq[0],data,dataMA100,lineLenght,slopeSpec)
+            
 
             sma100ArrowLevel = {
                 sma100_arrow_below : sma100ArrowBelow(data,dataMA100,lineLenght),
@@ -630,18 +641,10 @@
            
             
             var ohlc_timeframe_arr = response.ohlctimeframe
-            // console.log('AHA')
-            // console.log(data)
            
             let tfs_from_m1data_arr =  createTfDataSearchFromM1(getOhlcTimeframesDataFromM1(data))
-           
-        //    console.log (tfs_from_m1data_arr)
-
-        //    console.log(tfs_from_m1data_arr[0][0])
 
             var tfs_arr = createTfDataSearch(ohlc_timeframe_arr)
-            // console.log(tfs_arr)
-            
 
             // let bullish_ladder = bullishLadder(data,4)
             // let bearish_ladder = bearishLadder(data,4)
@@ -677,8 +680,6 @@
                 allred = false
             }
 
-            
-            
             let m1body = Math.abs(tfs_arr[0][0][0] - tfs_arr[0][0][1])
             let m1stdbarpercent = Math.abs((((response.m1barsize[0] - m1body)/m1body)*100).toFixed(2))
             let signm1 = '>';
@@ -726,8 +727,6 @@
                 signm30 = '<'
                 bigenough = false
             }
-
-            
 
             // if (tfs_arr[0][4][0] > tfs_arr[0][4][1]){
             //     allgreen = false
@@ -1053,6 +1052,25 @@
                         //     data: MarkData,
                         // },
                     }, 
+                    {
+                        name: 'MA10',
+                        data: dataMA10,
+                    }
+                    , 
+                    {
+                        name: 'MA20',
+                        data: dataMA20,
+                    }
+                    , 
+                    {
+                        name: 'MA35',
+                        data: dataMA35,
+                    }
+                    , 
+                    {
+                        name: 'MA100',
+                        data: dataMA100,
+                    }
    
                 ],                
                 xAxis : [
@@ -1061,7 +1079,8 @@
                     }
                 ],
                 dataZoom : {
-                    start : 90.5,
+                    // start : 90.5,
+                    start : 80,
                     end : 100
                 },
             });
@@ -1115,6 +1134,7 @@
 
             });
 
+            ////////////////  CALCULATION SECTION ////////////////////
             let bearish_curve = bearishCurve(tfs_from_m1data_arr[0])
             let bullish_curve = bullishCurve(tfs_from_m1data_arr[0])
             
@@ -1122,18 +1142,61 @@
             if(std_lot > 50){
                 std_lot = 50
             }
-            // console.log(std_lot)
-
-            // console.log(data[data.length-1][5])
+            
+     
+            let ma100slope = regressiveEq[0]
+            
             let currentDate = new Date(data[data.length-1][5]);
             let currentHour = currentDate.getUTCHours()
 
-            if(isMarketClose == 0 && (currentHour > 3 && currentHour < 21) && parseInt($('#spread').html()) < 15){  
+            if(isMarketClose == 0 && (currentHour > 1 && currentHour < 22) && parseInt($('#spread').html()) < 7){  
+                let std05 = response.m1barsize[4] * 0.25;
+                console.log(std05)
+                
+                if ((dataMA100[dataMA100.length-1] + std05) < dataMA35[dataMA35.length-1] 
+                    && (dataMA35[dataMA35.length-1]+ std05) < dataMA20[dataMA20.length-1] 
+                    && (dataMA20[dataMA20.length-1]+ std05) < dataMA10[dataMA10.length-1]
+                    && data[data.length-1][2] < dataMA10[dataMA10.length-1] && data[data.length-1][2] > dataMA20[dataMA20.length-1]
+                    // && data[data.length-1][2] > dataMA20[dataMA20.length-1]
+                    ){
+                        console.log('up trend pullback ' + response.symbol )
+                        result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
+                        openOrder(response.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+                            // lineNotification(result).then(data => {
+                            //     beep();
+                            //     location.reload(true);
+                            // }).catch(error => {})
+                        }).catch(error => {})
+                }
+
+                if(dataMA100[dataMA100.length-1] > (dataMA35[dataMA35.length-1]  + std05)
+                    && dataMA35[dataMA35.length-1] > (dataMA20[dataMA20.length-1] + std05) 
+                    && dataMA20[dataMA20.length-1] > (dataMA10[dataMA10.length-1] + std05)
+                    && data[data.length-1][3] > dataMA10[dataMA10.length-1] && data[data.length-1][3] < dataMA20[dataMA20.length-1]
+                    // && data[data.length-1][3] < dataMA20[dataMA20.length-1]
+                    ){
+                        console.log('down trend pullback ' + response.symbol )
+                        result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [SELL]'
+                        openOrder(response.symbol,'sell',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+                            // lineNotification(result).then(data => {
+                            //     beep();
+                            //     location.reload(true);
+                            // }).catch(error => {})
+                        }).catch(error => {})
+                }
+            }
+
+
+
+
+            // console.log('current hour ' + currentHour)
+            // console.log('slope ->: ' + regressiveEq[0].toFixed(10))
+
+            if(isMarketClose == 0 && (currentHour > 1 && currentHour < 22) && parseInt($('#spread').html()) < 7){  
                 if(bearish_curve == true){
-                    if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                    if(allred == true  && ma100slope < 0 &&  allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
                     // if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
                         if (threeBearishLadder(data) == true){
-                            // console.log('bearish_curve' + data[data.length-1] + ' ' + response.symbol)
                             fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
                             var img_tf_from_m1 = new Image();
                             var img_tf_all = new Image();
@@ -1171,49 +1234,49 @@
                         }
                     }    
                 }
-                if(bullish_curve == true){
-                    if(allgreen == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                    // if(allgreen == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                        if (threeBullishLadder(data) == true){
-                            console.log('bullish_curve' + data[data.length-1] + ' ' + response.symbol)
-                            fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
-                            var img_tf_from_m1 = new Image();
-                            var img_tf_all = new Image();
-                            var img_ohlc = new Image();
-                            var img_ohlc_zoom = new Image();
-                            img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
-                                pixelRatio: 2,
-                                backgroundColor: '#fff'
-                            });
+                // if(bullish_curve == true){
+                //     if(allgreen == true && ma100slope > 0 && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //     // if(allgreen == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //         if (threeBullishLadder(data) == true){
+                //             console.log('ma100slope:'+ma100slope)
+                //             fname = $('#symbol').html() +'-'+data[data.length-1][5].replaceAll(":", "-");
+                //             var img_tf_from_m1 = new Image();
+                //             var img_tf_all = new Image();
+                //             var img_ohlc = new Image();
+                //             var img_ohlc_zoom = new Image();
+                //             img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
 
-                            img_tf_all.src = canndle_stick_tf_all.getDataURL({
-                                pixelRatio: 2,
-                                backgroundColor: '#fff'
-                            });
+                //             img_tf_all.src = canndle_stick_tf_all.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
 
-                            img_ohlc.src = canndleStickChart.getDataURL({
-                                pixelRatio: 2,
-                                backgroundColor: '#fff'
-                            });
+                //             img_ohlc.src = canndleStickChart.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
 
-                            img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
-                                pixelRatio: 2,
-                                backgroundColor: '#fff'
-                            });
+                //             img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
+                //                 pixelRatio: 2,
+                //                 backgroundColor: '#fff'
+                //             });
 
-                            uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
-                                result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
-                                openOrder(response.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
-                                    lineNotification(result).then(data => {
-                                        beep();
-                                        location.reload(true);
-                                    }).catch(error => {})
-                                }).catch(error => {})
-                            }).catch(error => {})
-                        }
+                //             uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
+                //                 result=response.symbol + ' (M1) ' + data[data.length-1][5] + ' [BUY]'
+                //                 openOrder(response.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+                //                     lineNotification(result).then(data => {
+                //                         beep();
+                //                         location.reload(true);
+                //                     }).catch(error => {})
+                //                 }).catch(error => {})
+                //             }).catch(error => {})
+                //         }
 
-                    }
-                }
+                //     }
+                // }
             }
            
         }
@@ -1414,7 +1477,7 @@
                 // }
             },
             legend: {
-                data:['OHLC'],
+                data:['OHLC','MA10','MA20','MA35','MA100'],
                 selected:{'SSMA20':false},
                 textStyle: {
                     color: '#fff'
@@ -1508,6 +1571,46 @@
                         borderColor0: null
                     },
                 }, 
+                {
+                    name: 'MA10',
+                    type: 'line',
+                    data: dataMA10,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+                {
+                    name: 'MA20',
+                    type: 'line',
+                    data: dataMA20,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+                {
+                    name: 'MA35',
+                    type: 'line',
+                    data: dataMA35,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+                {
+                    name: 'MA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }
          
             ]
         };

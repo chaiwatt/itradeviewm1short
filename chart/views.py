@@ -20,6 +20,7 @@ import base64
 from django.core.files.base import ContentFile
 import operator
 import sys
+import uuid
 
 config ={
     'apiKey': "AIzaSyBWkbdZu6r0giHnxVwGrqJaHXoQIk2_TWk",
@@ -121,6 +122,7 @@ def index(request):
                 'profit':data['profit'],
                 'position':data['ticket'],
                 'type':data['type'],
+                'comment':data['comment'],
             }
             orders.append(_data)
         # print(orders)
@@ -221,6 +223,7 @@ def getohlc(request):
                 'profit':data['profit'],
                 'position':data['ticket'],
                 'type':data['type'],
+                'comment':data['comment'],
             }
             orders.append(_data)
         # print(orders)
@@ -602,6 +605,7 @@ def getbacktestjob(request):
         'spread' : symbol_info.spread,
         'trade_contract_size' : symbol_info.trade_contract_size,
         'balance' : accountinfo.balance,
+        'pipdistant' : symbol.pipdistant,
     }
 
     barsize = {
@@ -772,8 +776,8 @@ def setting(request):
     lotinfo = {
         'balance': accountinfo.balance,
         'lotsize': "{:.2f}".format(stdbalance),
-        'gbpcloseprice': "{:.2f}".format(stdbalance*75),
-        'nonegbpcloseprice': "{:.2f}".format(stdbalance*50),
+        'gbpcloseprice': "{:.2f}".format(stdbalance*40),
+        'nonegbpcloseprice': "{:.2f}".format(stdbalance*25),
     }
     return render(request,'setting.html',{
         'setting': setting,
@@ -924,7 +928,17 @@ def search(request):
             allgreen = False
 
         if allred == True or allgreen == True:
+            # m5_body = abs(m5from_m1_data['open'] - m5from_m1_data['close'])
+            # std_m5_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M5').first().value
+            # m5_percent = ((std_m5_barsize - m5_body)/m5_body)*100
+
+            # m15_body = abs(m15from_m1_data['open'] - m15from_m1_data['close'])
+            # std_m15_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M15').first().value
+            # m15_percent = ((std_m15_barsize - m15_body)/m15_body)*100
+            
+            # if m5_percent < 0 and m15_percent < 0 :
             greenOrred.append(search.id)
+
     # print(greenOrred)
     isMarketClose = 0    
     if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
@@ -1257,41 +1271,20 @@ def getsingleohlc(request):
         else:
             allgreen = False
 
-        # if search.name == 'USDJPY':
-        #     print('------------')
-        #     print(open_ohlcs_m30)
-        #     print(close_ohlcs_m30)
-        #     print(min_low_ohlcs_m30)
-        #     print(max_high_ohlcs_m30)
-
-        # ohlcs_h1_arr = _ohlcs_m1[-60:]
-        # max_high_ohlcs_h1 = 0
-        # for i in ohlcs_h1_arr:
-        #     if i['high'] > max_high_ohlcs_h1:
-        #         max_high_ohlcs_h1 = i['high']
-                
-        # min_low_ohlcs_h1 = max_high_ohlcs_h1        
-        # for i in ohlcs_h1_arr:
-        #     if i['low'] < min_low_ohlcs_h1:
-        #         min_low_ohlcs_h1 = i['low']
-
-        # open_ohlcs_h1 = ohlcs_h1_arr[0]['open']
-        # close_ohlcs_h1 = ohlcs_h1_arr[len(ohlcs_h1_arr)-1]['close']
-
-        # h1from_m1_data = {
-        #     'open':open_ohlcs_h1,
-        #     'high':max_high_ohlcs_h1,
-        #     'low':min_low_ohlcs_h1,
-        #     'close':close_ohlcs_h1, 
-        # }
-
-        # if float(h1from_m1_data['close']) > float(h1from_m1_data['open']) :
-        #     allred = False
-        # else:
-        #     allgreen = False
-
-
         if allred == True or allgreen == True:
+            
+            # m5_body = abs(m5from_m1_data['open'] - m5from_m1_data['close'])
+            
+            # std_m5_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M5').first().value
+            # m5_percent = ((std_m5_barsize - m5_body)/m5_body)*100
+
+            # print(m5_body)
+            # print('--------------')
+            # m15_body = abs(m15from_m1_data['open'] - m15from_m1_data['close'])
+            # std_m15_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M15').first().value
+            # m15_percent = ((std_m15_barsize - m15_body)/m15_body)*100
+            
+            # if m5_body > std_m5_barsize :
             greenOrred.append(search.id)
 
     
@@ -1486,7 +1479,17 @@ def getapisymbols(request):
         #     allgreen = False
 
         if allred == True or allgreen == True:
+            # m5_body = abs(m5from_m1_data['open'] - m5from_m1_data['close'])
+            # std_m5_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M5').first().value
+            # m5_percent = ((std_m5_barsize - m5_body)/m5_body)*100
+
+            # m15_body = abs(m15from_m1_data['open'] - m15from_m1_data['close'])
+            # std_m15_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M15').first().value
+            # m15_percent = ((std_m15_barsize - m15_body)/m15_body)*100
+            
+            # if m5_percent < 0 and m15_percent < 0 :
             greenOrred.append(search.id)
+
     # print(greenOrred)
     data = {
         'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = greenOrred)),
@@ -1637,6 +1640,7 @@ def getorders(request):
         for position in positions:
             sb = Symbol.objects.filter(name=position.symbol).first()
             positionsymbol.append(sb.id)  
+
     greenOrred = []
     searchs = Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = positionsymbol)
     
@@ -1748,41 +1752,20 @@ def getorders(request):
         else:
             allgreen = False
 
-        # if search.name == 'USDJPY':
-        #     print('------------')
-        #     print(open_ohlcs_m30)
-        #     print(close_ohlcs_m30)
-        #     print(min_low_ohlcs_m30)
-        #     print(max_high_ohlcs_m30)
-
-        # ohlcs_h1_arr = _ohlcs_m1[-60:]
-        # max_high_ohlcs_h1 = 0
-        # for i in ohlcs_h1_arr:
-        #     if i['high'] > max_high_ohlcs_h1:
-        #         max_high_ohlcs_h1 = i['high']
-                
-        # min_low_ohlcs_h1 = max_high_ohlcs_h1        
-        # for i in ohlcs_h1_arr:
-        #     if i['low'] < min_low_ohlcs_h1:
-        #         min_low_ohlcs_h1 = i['low']
-
-        # open_ohlcs_h1 = ohlcs_h1_arr[0]['open']
-        # close_ohlcs_h1 = ohlcs_h1_arr[len(ohlcs_h1_arr)-1]['close']
-
-        # h1from_m1_data = {
-        #     'open':open_ohlcs_h1,
-        #     'high':max_high_ohlcs_h1,
-        #     'low':min_low_ohlcs_h1,
-        #     'close':close_ohlcs_h1, 
-        # }
-
-        # if float(h1from_m1_data['close']) > float(h1from_m1_data['open']) :
-        #     allred = False
-        # else:
-        #     allgreen = False
 
         if allred == True or allgreen == True:
+            # m5_body = abs(m5from_m1_data['open'] - m5from_m1_data['close'])
+            # std_m5_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M5').first().value
+            # m5_percent = ((std_m5_barsize - m5_body)/m5_body)*100
+
+            # m15_body = abs(m15from_m1_data['open'] - m15from_m1_data['close'])
+            # std_m15_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M15').first().value
+            # m15_percent = ((std_m15_barsize - m15_body)/m15_body)*100
+            
+            # if m5_percent < 0 and m15_percent < 0 :
             greenOrred.append(search.id)
+
+           
 
     isMarketClose = 0    
     if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
@@ -1804,6 +1787,7 @@ def getorders(request):
                 'lot' : position.volume,
                 'type' : position.type,
                 'profit' : position.profit,
+                'comment' : position.comment,
             })   
 
 
@@ -1869,6 +1853,7 @@ def getordersymbols(request):
                 'lot' : position.volume,
                 'type' : position.type,
                 'profit' : position.profit,
+                'comment' : position.comment,
             })  
     data = {
          'orders' : orders
@@ -2119,6 +2104,7 @@ def openorder(request):
     deviation = 20
     n = int(setting.numorder)
     for i in range(n):
+        myuuid = str(uuid.uuid4().hex[:8])
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
@@ -2129,7 +2115,7 @@ def openorder(request):
             "tp": 0.0,
             "deviation": deviation,
             "magic": 234000,
-            "comment": request.POST.get('comment'),
+            "comment": symbol,
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_IOC,
         }
@@ -2156,6 +2142,7 @@ def openorder(request):
                 'profit':data['profit'],
                 'position':data['ticket'],
                 'type':data['type'],
+                'comment':data['comment'],
             }
             orders.append(_data)
 
@@ -2282,6 +2269,7 @@ def manualcloseorder(request):
                 'profit':data['profit'],
                 'position':data['ticket'],
                 'type':data['type'],
+                'comment':data['comment'],
             }
             orders.append(_data)
 

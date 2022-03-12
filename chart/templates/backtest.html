@@ -380,9 +380,9 @@
                      <div class="col-md-12">
                         <div id="canndle_stick_tf_h1"></div>
                      </div>
-                     <div class="col-md-12">
+                     <!-- <div class="col-md-12">
                         <div id="canndle_stick_tf_h4"></div>
-                     </div>
+                     </div> -->
                      <!-- <div class="col-md-12">
                         <div id="canndle_stick_tf_d1"></div>
                      </div> -->
@@ -463,7 +463,7 @@
         var canndle_stick_tf_m15 = echarts.init(document.getElementById('canndle_stick_tf_m15'));  
         var canndle_stick_tf_m30 = echarts.init(document.getElementById('canndle_stick_tf_m30'));  
         var canndle_stick_tf_h1 = echarts.init(document.getElementById('canndle_stick_tf_h1'));         
-        var canndle_stick_tf_h4 = echarts.init(document.getElementById('canndle_stick_tf_h4'));    
+        // var canndle_stick_tf_h4 = echarts.init(document.getElementById('canndle_stick_tf_h4'));    
         // var canndle_stick_tf_d1 = echarts.init(document.getElementById('canndle_stick_tf_d1'));    
 
         var searchType = JSON.parse("{{searchtype|escapejs}}")[0].fields; 
@@ -484,8 +484,13 @@
         var data_tf_w1 = []
         var axisData = [];
         var SSMA20Arr = [];
-        var SSMA100Arr = [];
+        var SMA100Arr = [];
+        var dataMA6 = [];
+        var dataMA10 = [];
+        var dataMA20 = [];
+        var dataMA35 = [];
         var dataMA100 = [];
+        var dataBody = [];
         var MarkData = [];
         var markMA100LineCord = [];
         var MarkMA100Slope  = [];
@@ -518,7 +523,10 @@
         let _ohlc_timeframe = []
         var allstdbarsizes = []
         var isOrderPlace = false;
-
+        var foundCrossUptrend = false;
+        var barDuringCrossUptrend = [];
+        var foundCrossDowntrend = false;
+        var barDuringCrossDowntrend = [];
 
         var dom = document.getElementById("clockcontainer");
             var clock = echarts.init(dom);
@@ -674,7 +682,7 @@
             
             data = getData(_forexData);
             // console.log(data[data.length-1])
-            // console.log(data)
+            // console.log(_forexData)
 
             // console.log(convertOhlcTimeframe(_ohlc_timeframe,data[data.length-1][5]))
 
@@ -682,14 +690,27 @@
             lowPrice = getLowPrice(_forexData);
             highPrice = getHighPrice(_forexData);
             axisData = getDateLabel(_forexData); 
+            let SMA6Arr = SSMA_Calc(closedPrice,6);
+            let SMA10Arr = SSMA_Calc(closedPrice,10);
+            let SMA20Arr = SSMA_Calc(closedPrice,20);
+            let SMA35Arr = SSMA_Calc(closedPrice,35);
+            SMA100Arr = SSMA_Calc(closedPrice,100);
+            dataBody = DataBody(data);
+            // console.log(dataBody)
+            var nullSmoth_SSMA6 = Array(closedPrice.length - SMA6Arr.length).fill(null);
+            var nullSmoth_SSMA10 = Array(closedPrice.length - SMA10Arr.length).fill(null);
+            var nullSmoth_SSMA20 = Array(closedPrice.length - SMA20Arr.length).fill(null);
+            var nullSmoth_SSMA35 = Array(closedPrice.length - SMA35Arr.length).fill(null);
+            var nullSmoth_SSMA100 = Array(closedPrice.length - SMA100Arr.length).fill(null);
 
-            SSMA100Arr = SSMA_Calc(closedPrice,100);
-
-            var nullSmoth_SSMA100 = Array(closedPrice.length - SSMA100Arr.length).fill(null);
-
-            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr);  //calculateMA(100, data); 
+            dataMA6 =  nullSmoth_SSMA6.concat(SMA6Arr); 
+            dataMA10 =  nullSmoth_SSMA10.concat(SMA10Arr);  //calculateMA(100, data); 
+            dataMA20 =  nullSmoth_SSMA20.concat(SMA20Arr); 
+            dataMA35 =  nullSmoth_SSMA35.concat(SMA35Arr); 
+            dataMA100 =  nullSmoth_SSMA100.concat(SMA100Arr); 
 
             let regressiveEq = genRegressionLine(dataMA100,lineLenght)
+    
             markMA100LineCord = getCoord(regressiveEq,dataMA100.length-1-lineLenght,dataMA100.length-1,lineLenght)
 
             sma100Trend = isUpTrend(regressiveEq[0],data,dataMA100,lineLenght,slopeSpec)
@@ -758,20 +779,20 @@
                     $('#pricechange').html(accumulateprice.toFixed(2))
                     // console.log(orderinfo)
                     if(accumulateprice.toFixed(5) > orderinfo.takeprofit){
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'Sell',
-                            text: 'Profit greater than Take profit',
-                        })
+                        // Swal.fire({
+                        //     icon: 'info',
+                        //     title: 'Sell',
+                        //     text: 'Profit greater than Take profit',
+                        // })
                         $('#autotest').removeClass('start');
                         $('#autotest').text("Auto Test") ;
                         clearInterval(backtestTimer);
                     }else if(accumulateprice.toFixed(5) < (orderinfo.stoploss*-1)){
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Sell',
-                            text: 'Lost than stop lost',
-                        })
+                        // Swal.fire({
+                        //     icon: 'warning',
+                        //     title: 'Sell',
+                        //     text: 'Lost than stop lost',
+                        // })
                         $('#autotest').removeClass('start');
                         $('#autotest').text("Auto Test") ;
                         clearInterval(backtestTimer);
@@ -796,6 +817,8 @@
             
 
                 let ohlc_timeframe = convertOhlcTimeframe(_ohlc_timeframe,data[data.length-1][5])
+                // console.log(ohlc_timeframe[2])
+
 
                 let ohlc_timeframe_arr = ohlc_timeframe[0]
                 let ohlc_timeframe_from_m1data_arr = ohlc_timeframe[1]
@@ -1065,37 +1088,402 @@
                 //     color: "#000",
                 // });
 
+                let alltimeframetrend = getAllTimeframeTrend(ohlc_timeframe[2],lineLenght)
+            //    if(alltimeframetrend[0] == 1){
+                   
+            //         console.log('All timeframe uptrend')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //    }else if(alltimeframetrend[1] == 1){
+            //         console.log('All timeframe downtrend')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //    }
 
-                let bearish_curve = bearishCurve(tfs_from_m1data_arr)
-                let bullish_curve = bullishCurve(tfs_from_m1data_arr)
-                if(bearish_curve == true){
-                    // console.log('bearish')
-                    if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                    // if(allred == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){    
-                        if (threeBearishLadder(data) == true){
-                            console.log('bearish_curve')
-                            $('#autotest').removeClass('start');
-                            $('#autotest').text("Auto Test") ;
-                            clearInterval(backtestTimer);
-                        }
+
+
+                // console.log(dataMA20[dataMA20.length-1])
+                // console.log(dataMA20[dataMA20.length-2])
+                // if(foundCrossUptrend == false){
+                //     if(dataMA6[dataMA6.length-1] > dataMA20[dataMA20.length-1] && dataMA6[dataMA6.length-2] < dataMA20[dataMA20.length-2] 
+                //             && dataMA35[dataMA35.length-1] > dataMA6[dataMA6.length-1] && dataMA35[dataMA35.length-1] > dataMA20[dataMA20.length-1]
+                //             // && dataMA6[dataMA6.length-1] > dataMA100[dataMA100.length-1] && dataMA20[dataMA20.length-1] > dataMA100[dataMA100.length-1]
+                //             // && dataMA35[dataMA35.length-1] > dataMA100[dataMA100.length-1]
+                //         ){
+                //             // barDuringCrossUptrend.push(data[data.length-1])
+                //             foundCrossUptrend = true
+                //         }
+                // }else{
+                //     barDuringCrossUptrend.push(data[data.length-1])
+                //     if(dataMA6[dataMA6.length-1] > dataMA35[dataMA35.length-1] && dataMA6[dataMA6.length-2] < dataMA35[dataMA35.length-2] ){
+                //         foundCrossUptrend = false    
+                //         console.log(barDuringCrossUptrend)
+                //         barDuringCrossUptrend = []
+                //         console.log(data[data.length-1])
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // }
+
+                // if(foundCrossDowntrend == false){
+                //     if(dataMA6[dataMA6.length-1] < dataMA20[dataMA20.length-1] && dataMA6[dataMA6.length-2] > dataMA20[dataMA20.length-2]
+                //     && dataMA35[dataMA35.length-1] < dataMA6[dataMA6.length-1] && dataMA35[dataMA35.length-1] < dataMA20[dataMA20.length-1]
+                //     // && dataMA6[dataMA6.length-1] < dataMA100[dataMA100.length-1] && dataMA20[dataMA20.length-1] < dataMA100[dataMA100.length-1]
+                //     // && dataMA35[dataMA35.length-1] < dataMA100[dataMA100.length-1]
+                //     ){
+                //         console.log('found downtrend cross')
+                //         foundCrossDowntrend = true
+                //     }
+                // }else{
+                //     barDuringCrossDowntrend.push(data.length-1)
+                //     if(dataMA6[dataMA6.length-1] < dataMA35[dataMA35.length-1] && dataMA6[dataMA6.length-2] > dataMA35[dataMA35.length-2] ){
+                //         foundCrossDowntrend = false
+                //         console.log('found cross downtrend')
+                        
+                //         console.log(barDuringCrossDowntrend)
+                //         barDuringCrossDowntrend = []
+                //         console.log(data[data.length-1])
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // } 
+
+                // if(foundCross == false){
+                //     if(dataMA6[dataMA6.length-1] > dataMA20[dataMA20.length-1] && dataMA6[dataMA6.length-2] < dataMA20[dataMA20.length-2] 
+                //             && dataMA35[dataMA35.length-1] > dataMA6[dataMA6.length-1] && dataMA35[dataMA35.length-1] > dataMA20[dataMA20.length-1]
+                //             && dataMA6[dataMA6.length-1] > dataMA100[dataMA100.length-1] && dataMA20[dataMA20.length-1] > dataMA100[dataMA100.length-1]
+                //             && dataMA35[dataMA35.length-1] > dataMA100[dataMA100.length-1]
+                //         ){
+                //             console.log('found cross')
+                //             barDuringCross.push(data.length-1)
+                //             foundCross = true
+                //         }
+                // }else{
+                //     barDuringCross.push(data.length-1)
+                //     if(dataMA6[dataMA6.length-1] > dataMA35[dataMA35.length-1] && dataMA6[dataMA6.length-2] < dataMA35[dataMA35.length-2] ){
+                //         foundCross = false
+                //         console.log('found cross uptrend')
+                        
+                //         console.log(barDuringCross)
+                //         barDuringCross = []
+                //         console.log(data[data.length-1])
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // }
+
+
+  
+
+                if(dataMA100[dataMA100.length-2] > (dataMA35[dataMA35.length-2]+1.5*allstdbarsizes[0].fields.value) && dataMA35[dataMA35.length-2] > (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA20[dataMA20.length-2] > (dataMA6[dataMA6.length-2]+0.5*allstdbarsizes[0].fields.value) && alltimeframetrend[1] == 1){
+                    if(dataBody[dataBody.length-1] < dataMA6[dataMA6.length-1] && dataBody[dataBody.length-2] > dataMA6[dataMA6.length-2] ){
+                        let inloopData = []
+                        let inloopDataGuage = []
+                        for (let i = 2; i < 10; i++) {
+                            let check = dataBody[dataBody.length-i] - dataMA6[dataMA6.length-i]
                       
-                    }
-                    
-                }
-                if(bullish_curve == true){
-                    // console.log('bullish')
-                    if(allgreen ==true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                    // if( allgreen ==true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
-                        if(threeBullishLadder(data) == true){
-                            console.log('bullish_curve')
-                            $('#autotest').removeClass('start');
-                            $('#autotest').text("Auto Test") ;
-                            clearInterval(backtestTimer);
+                            if(check < 0){
+                                break
+                            }
+                            inloopData.push(dataBody[dataBody.length-i])
+                            inloopDataGuage.push(dataMA20[dataMA20.length-i])
                         }
+                        let maxInloopData = Math.max(...inloopData);
+                        let mininloopDataGuage = Math.min(...inloopDataGuage);
+                        if(inloopData.length < 5 && maxInloopData < mininloopDataGuage){
+                            let crossCount = 0
+                            for (let i = 1; i < 30; i++) {
+                                if(dataBody[dataBody.length-i] < dataMA6[dataMA6.length-i] && dataBody[dataBody.length-i+1] > dataMA6[dataMA6.length-i+1]){
+                                    crossCount++
+                                }
+                            }
+                            console.log(crossCount)
+                            if(crossCount < 3){
+                                // console.log(inloopData)
+                                // console.log(inloopDataGuage)
+                                // console.log (maxInloopData)
+                                // console.log (mininloopDataGuage)
+                                console.log('Data body toggle downtrend')
+                                console.log(alltimeframetrend)
+                                $('#autotest').removeClass('start');
+                                $('#autotest').text("Auto Test") ;
+                                clearInterval(backtestTimer);
+                            }
 
+                      
+                        }
                     }
-   
                 }
+
+                if((dataMA100[dataMA100.length-2]+1.5*allstdbarsizes[0].fields.value) < dataMA35[dataMA35.length-2] && (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA20[dataMA20.length-2] && (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-2] && alltimeframetrend[0] == 1){
+                    if(dataBody[dataBody.length-1] > dataMA6[dataMA6.length-1] && dataBody[dataBody.length-2] < dataMA6[dataMA6.length-2] ){
+                        let inloopData = []
+                        let inloopDataGuage = []
+                        for (let i = 2; i < 10; i++) {
+                            let check = dataBody[dataBody.length-i] - dataMA6[dataMA6.length-i]
+                      
+                            if(check > 0){
+                                break
+                            }
+                            inloopData.push(dataBody[dataBody.length-i])
+                            inloopDataGuage.push(dataMA20[dataMA20.length-i])
+                        }
+                        let maxInloopData = Math.max(...inloopData);
+                        let mininloopDataGuage = Math.min(...inloopDataGuage);
+                        if(inloopData.length < 5 && maxInloopData > mininloopDataGuage){
+                            let crossCount = 0
+                            for (let i = 1; i < 30; i++) {
+                                if(dataBody[dataBody.length-i] > dataMA6[dataMA6.length-i] && dataBody[dataBody.length-i+1] < dataMA6[dataMA6.length-i+1]){
+                                    crossCount++
+                                }
+                            }
+                            console.log(crossCount)
+                            if(crossCount < 3){
+                                // console.log(inloopData)
+                                // console.log(inloopDataGuage)
+                                // console.log (maxInloopData)
+                                // console.log (mininloopDataGuage)
+                                console.log('Data body toggle uptrend')
+                                console.log(alltimeframetrend)
+                                $('#autotest').removeClass('start');
+                                $('#autotest').text("Auto Test") ;
+                                clearInterval(backtestTimer);
+                            }
+                            
+                        }
+                    }
+                }
+
+                // if((dataMA100[dataMA100.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA35[dataMA35.length-2] && (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA20[dataMA20.length-2] && (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-2] ){
+                //     if(data[data.length-2][3] > dataMA6[dataMA6.length-2] && data[data.length-2][2] > dataMA20[dataMA20.length-2] ){
+                //         if(data[data.length-3][3] < dataMA6[dataMA6.length-3]){
+                //             console.log('Another uptrend')
+                //             console.log(alltimeframetrend)
+                //             $('#autotest').removeClass('start');
+                //             $('#autotest').text("Auto Test") ;
+                //             clearInterval(backtestTimer);
+                //         }
+                //     }
+                // }
+
+                // if(dataMA100[dataMA100.length-2] > (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA35[dataMA35.length-2] > (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA20[dataMA20.length-2] > (dataMA6[dataMA6.length-2]+0.5*allstdbarsizes[0].fields.value) ){
+                //     if(data[data.length-2][3] > dataMA6[dataMA6.length-2] && data[data.length-2][3] < dataMA20[dataMA20.length-2] ){
+                //         if(data[data.length-3][2] > dataMA6[dataMA6.length-3] && data[data.length-3][3] < dataMA20[dataMA20.length-3]){
+                //             console.log('Another downtrend')
+                //             console.log(alltimeframetrend)
+                //             $('#autotest').removeClass('start');
+                //             $('#autotest').text("Auto Test") ;
+                //             clearInterval(backtestTimer);
+                //         }
+                //     }
+                // }
+
+                // if((dataMA100[dataMA100.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA35[dataMA35.length-2] && (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA20[dataMA20.length-2] && (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-2] ){
+                //     if(bullishLadder(data,10) == true){
+                //         console.log('Long uptrend')
+                //         console.log(alltimeframetrend)
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // }
+
+                // if(dataMA100[dataMA100.length-2] > (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA35[dataMA35.length-2] > (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA20[dataMA20.length-2] > (dataMA6[dataMA6.length-2]+0.5*allstdbarsizes[0].fields.value) ){
+                //     if(bearishLadder(data,10) == true){
+                //         console.log('Long downtrend')
+                //         console.log(alltimeframetrend)
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     }
+                // }
+
+                // if(dataMA100[dataMA100.length-2] > (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA35[dataMA35.length-2] > (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA20[dataMA20.length-2] > (dataMA6[dataMA6.length-2]+0.5*allstdbarsizes[0].fields.value) ){
+                //     if(data[data.length-2][3] < dataMA6[dataMA6.length-2] && data[data.length-3][3] > dataMA6[dataMA6.length-3] && data[data.length-3][3] < dataMA20[dataMA20.length-3] && data[data.length-4][1] < dataMA6[dataMA6.length-4]){
+                //         let barbody_1 = data[data.length-2][0] - data[data.length-2][1] 
+                //         let barbody_2 = data[data.length-3][0] - data[data.length-3][1] 
+                //         if(barbody_1 > 0 && barbody_2 > 0 ){
+                //             console.log('Now is downtrend')
+                //             console.log(alltimeframetrend)
+                //             $('#autotest').removeClass('start');
+                //             $('#autotest').text("Auto Test") ;
+                //             clearInterval(backtestTimer);
+                //         } 
+                //     }
+                // }
+
+                // if((dataMA100[dataMA100.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA35[dataMA35.length-2] && (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA20[dataMA20.length-2] && (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-2] ){
+                //     if(data[data.length-2][2] > dataMA6[dataMA6.length-2] && data[data.length-3][2] < dataMA6[dataMA6.length-2] && data[data.length-3][2] > dataMA20[dataMA20.length-3]  && data[data.length-4][1] > dataMA6[dataMA6.length-4] ){
+                //         let barbody_1 = data[data.length-2][0] - data[data.length-2][1] 
+                //         let barbody_2 = data[data.length-3][0] - data[data.length-3][1] 
+                //         if(barbody_1 < 0 && barbody_2 < 0 ){
+                //             console.log('Now is uptrend')
+                //             console.log(alltimeframetrend)
+                //             $('#autotest').removeClass('start');
+                //             $('#autotest').text("Auto Test") ;
+                //             clearInterval(backtestTimer);
+                //         } 
+
+                //     }
+                // }
+
+                // if(foundCrossUptrend == false){
+                //     if(dataMA100[dataMA100.length-1] < dataMA35[dataMA35.length-1] && dataMA6[dataMA6.length-1] > dataMA35[dataMA35.length-1] && dataMA6[dataMA6.length-2] < dataMA35[dataMA35.length-2] && dataMA6[dataMA6.length-1] > dataMA20[dataMA20.length-1] ){
+                //         foundCrossUptrend = true
+                //     }
+                // }else{
+                //     foundCrossUptrend = false
+                   
+                //     let barbody_1 = data[data.length-2][0] - data[data.length-2][1] 
+                //     let barbody_2 = data[data.length-3][0] - data[data.length-3][1] 
+                //     if(barbody_1 < 0 && barbody_2 < 0 ){
+                //         console.log('found cross uptrend')
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     } 
+                // }
+
+                // if(foundCrossDowntrend == false){
+                //     if(dataMA100[dataMA100.length-1] > dataMA35[dataMA35.length-1] && dataMA20[dataMA20.length-1] < dataMA35[dataMA35.length-1] && dataMA20[dataMA20.length-2] > dataMA35[dataMA35.length-2] && dataMA6[dataMA6.length-1] < dataMA20[dataMA20.length-1]){
+                //         foundCrossDowntrend = true
+                //     }
+                // }else{
+                //     foundCrossDowntrend = false
+                    
+                //     let barbody_1 = data[data.length-2][0] - data[data.length-2][1] 
+                //     let barbody_2 = data[data.length-3][0] - data[data.length-3][1] 
+                //     if(barbody_1 > 0 && barbody_2 > 0 ){
+                //         console.log('found cross downtrend')
+                //         $('#autotest').removeClass('start');
+                //         $('#autotest').text("Auto Test") ;
+                //         clearInterval(backtestTimer);
+                //     } 
+                // }
+  
+
+
+
+
+            //    let uptrendpinbar = uptrendPinbar(data,allstdbarsizes[0].fields.value,calculationinfo.degit,calculationinfo.pipdistant,dataMA100[dataMA100.length-2])
+            //    let downtrendpinbar = downtrendPinbar(data,allstdbarsizes[0].fields.value,calculationinfo.degit,calculationinfo.pipdistant,dataMA100[dataMA100.length-2])
+
+            //    if(uptrendpinbar == true && alltimeframetrend[0] == 1){
+            //    if(uptrendpinbar == true ){
+            //         console.log('Uptrend pinbar')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //    }
+            //    if(downtrendpinbar == true && alltimeframetrend[1] == 1){
+            //    if(downtrendpinbar == true ){
+            //         console.log('Downtrend pinbar')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //    }
+
+            //    if(threeBullishLadderBackTest(data,allstdbarsizes[0].fields.value,dataMA100[dataMA100.length-2]) == true && alltimeframetrend[0] == 1){
+            //         console.log('three ladder bullish')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //     }
+
+
+            //    if (threeBearishLadderBackTest(data,allstdbarsizes[0].fields.value,dataMA100[dataMA100.length-2]) == true && alltimeframetrend[1] == 1){
+            //         console.log('three ladder bearish')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //     }
+
+            //     if(threeBearishLadderBackTest(data) == true && alltimeframetrend[1] == 1 && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+            //         console.log('bearish_curve')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+                   
+            //     }
+
+            //     if(threeBullishLadderBackTest(data) == true  && alltimeframetrend[0] == 1 && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+            //             console.log('bullish_curve')
+            //             $('#autotest').removeClass('start');
+            //             $('#autotest').text("Auto Test") ;
+            //             clearInterval(backtestTimer);
+            //     }
+
+                // console.log('dataMA100: ' + dataMA100[dataMA100.length-2])
+
+               
+
+                // let bearish_curve = bearishCurve(tfs_from_m1data_arr)
+                // let bullish_curve = bullishCurve(tfs_from_m1data_arr)
+                // let ma100slope = regressiveEq[0]
+                // console.log(dataMA100[dataMA100.length-2])
+                // console.log(data[data.length-2])
+                // console.log(calculationinfo.pipdistant)
+
+            //    let checkPinBar = PinBar(data,allstdbarsizes[0].fields.value,ma100slope,dataMA100[dataMA100.length-2],calculationinfo.degit)
+            //    let checkDoublePinbar = DoublePinbar(data,allstdbarsizes[0].fields.value,ma100slope,dataMA100[dataMA100.length-2],calculationinfo.degit,calculationinfo.pipdistant)
+
+            //    if(checkDoublePinbar[0] == 1){
+            //         console.log('double pinbar')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //    }
+
+            //    console.log(checkPinBar)
+            //    if(checkPinBar[0] == 1){
+            //         console.log('bearish pinbar')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //    }else if(checkPinBar[1] == 1){
+
+            //         console.log(' bullish pinbar')
+            //         $('#autotest').removeClass('start');
+            //         $('#autotest').text("Auto Test") ;
+            //         clearInterval(backtestTimer);
+            //    }
+
+
+            //    let closedPrice_m1 = getClosedPrice(ohlc_timeframe[2][4]);
+            //    let SSMA20Arr_m1 = SSMA_Calc(closedPrice_m1,20);
+            //    let regressiveEq_m1 = genRegressionLine(SSMA20Arr_m1,lineLenght)
+ 
+
+
+                // if(bearish_curve == true){
+                //     // if(allred == true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //     if(allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //         if (threeBearishLadder(data) == true){
+                //             console.log('bearish_curve')
+                //             $('#autotest').removeClass('start');
+                //             $('#autotest').text("Auto Test") ;
+                //             clearInterval(backtestTimer);
+                //         }
+                //     }
+                // }
+                // if(bullish_curve == true){
+                //     // if(allgreen ==true && allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //     if(allbig == true && m1stdbarpercent_fromm1 > 0 && m5stdbarpercent_fromm1 > 0 && m15stdbarpercent_fromm1 > 0 && m30stdbarpercent_fromm1 > 0 ){
+                //         if(threeBullishLadder(data) == true){
+                //             console.log('bullish_curve')
+                //             $('#autotest').removeClass('start');
+                //             $('#autotest').text("Auto Test") ;
+                //             clearInterval(backtestTimer);
+                //         }
+
+                //     }
+   
+                // }
 
                 // if($('#checkAutotune').is(":checked")){
                 //     if(bigenough == true &&  allred == true){
@@ -1232,6 +1620,26 @@
                         },
 
                     }, 
+                    {
+                        name: 'MA6',
+                        data: dataMA6,
+                    }, 
+                    {
+                        name: 'MA20',
+                        data: dataMA20,
+                    }, 
+                    {
+                        name: 'MA35',
+                        data: dataMA35,
+                    }, 
+                    {
+                        name: 'MA100',
+                        data: dataMA100,
+                    }, 
+                    {
+                        name: 'BODY',
+                        data: dataBody,
+                    }
    
                 ],                
                 xAxis : [
@@ -1240,7 +1648,7 @@
                     }
                 ],
                 dataZoom : {
-                    start : 83,
+                    start : 70,
                     end : 100
                 },
             });
@@ -1446,93 +1854,93 @@
             let axisData_tf_h4 = getDateLabel(response.ohlcs_h4); 
             // let axisData_tf_d1 = getDateLabel(response.ohlcs_d1); 
 
-            let SSMA100Arr_tf_m1 = SSMA_Calc(closedPrice_tf_m1,100);
-            let SSMA100Arr_tf_m5 = SSMA_Calc(closedPrice_tf_m5,100);
-            let SSMA100Arr_tf_m15 = SSMA_Calc(closedPrice_tf_m15,100);
-            let SSMA100Arr_tf_m30 = SSMA_Calc(closedPrice_tf_m30,100);
-            let SSMA100Arr_tf_h1 = SSMA_Calc(closedPrice_tf_h1,100);
-            let SSMA100Arr_tf_h4 = SSMA_Calc(closedPrice_tf_h4,100);
-            // let SSMA100Arr_tf_d1 = SSMA_Calc(closedPrice_tf_d1,100);
+            let SSMA20Arr_tf_m1 = SSMA_Calc(closedPrice_tf_m1,20);
+            let SSMA20Arr_tf_m5 = SSMA_Calc(closedPrice_tf_m5,20);
+            let SSMA20Arr_tf_m15 = SSMA_Calc(closedPrice_tf_m15,20);
+            let SSMA20Arr_tf_m30 = SSMA_Calc(closedPrice_tf_m30,20);
+            let SSMA20Arr_tf_h1 = SSMA_Calc(closedPrice_tf_h1,20);
+            let SSMA20Arr_tf_h4 = SSMA_Calc(closedPrice_tf_h4,20);
+            // let SSMA20Arr_tf_d1 = SSMA_Calc(closedPrice_tf_d1,100);
 
-            let nullSmoth_SSMA100_tf_m1 = Array(closedPrice_tf_m1.length - SSMA100Arr_tf_m1.length).fill(null);
-            let nullSmoth_SSMA100_tf_m5 = Array(closedPrice_tf_m5.length - SSMA100Arr_tf_m5.length).fill(null);
-            let nullSmoth_SSMA100_tf_m15 = Array(closedPrice_tf_m15.length - SSMA100Arr_tf_m15.length).fill(null);
-            let nullSmoth_SSMA100_tf_m30 = Array(closedPrice_tf_m30.length - SSMA100Arr_tf_m30.length).fill(null);
-            let nullSmoth_SSMA100_tf_h1 = Array(closedPrice_tf_h1.length - SSMA100Arr_tf_h1.length).fill(null);
-            let nullSmoth_SSMA100_tf_h4 = Array(closedPrice_tf_h4.length - SSMA100Arr_tf_h4.length).fill(null);
-            // let nullSmoth_SSMA100_tf_d1 = Array(closedPrice_tf_d1.length - SSMA100Arr_tf_d1.length).fill(null);
+            let nullSmoth_SSMA100_tf_m1 = Array(closedPrice_tf_m1.length - SSMA20Arr_tf_m1.length).fill(null);
+            let nullSmoth_SSMA100_tf_m5 = Array(closedPrice_tf_m5.length - SSMA20Arr_tf_m5.length).fill(null);
+            let nullSmoth_SSMA100_tf_m15 = Array(closedPrice_tf_m15.length - SSMA20Arr_tf_m15.length).fill(null);
+            let nullSmoth_SSMA100_tf_m30 = Array(closedPrice_tf_m30.length - SSMA20Arr_tf_m30.length).fill(null);
+            let nullSmoth_SSMA100_tf_h1 = Array(closedPrice_tf_h1.length - SSMA20Arr_tf_h1.length).fill(null);
+            let nullSmoth_SSMA100_tf_h4 = Array(closedPrice_tf_h4.length - SSMA20Arr_tf_h4.length).fill(null);
+            // let nullSmoth_SSMA100_tf_d1 = Array(closedPrice_tf_d1.length - SSMA20Arr_tf_d1.length).fill(null);
 
-            let dataMA100_tf_m1  =  nullSmoth_SSMA100_tf_m1.concat(SSMA100Arr_tf_m1); 
-            let dataMA100_tf_m5  =  nullSmoth_SSMA100_tf_m5.concat(SSMA100Arr_tf_m5); 
-            let dataMA100_tf_m15  =  nullSmoth_SSMA100_tf_m15.concat(SSMA100Arr_tf_m15); 
-            let dataMA100_tf_m30  =  nullSmoth_SSMA100_tf_m30.concat(SSMA100Arr_tf_m30); 
-            let dataMA100_tf_h1  =  nullSmoth_SSMA100_tf_h1.concat(SSMA100Arr_tf_h1); 
-            let dataMA100_tf_h4  =  nullSmoth_SSMA100_tf_h4.concat(SSMA100Arr_tf_h4); 
-            // let dataMA100_tf_d1  =  nullSmoth_SSMA100_tf_d1.concat(SSMA100Arr_tf_d1); 
+            let dataMA20_tf_m1  =  nullSmoth_SSMA100_tf_m1.concat(SSMA20Arr_tf_m1); 
+            let dataMA20_tf_m5  =  nullSmoth_SSMA100_tf_m5.concat(SSMA20Arr_tf_m5); 
+            let dataMA20_tf_m15  =  nullSmoth_SSMA100_tf_m15.concat(SSMA20Arr_tf_m15); 
+            let dataMA20_tf_m30  =  nullSmoth_SSMA100_tf_m30.concat(SSMA20Arr_tf_m30); 
+            let dataMA20_tf_h1  =  nullSmoth_SSMA100_tf_h1.concat(SSMA20Arr_tf_h1); 
+            let dataMA20_tf_h4  =  nullSmoth_SSMA100_tf_h4.concat(SSMA20Arr_tf_h4); 
+            // let dataMA20_tf_d1  =  nullSmoth_SSMA100_tf_d1.concat(SSMA20Arr_tf_d1); 
 
             canndle_stick_tf_m1.setOption({
-                series : [{name: 'M1',data: data_tf_m1,},{name: 'SMA100', data: dataMA100_tf_m1,}],                
+                series : [{name: 'M1',data: data_tf_m1,},{name: 'SMA20', data: dataMA20_tf_m1,}],                
                 xAxis : [{data : axisData_tf_m1}],
                 dataZoom : {
-                    start : 90,
+                    start : 70,
                     end : 100
                 },
             });
             canndle_stick_tf_m1.resize();
 
             canndle_stick_tf_m5.setOption({
-                series : [{name: 'M5',data: data_tf_m5,},{name: 'SMA100', data: dataMA100_tf_m5,}],                
+                series : [{name: 'M5',data: data_tf_m5,},{name: 'SMA20', data: dataMA20_tf_m5,}],                
                 xAxis : [{data : axisData_tf_m5}],
                 dataZoom : {
-                    start : 90,
+                    start : 70,
                     end : 100
                 },
             });
             canndle_stick_tf_m5.resize();
 
             canndle_stick_tf_m15.setOption({
-                series : [{name: 'M15',data: data_tf_m15,},{name: 'SMA100', data: dataMA100_tf_m15,}],                
+                series : [{name: 'M15',data: data_tf_m15,},{name: 'SMA20', data: dataMA20_tf_m15,}],                
                 xAxis : [{data : axisData_tf_m15}],
                 dataZoom : {
-                    start : 90,
+                    start : 70,
                     end : 100
                 },
             });
             canndle_stick_tf_m15.resize();
             
             canndle_stick_tf_m30.setOption({
-                series : [{name: 'M30',data: data_tf_m30,},{name: 'SMA100', data: dataMA100_tf_m30,}],                
+                series : [{name: 'M30',data: data_tf_m30,},{name: 'SMA20', data: dataMA20_tf_m30,}],                
                 xAxis : [{data : axisData_tf_m30}],
                 dataZoom : {
-                    start : 90.8,
+                    start : 70,
                     end : 100
                 },
             });
             canndle_stick_tf_m30.resize();
             
             canndle_stick_tf_h1.setOption({
-                series : [{name: 'H1',data: data_tf_h1,},{name: 'SMA100', data: dataMA100_tf_h1,}],                
+                series : [{name: 'H1',data: data_tf_h1,},{name: 'SMA20', data: dataMA20_tf_h1,}],                
                 xAxis : [{data : axisData_tf_h1}],
                 dataZoom : {
-                    start : 90.8,
+                    start : 70,
                     end : 100
                 },
             });
             canndle_stick_tf_h1.resize();
 
             
-            canndle_stick_tf_h4.setOption({
-                series : [{name: 'H4',data: data_tf_h4,},{name: 'SMA100', data: dataMA100_tf_h4,}],                
-                xAxis : [{data : axisData_tf_h4}],
-                dataZoom : {
-                    start : 90.8,
-                    end : 100
-                },
-            });
-            canndle_stick_tf_h4.resize();
+            // canndle_stick_tf_h4.setOption({
+            //     series : [{name: 'H4',data: data_tf_h4,},{name: 'SMA20', data: dataMA20_tf_h4,}],                
+            //     xAxis : [{data : axisData_tf_h4}],
+            //     dataZoom : {
+            //         start : 90.8,
+            //         end : 100
+            //     },
+            // });
+            // canndle_stick_tf_h4.resize();
             
             // canndle_stick_tf_d1.setOption({
-            //     series : [{name: 'D1',data: data_tf_d1,},{name: 'SMA100', data: dataMA100_tf_d1,}],                
+            //     series : [{name: 'D1',data: data_tf_d1,},{name: 'SMA100', data: dataMA20_tf_d1,}],                
             //     xAxis : [{data : axisData_tf_d1}],
             //     dataZoom : {
             //         start : 90.8,
@@ -1566,8 +1974,8 @@
                 // }
             },
             legend: {
-                data:['OHLC'],
-                selected:{'SSMA20':false},
+                data:['OHLC','MA6','MA20','MA35','MA100','BODY'],
+                // selected:{'SSMA20':false},
                 textStyle: {
                     color: '#fff'
                 }
@@ -1660,7 +2068,56 @@
                         borderColor0: null
                     },
                 }, 
-         
+                {
+                    name: 'MA6',
+                    type: 'line',
+                    data: dataMA6,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+                {
+                    name: 'MA20',
+                    type: 'line',
+                    data: dataMA20,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+                {
+                    name: 'MA35',
+                    type: 'line',
+                    data: dataMA35,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+                {
+                    name: 'MA100',
+                    type: 'line',
+                    data: dataMA100,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }, 
+                {
+                    name: 'BODY',
+                    type: 'line',
+                    data: dataBody,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }
             ]
         };
 
@@ -1691,13 +2148,24 @@
                     }
                 }
             },            
-            dataZoom : {
-                y: 250,
-                show : false,
-                realtime: true,
-                start : Math.round((data.length-300)/(data.length)*100),
-                end : 100
-            },
+            dataZoom :  {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
             grid: {
                 left: 80,
                 top: 40,
@@ -2028,8 +2496,8 @@
 
             },
             legend: {
-                data:['M1','SMA100'],
-                selected:{'SMA100':false},
+                data:['M1','SMA20'],
+                selected:{'SMA20':true},
                 textStyle: {
                     color: '#fff'
                 }
@@ -2123,7 +2591,7 @@
                     },
                 }, 
                 {
-                    name: 'SMA100',
+                    name: 'SMA20',
                     type: 'line',
                     data: dataMA100,
                     smooth: true,
@@ -2153,8 +2621,8 @@
 
             },
             legend: {
-                data:['M5','SMA100'],
-                selected:{'SMA100':false},
+                data:['M5','SMA20'],
+                selected:{'SMA20':true},
                 textStyle: {
                     color: '#fff'
                 }
@@ -2248,7 +2716,7 @@
                     },
                 }, 
                 {
-                    name: 'SMA100',
+                    name: 'SMA20',
                     type: 'line',
                     data: dataMA100,
                     smooth: true,
@@ -2278,8 +2746,8 @@
 
             },
             legend: {
-                data:['M15','SMA100'],
-                selected:{'SMA100':false},
+                data:['M15','SMA20'],
+                selected:{'SMA20':true},
                 textStyle: {
                     color: '#fff'
                 }
@@ -2373,7 +2841,7 @@
                     },
                 }, 
                 {
-                    name: 'SMA100',
+                    name: 'SMA20',
                     type: 'line',
                     data: dataMA100,
                     smooth: true,
@@ -2402,8 +2870,8 @@
 
             },
             legend: {
-                data:['M30','SMA100'],
-                selected:{'SMA100':false},
+                data:['M30','SMA20'],
+                selected:{'SMA20':true},
                 textStyle: {
                     color: '#fff'
                 }
@@ -2497,7 +2965,7 @@
                     },
                 }, 
                 {
-                    name: 'SMA100',
+                    name: 'SMA20',
                     type: 'line',
                     data: dataMA100,
                     smooth: true,
@@ -2526,8 +2994,8 @@
 
             },
             legend: {
-                data:['H1','SMA100'],
-                selected:{'SMA100':false},
+                data:['H1','SMA20'],
+                selected:{'SMA20':true},
                 textStyle: {
                     color: '#fff'
                 }
@@ -2621,7 +3089,7 @@
                     },
                 }, 
                 {
-                    name: 'SMA100',
+                    name: 'SMA20',
                     type: 'line',
                     data: dataMA100,
                     smooth: true,
@@ -2633,129 +3101,129 @@
             ]
         };
 
-        option_canndle_stick_tf_h4 = {
-            backgroundColor: '#21202D',
-            title : {
-                // text: 'OHLC',
-                textStyle: {
-                    color: '#fff'
-                }
-            },
-            tooltip : {
-                trigger: 'axis',
-                axisPointer: {
-                    type: 'cross'
-                },
-                showDelay: 0,             // delay ms
+        // option_canndle_stick_tf_h4 = {
+        //     backgroundColor: '#21202D',
+        //     title : {
+        //         // text: 'OHLC',
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     tooltip : {
+        //         trigger: 'axis',
+        //         axisPointer: {
+        //             type: 'cross'
+        //         },
+        //         showDelay: 0,             // delay ms
 
-            },
-            legend: {
-                data:['H4','SMA100'],
-                selected:{'SMA100':false},
-                textStyle: {
-                    color: '#fff'
-                }
-            },
-            toolbox: {
-                show : true,
-                feature : {
-                    // mark : {show: true},
-                    // dataZoom : {show: true},
-                    // magicType : {show: true, type: ['line', 'bar']},
-                    // restore : {show: true},
-                    saveAsImage : {
-                        show: true,
-                        title: 'Save As picture'
-                    }
-                }
-            },            
-            dataZoom : 
-                {
-                    show : true,
-                    realtime: true,
-                    start : Math.round((data.length-90)/(data.length)*100),
-                    end : 100,
-                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-                    handleSize: '80%',
-                    textStyle: {
-                        color: '#fff'
-                    },
-                    handleStyle: {
-                        color: '#fff',
-                        shadowBlur: 3,
-                        shadowColor: 'rgba(0, 0, 0, 0.6)',
-                        shadowOffsetX: 2,
-                        shadowOffsetY: 2
-                    }
-                },
-            grid: {
-                left: 80,
-                top: 40,
-                right: 20,
-                bottom: 85
-            },
-            xAxis : [
-                {
-                    type : 'category',
-                    boundaryGap : true,
-                    axisTick: {onGap:false},
-                    splitLine: {show:false},
-                    data : axisData,
-                    axisLine:{
-                        lineStyle:{
-                            color:'#aca9a9'
-                        }
-                    },
-                }
-            ],
-            yAxis : [
-                {
-                    type : 'value',
-                    scale:true,
-                    boundaryGap: [0.05, 0.05],
-                    splitArea : {show : true},
-                    axisLine:{
-                        lineStyle:{
-                            color:'#aca9a9'
-                        }
-                    },
-                }
-            ],
-            series : [
-                {
-                    name:'OHLC',
-                    type:'candlestick',
-                    data: data,
-                    markPoint: {
-                        label: {
-                            normal: {
-                                formatter: function (param) {
-                                    return param != null ? param.data['name'] : '';
-                                }
-                            }
-                        },
-                        data: MarkData,
-                    },
+        //     },
+        //     legend: {
+        //         data:['H4','SMA20'],
+        //         selected:{'SMA20':true},
+        //         textStyle: {
+        //             color: '#fff'
+        //         }
+        //     },
+        //     toolbox: {
+        //         show : true,
+        //         feature : {
+        //             // mark : {show: true},
+        //             // dataZoom : {show: true},
+        //             // magicType : {show: true, type: ['line', 'bar']},
+        //             // restore : {show: true},
+        //             saveAsImage : {
+        //                 show: true,
+        //                 title: 'Save As picture'
+        //             }
+        //         }
+        //     },            
+        //     dataZoom : 
+        //         {
+        //             show : true,
+        //             realtime: true,
+        //             start : Math.round((data.length-90)/(data.length)*100),
+        //             end : 100,
+        //             handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+        //             handleSize: '80%',
+        //             textStyle: {
+        //                 color: '#fff'
+        //             },
+        //             handleStyle: {
+        //                 color: '#fff',
+        //                 shadowBlur: 3,
+        //                 shadowColor: 'rgba(0, 0, 0, 0.6)',
+        //                 shadowOffsetX: 2,
+        //                 shadowOffsetY: 2
+        //             }
+        //         },
+        //     grid: {
+        //         left: 80,
+        //         top: 40,
+        //         right: 20,
+        //         bottom: 85
+        //     },
+        //     xAxis : [
+        //         {
+        //             type : 'category',
+        //             boundaryGap : true,
+        //             axisTick: {onGap:false},
+        //             splitLine: {show:false},
+        //             data : axisData,
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     yAxis : [
+        //         {
+        //             type : 'value',
+        //             scale:true,
+        //             boundaryGap: [0.05, 0.05],
+        //             splitArea : {show : true},
+        //             axisLine:{
+        //                 lineStyle:{
+        //                     color:'#aca9a9'
+        //                 }
+        //             },
+        //         }
+        //     ],
+        //     series : [
+        //         {
+        //             name:'OHLC',
+        //             type:'candlestick',
+        //             data: data,
+        //             markPoint: {
+        //                 label: {
+        //                     normal: {
+        //                         formatter: function (param) {
+        //                             return param != null ? param.data['name'] : '';
+        //                         }
+        //                     }
+        //                 },
+        //                 data: MarkData,
+        //             },
    
-                    itemStyle: {
-                        color: upColor,
-                        color0: downColor,
-                        borderColor: null,
-                        borderColor0: null
-                    },
-                }, 
-                {
-                    name: 'SMA100',
-                    type: 'line',
-                    data: dataMA100,
-                    smooth: true,
-                    showSymbol: false,
-                    lineStyle: {
-                        width: 1
-                    }
-                }, 
-            ]
-        };
+        //             itemStyle: {
+        //                 color: upColor,
+        //                 color0: downColor,
+        //                 borderColor: null,
+        //                 borderColor0: null
+        //             },
+        //         }, 
+        //         {
+        //             name: 'SMA20',
+        //             type: 'line',
+        //             data: dataMA100,
+        //             smooth: true,
+        //             showSymbol: false,
+        //             lineStyle: {
+        //                 width: 1
+        //             }
+        //         }, 
+        //     ]
+        // };
 
         // option_canndle_stick_tf_d1 = {
         //     backgroundColor: '#21202D',
@@ -2775,7 +3243,7 @@
         //     },
         //     legend: {
         //         data:['D1','SMA100'],
-        //         selected:{'SMA100':false},
+        //         selected:{'SMA100':true},
         //         textStyle: {
         //             color: '#fff'
         //         }
@@ -2895,7 +3363,7 @@
         canndle_stick_tf_m15.setOption(option_canndle_stick_tf_m15);
         canndle_stick_tf_m30.setOption(option_canndle_stick_tf_m30);
         canndle_stick_tf_h1.setOption(option_canndle_stick_tf_h1);
-        canndle_stick_tf_h4.setOption(option_canndle_stick_tf_h4);
+        // canndle_stick_tf_h4.setOption(option_canndle_stick_tf_h4);
         // canndle_stick_tf_d1.setOption(option_canndle_stick_tf_d1);
         
 
@@ -2947,7 +3415,7 @@
                 $("#ordertype option[selected]").removeAttr("selected");   
                 $("#ordertype option[value='0']").attr("selected","selected");
                 
-                if(SSMA100Arr[SSMA100Arr.length-1] < params.data[4]){
+                if(SMA100Arr[SMA100Arr.length-1] < params.data[4]){
                     $("#ordertype option[value='0']").attr("selected","selected");
                 }else{
                     $("#ordertype option[value='1']").attr("selected","selected");

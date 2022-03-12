@@ -33,6 +33,7 @@ class Symbol(models.Model):
     broker=models.ForeignKey(Broker, on_delete=models.CASCADE)
     name=models.CharField(max_length=20)
     status=models.CharField(max_length=1)
+    pipdistant=models.IntegerField(default = 5,null=True)
 
     class Meta:
         db_table = "symbols"

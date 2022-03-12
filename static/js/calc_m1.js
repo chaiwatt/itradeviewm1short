@@ -158,22 +158,26 @@
 
         let only_data_ohlc_timeframe_h1= []
         let basehour_h1 = parseInt(baseHour)
+        let h1_key =0
         data_ohlc_timeframe_h1.forEach((ohlc,key) => {
             let test_d = new Date(ohlc.time);
             if(parseInt(baseYear) == parseInt(test_d.getUTCFullYear()) && parseInt(baseMonth) == parseInt(test_d.getUTCMonth()+1) && parseInt(baseDay) == parseInt(test_d.getUTCDate()) && 
             parseInt(basehour_h1) == parseInt(test_d.getUTCHours()) 
             ){
+                h1_key = key
                 only_data_ohlc_timeframe_h1.push({
                      h1 : ohlc
                 })
             }
         });
 
+        let data_ohlc_timeframe_h1_100data = data_ohlc_timeframe_h1.filter((h1,idx) => idx > (h1_key-100) && idx <= (h1_key))
         h1 = only_data_ohlc_timeframe_h1[only_data_ohlc_timeframe_h1.length-1]
-        // //console.log(h1)
+        // ////console.log(h1)
 
         let only_data_ohlc_timeframe_m30= []
         let baseminute_m30 = parseInt(baseMinute/30) * 30
+        let m30_key = 0
         data_ohlc_timeframe_m30.forEach((ohlc,key) => {
             let test_d = new Date(ohlc.time);
             if(parseInt(baseYear) == parseInt(test_d.getUTCFullYear()) 
@@ -182,19 +186,29 @@
             && parseInt(baseHour) == parseInt(test_d.getUTCHours())
             && parseInt(baseminute_m30) == parseInt(test_d.getUTCMinutes())
             
-            ){
+            )
+            {
+                // //console.log(key)
+                m30_key = key
                 only_data_ohlc_timeframe_m30.push({
                      m30 : ohlc
                 })
             }
         });
 
+        // //console.log('This is M30 data')
+        // //console.log(data_ohlc_timeframe_m30)
+        // //console.log(only_data_ohlc_timeframe_m30)
+
+        let data_ohlc_timeframe_m30_100data = data_ohlc_timeframe_m30.filter((m30,idx) => idx > (m30_key-100) && idx <= (m30_key))
+        // //console.log(data_ohlc_timeframe_m30_100data)
         m30 = only_data_ohlc_timeframe_m30[only_data_ohlc_timeframe_m30.length-1]
 
         ////
 
         let only_data_ohlc_timeframe_m15= []
         let baseminute_m15 = parseInt(baseMinute/15) * 15
+        let m15_key =0
         data_ohlc_timeframe_m15.forEach((ohlc,key) => {
             let test_d = new Date(ohlc.time);
             if(parseInt(baseYear) == parseInt(test_d.getUTCFullYear()) 
@@ -203,15 +217,24 @@
             && parseInt(baseHour) == parseInt(test_d.getUTCHours())
             && parseInt(baseminute_m15) == parseInt(test_d.getUTCMinutes())
             ){
+                // //console.log(key)
+                m15_key =key
                 only_data_ohlc_timeframe_m15.push({
                      m15 : ohlc
                 })
             }
         });
+
+        // //console.log('This is M15 data')
+        // //console.log(data_ohlc_timeframe_m15)
+        // //console.log(only_data_ohlc_timeframe_m15)
+        let data_ohlc_timeframe_m15_100data = data_ohlc_timeframe_m15.filter((m15,idx) => idx > (m15_key-100) && idx <= (m15_key))
+        // //console.log(data_ohlc_timeframe_m15_100data)
         m15 = only_data_ohlc_timeframe_m15[only_data_ohlc_timeframe_m15.length-1]
 
         let only_data_ohlc_timeframe_m5= []
         let baseminute_m5 = parseInt(baseMinute/5) * 5
+        let m5_key =0
         data_ohlc_timeframe_m5.forEach((ohlc,key) => {
             let test_d = new Date(ohlc.time);
 
@@ -221,17 +244,27 @@
             && parseInt(baseHour) == parseInt(test_d.getUTCHours())
             && parseInt(baseminute_m5) == parseInt(test_d.getUTCMinutes())
             ){
+                // //console.log(key)
+                m5_key = key
                 only_data_ohlc_timeframe_m5.push({
                      m5 : ohlc
                 })
             }
         });
 
+        // //console.log('This is M5 data')
+        // //console.log(data_ohlc_timeframe_m5)
+        // //console.log(only_data_ohlc_timeframe_m5)
+
+        let data_ohlc_timeframe_m5_100data = data_ohlc_timeframe_m5.filter((m5,idx) => idx > (m5_key-100) && idx <= (m5_key))
+        // //console.log(data_ohlc_timeframe_m5_100data)
+
         m5 = only_data_ohlc_timeframe_m5[only_data_ohlc_timeframe_m5.length-1]
 
 
         let only_data_ohlc_timeframe_m1= []
         let baseminute_m1 = parseInt(baseMinute/1) * 1
+        let m1_key = 0
         data_ohlc_timeframe_m1.forEach((ohlc,key) => {
             let test_d = new Date(ohlc.time);
 
@@ -241,12 +274,19 @@
             && parseInt(baseHour) == parseInt(test_d.getUTCHours())
             && parseInt(baseminute_m1) == parseInt(test_d.getUTCMinutes())
             ){
+                m1_key =key
                 only_data_ohlc_timeframe_m1.push({
                      m1 : ohlc
                 })
             }
         });
 
+        // //console.log('This is M1 data')
+        // //console.log(data_ohlc_timeframe_m1)
+        // //console.log(only_data_ohlc_timeframe_m1)
+
+        let data_ohlc_timeframe_m1_100data = data_ohlc_timeframe_m1.filter((m1,idx) => idx > (m1_key-100) && idx <= (m1_key))
+        // //console.log(data_ohlc_timeframe_m1_100data)
       
         m1 = only_data_ohlc_timeframe_m1[only_data_ohlc_timeframe_m1.length-1]
 
@@ -266,8 +306,8 @@
             high: max_high_m5from_m1,
         }
 
-        // console.log(m5from_m1)
-        // console.log(m5from_m1_data)
+        // //console.log(m5from_m1)
+        // //console.log(m5from_m1_data)
 
         numNeed = 15
         let m15from_m1 = data_ohlc_timeframe_m1.filter(x => (x.index >= (start - numNeed +1) && x.index <= start))
@@ -283,8 +323,8 @@
             high: max_high_m15from_m1,
         }
 
-        // console.log(m15from_m1)
-        // console.log(m15from_m1_data)
+        // //console.log(m15from_m1)
+        // //console.log(m15from_m1_data)
 
         numNeed = 30
         let m30from_m1 = data_ohlc_timeframe_m1.filter(x => (x.index >= (start - numNeed +1) && x.index <= start))
@@ -302,10 +342,10 @@
             high: max_high_m30from_m1,
         }
 
-        //console.log(m30from_m1_data)
+        ////console.log(m30from_m1_data)
 
-        // console.log(m30from_m1_data)
-        // console.log(m30from_m1)
+        // //console.log(m30from_m1_data)
+        // //console.log(m30from_m1)
 
         numNeed = 60
         let h1from_m1 = data_ohlc_timeframe_m1.filter(x => (x.index >= (start - numNeed +1) && x.index <= start))
@@ -314,7 +354,7 @@
         let h1from_m1_open = h1from_m1[0].open
         let h1from_m1_close = h1from_m1[h1from_m1.length-1].close
 
-        // console.log(h1from_m1)
+        // //console.log(h1from_m1)
 
         let h1from_m1_data = {
             open: h1from_m1_open,
@@ -323,8 +363,8 @@
             high: max_high_h1from_m1,
         }
 
-        // console.log(h1from_m1)
-        // console.log(h1from_m1_data)
+        // //console.log(h1from_m1)
+        // //console.log(h1from_m1_data)
 
         let m1from_m1 = data_ohlc_timeframe_m1.filter(x => (x.index >= (start - 1 +1) && x.index <= start))[0]
 
@@ -335,15 +375,15 @@
             high: m1from_m1.high,
         }
 
-
-       
+        let data_ohlc_timeframe_100data =[]
+        data_ohlc_timeframe_100data.push(data_ohlc_timeframe_h1_100data,data_ohlc_timeframe_m30_100data,data_ohlc_timeframe_m15_100data,data_ohlc_timeframe_m5_100data,data_ohlc_timeframe_m1_100data)
 
         let currentOhlctimeframe_from_m1 =[]
         currentOhlctimeframe_from_m1.push(h1from_m1_data,m30from_m1_data,m15from_m1_data,m5from_m1_data,m1from_m1_data)
 
         currentOhlctimeframe.push(d1,h4,h1,m30,m15,m5,m1)
 
-        return [currentOhlctimeframe,currentOhlctimeframe_from_m1]
+        return [currentOhlctimeframe,currentOhlctimeframe_from_m1,data_ohlc_timeframe_100data]
     }
 
     function getOhlcTimeframesDataFromM1(data){ 
@@ -358,7 +398,7 @@
             })
         });
 
-        // console.log(_m5from_m1)
+        // //console.log(_m5from_m1)
 
         let max_high_m5from_m1 = Math.max.apply(null, m5from_m1.map(item => item.high));
         let min_low_m5from_m1 = Math.min.apply(null, m5from_m1.map(item => item.low));
@@ -396,8 +436,8 @@
             high: max_high_m15from_m1,
         }
 
-        // console.log(m15from_m1)
-        // console.log(m15from_m1_data)
+        // //console.log(m15from_m1)
+        // //console.log(m15from_m1_data)
 
         //=======
 
@@ -424,8 +464,8 @@
             high: max_high_m30from_m1,
         }
 
-        // console.log(m30from_m1)
-        // console.log(m30from_m1_data)
+        // //console.log(m30from_m1)
+        // //console.log(m30from_m1_data)
 
         
         //=======
@@ -453,8 +493,8 @@
             high: max_high_h1from_m1,
         }
 
-        // console.log(h1from_m1)
-        // console.log(h1from_m1_data)
+        // //console.log(h1from_m1)
+        // //console.log(h1from_m1_data)
 
 
         let m1from_m1_data = {
@@ -680,6 +720,24 @@
         }
     }
 
+    function DataBody(arr){
+        var bodyArr = [];
+        for (var i = 0 ; i < arr.length ; i++){
+            if(arr[i][0] == arr[i][1]){
+                bodyArr.push(arr[i][0]);
+            }else{
+                if(arr[i][1] > arr[i][0]){
+                    bodyArr.push((arr[i][1]-arr[i][0])/2 + arr[i][0]);
+                }else{
+                    bodyArr.push((arr[i][0]-arr[i][1])/2 + arr[i][1]);
+                }
+                
+            }
+            
+        }
+        return bodyArr
+    }
+
     function getSignChange(arr,macdarr){
         let positive = arr[0] >= 0; 
         return arr.map((item, index) => {
@@ -728,6 +786,25 @@
             }
         }
         return [isUp,crossAbove,crossIndex+1,macd[macd.length-1]]
+    }
+
+
+    function getAllTimeframeTrend(arr,linelenght){
+        var slopes = [];
+        for (let i = 0; i <= 3; i++) {
+            let closedPrice = getClosedPrice(arr[i]);
+            let SSMA20Arr = SSMA_Calc(closedPrice,20);
+            let regressiveEq = genRegressionLine(SSMA20Arr,linelenght)
+            slopes.push(regressiveEq[0]);
+        }
+        if(slopes[3] > 0 && slopes[2] > 0 && slopes[1] > 0){
+            return [1,0]
+        }else if(slopes[3] < 0 && slopes[2] < 0 && slopes[1] < 0){
+            return [0,1]
+        }else{
+            return [0,0]
+        }
+        
     }
 
     function genRegressionLine(_data,nRange){
@@ -953,7 +1030,7 @@
 
         if(Math.abs(presentbarsize) > barSize && Math.abs(previous1) > barSize && Math.abs(previous2) > barSize && presentbarsize > 0 && previous1 > 0 && previous2 > 0){
             if(_data[_data.length-1][3] > _data[_data.length-2][3] && _data[_data.length-2][3] > _data[_data.length-3][3] &&  _data[_data.length-1][2] > _data[_data.length-2][2] && _data[_data.length-2][2] > _data[_data.length-3][2]){
-                //console.log('found two bar up')
+                ////console.log('found two bar up')
                 return true
             }else{
                 return false 
@@ -1039,7 +1116,7 @@
         if (degit % 2 == 0){
             multipleNum = 1
         }
-        // //console.log('degit')
+        // ////console.log('degit')
         return ((toPrice - fromPrice) * Math.pow(10, 1*degit))/multipleNum 
     }
 
@@ -1104,6 +1181,74 @@
         }
     }
 
+    function threeBearishLadderBackTest(_data,stdbarsize,sma100){
+        let open0 = _data[_data.length-2][0]
+        let close0 = _data[_data.length-2][1]
+        let high0 = _data[_data.length-2][3]
+        let low0 = _data[_data.length-2][2]
+        let diff0 = open0 - close0
+
+        let open1 = _data[_data.length-3][0]
+        let close1 = _data[_data.length-3][1]
+        let high1 = _data[_data.length-3][3]
+        let low1 = _data[_data.length-3][2]
+        let diff1 = open1 - close1
+
+        let open2 = _data[_data.length-4][0]
+        let close2 = _data[_data.length-4][1]
+        let high2 = _data[_data.length-4][3]
+        let low2 = _data[_data.length-4][2]
+        let diff2 = open2 - close2
+
+        // if(high0 > high1 || high0 > high2 || high1 > high2 || low0 > low1 || low0 > low2 || low1 > low2 || Math.abs(diff0) < stdbarsize || Math.abs(diff0) < (0.5*stdbarsize) || diff0 < 0 || diff1 < 0 || diff2 < 0){
+        if(high0 > high1 || high0 > high2 || high1 > high2 || low0 > low1 || low0 > low2 || low1 > low2 || Math.abs(diff0) < stdbarsize || Math.abs(diff0) < (0.5*stdbarsize) || high2 > sma100){
+            return false
+        }else{
+            //console.log(_data[_data.length-2])
+            return true
+            // if(Math.abs(diff0) > Math.abs(diff1) && Math.abs(diff1) > Math.abs(diff2)){
+            //     return true
+            // }else{
+            //     return false
+            // }            
+        }
+    }
+
+    function threeBullishLadderBackTest(_data,stdbarsize,sma100){
+        let open0 = _data[_data.length-2][0]
+        let close0 = _data[_data.length-2][1]
+        let high0 = _data[_data.length-2][3]
+        let low0 = _data[_data.length-2][2]
+        let diff0 = open0 - close0
+
+        let open1 = _data[_data.length-3][0]
+        let close1 = _data[_data.length-3][1]
+        let high1 = _data[_data.length-3][3]
+        let low1 = _data[_data.length-3][2]
+        let diff1 = open1 - close1
+
+        let open2 = _data[_data.length-4][0]
+        let close2 = _data[_data.length-4][1]
+        let high2 = _data[_data.length-4][3]
+        let low2 = _data[_data.length-4][2]
+        let diff2 = open2 - close2
+
+        // console.log()
+
+        // if(high0 < high1 || high0 < high2 || high1 < high2 || low0 < low1 || low0 < low1 || low1 < low2 || Math.abs(diff0) < stdbarsize || Math.abs(diff0) < (0.5*stdbarsize) || diff0 > 0 || diff1 > 0 || diff2 > 0){
+        if(high0 < high1 || high0 < high2 || high1 < high2 || low0 < low1 || low0 < low2 || low1 < low2 || Math.abs(diff0) < stdbarsize || Math.abs(diff0) < (0.5*stdbarsize) || low2 < sma100){
+            return false
+        }else{
+            // if(Math.abs(diff0) > Math.abs(diff1) && Math.abs(diff1) > Math.abs(diff2)){
+            //     return true
+            // }else{
+            //     return false
+            // } 
+            // //console.log(_data[_data.length-2])
+            return true           
+        }
+    }
+
     function threeBullishLadder(_data){
         let open0 = _data[_data.length-1][0]
         let close0 = _data[_data.length-1][1]
@@ -1129,7 +1274,7 @@
     }
 
     function bearishCurve(_data){
-        // console.log(_data)
+        // //console.log(_data)
         let m1_open = _data[0][0]
         let m1_close = _data[0][1]
         let m5_open = _data[1][0]
@@ -1281,6 +1426,269 @@
 
     }
 
+    function uptrendPinbar(_data,stdbarsize,digit,pipdistant,sma100){
+        let openSubtractClose_confirm = _data[_data.length-2][0] - _data[_data.length-2][1]
+        let openSubtractClose_key = _data[_data.length-3][0] - _data[_data.length-3][1]
+
+        let highLowSize_key = _data[_data.length-3][3] - _data[_data.length-3][2]
+        if(highLowSize_key > stdbarsize*2 ){
+            if(openSubtractClose_key<0){
+                let wick = _data[_data.length-3][3] - _data[_data.length-3][1]
+                diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key))  
+
+                let tail = _data[_data.length-3][0] - _data[_data.length-3][2]
+                diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))          
+            }else{
+                
+                let wick = _data[_data.length-3][3] - _data[_data.length-3][0]
+                diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key)) 
+
+                let tail = _data[_data.length-3][1] - _data[_data.length-3][2]
+                diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))
+            }
+          
+            if(diffbodytail_key >= 250 && diffbodytail_key > 3*diffbodywick_key){
+                // //console.log('diffbodywick:' + diffbodywick_key)
+                // //console.log('diffbodytail:'+diffbodytail_key)
+                
+                if (openSubtractClose_confirm <= 0){
+                    if(_data[_data.length-3][2] > sma100){
+                        return true
+                    }else{
+                        return false
+                    }
+                    
+                }else{
+                    return false
+                }
+            }else{
+                return false
+            }
+        }else{
+            return false
+        }
+    }
+
+    function downtrendPinbar(_data,stdbarsize,digit,pipdistant,sma100){
+        let openSubtractClose_confirm = _data[_data.length-2][0] - _data[_data.length-2][1]
+        let openSubtractClose_key = _data[_data.length-3][0] - _data[_data.length-3][1]
+        let highLowSize_key = _data[_data.length-3][3] - _data[_data.length-3][2]
+        if(highLowSize_key > stdbarsize*2 ){
+            if(openSubtractClose_key < 0){ //green
+                let wick = _data[_data.length-3][3] - _data[_data.length-3][1]
+                diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key))  
+
+                let tail = _data[_data.length-3][0] - _data[_data.length-3][2]
+                diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))   
+            }else{
+                let wick = _data[_data.length-3][3] - _data[_data.length-3][0]
+                diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key)) 
+
+                let tail = _data[_data.length-3][1] - _data[_data.length-3][2]
+                diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))
+            }
+
+            if(diffbodywick_key >= 250 && diffbodywick_key > 3*diffbodytail_key){
+                // //console.log('diffbodywick:' + diffbodywick_key)
+                // //console.log('diffbodytail:'+diffbodytail_key)
+                
+                if (openSubtractClose_confirm >= 0){
+                    if(_data[_data.length-3][3] < sma100){
+                        return true
+                    }else{
+                        return false
+                    }
+                }else{
+                    return false
+                }
+            }else{
+                return false
+            }
+
+        }else{
+            return false
+        }
+    }
+
+    function DoublePinbar(_data,stdbarsize,slope,sma100,digit,pipdistant){
+        if(slope<0){
+            let diffbodytail_key =0;
+            let diffbodywick_key =0;
+            let openSubtractClose_key = _data[_data.length-2][0] - _data[_data.length-2][1]
+            let highLowSize_key = _data[_data.length-2][3] - _data[_data.length-2][2]
+
+            let openSubtractClose_brother = _data[_data.length-3][0] - _data[_data.length-3][1]
+            let highLowSize_brother = _data[_data.length-3][3] - _data[_data.length-3][2]
+
+           
+            
+            if(highLowSize_key < stdbarsize*2 || highLowSize_brother < stdbarsize*2 ){
+                return [0,0]
+            }else{
+                // //console.log('-----------')
+                // //console.log('sdt15: ' + stdbarsize*2)
+                
+                // //console.log('highLowSize: ' +highLowSize_key)
+                // //console.log('-----------')
+                if(openSubtractClose_key<0){
+                    let wick = _data[_data.length-2][3] - _data[_data.length-2][1]
+                    diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key))  
+
+                    let tail = _data[_data.length-2][0] - _data[_data.length-2][2]
+                    diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))          
+                }else{
+                    
+                    let wick = _data[_data.length-2][3] - _data[_data.length-2][0]
+                    diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key)) 
+
+                    let tail = _data[_data.length-2][1] - _data[_data.length-2][2]
+                    diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))
+                }
+
+                let pipchange= pipChange(parseFloat(_data[_data.length-2][3]),parseFloat(sma100),digit)
+
+                if(diffbodywick_key >= 250 && diffbodywick_key > 3*diffbodytail_key){
+                    
+                    if(pipchange > pipdistant){
+                        //console.log('pip change' + pipchange)
+                        return [1,0]
+                    }else{
+                        return [0,0]
+                    }
+                    
+                }else{
+                    return [0,0]
+                }
+            }
+
+        }else{
+            return [0,0]
+        }
+    }
+
+    function PinBar(_data,stdbarsize,slope,sma100,digit){
+        // //console.log(stdbarsize)
+        let diffbodytail =0;
+        let diffbodywick =0;
+        let openSubtractClose = _data[_data.length-2][0] - _data[_data.length-2][1]
+        let highLowSize = _data[_data.length-2][3] - _data[_data.length-2][2]
+        if(highLowSize < stdbarsize*2 ){
+            // //console.log('less than stdbar size')
+            return [0,0]
+        }
+        if(slope<0){
+            if(openSubtractClose<0){
+                let wick = _data[_data.length-2][3] - _data[_data.length-2][1]
+                diffbodywick = 100-((Math.abs(openSubtractClose) - Math.abs(wick))*100/Math.abs(openSubtractClose))          
+                
+                let tail = _data[_data.length-2][0] - _data[_data.length-2][2]
+                diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))  
+            }else{
+                
+                let wick = _data[_data.length-2][3] - _data[_data.length-2][0]
+                diffbodywick = 100-((Math.abs(openSubtractClose) - Math.abs(wick))*100/Math.abs(openSubtractClose))
+            
+                let tail = _data[_data.length-2][1] - _data[_data.length-2][2]
+                diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))
+            }
+
+           
+
+            if(diffbodywick >= 250 && diffbodywick > 3*diffbodytail){
+                let keybodySize = Math.abs(_data[_data.length-2][0] - _data[_data.length-2][1]) 
+                let brotherSize = Math.abs(_data[_data.length-3][0] - _data[_data.length-3][1])
+                let littleBrotherSize = Math.abs(_data[_data.length-4][0] - _data[_data.length-4][1])
+                if(littleBrotherSize > stdbarsize && littleBrotherSize > brotherSize &&  littleBrotherSize > keybodySize){
+                    // //console.log('little brother bigger than std')
+                    let openkey = _data[_data.length-2][0]
+                    let closekey = _data[_data.length-2][1]
+
+
+                    let openbrother = _data[_data.length-3][0]
+                    let closebrother = _data[_data.length-3][1]
+                   
+                    let openlittlebrother = _data[_data.length-4][0]
+                    let closelittlebrother = _data[_data.length-4][1]
+
+                    if(openkey > openbrother && openbrother > openlittlebrother && closekey > closebrother && closebrother > closelittlebrother){
+                        // //console.log('little brother bigger than std and ladder')
+                        let pipchange= pipChange(parseFloat(_data[_data.length-2][3]),parseFloat(sma100),digit)
+                        // //console.log(pipchange)
+                        if(pipchange > 4 ){
+                        
+                            return [1,0]
+                        }else{
+                            return [0,0]  
+                        }
+                    }else{
+                        return [0,0]
+                    }
+                }else{
+                    return [0,0]
+                }
+            }else{
+                return [0,0]
+            }
+       
+
+        }else{
+            if(openSubtractClose<0){
+                let tail = _data[_data.length-2][0] - _data[_data.length-2][2]
+                diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))          
+            
+            }else{
+                
+                let tail = _data[_data.length-2][1] - _data[_data.length-2][2]
+                diffbodytail = 100-((Math.abs(openSubtractClose) - Math.abs(tail))*100/Math.abs(openSubtractClose))
+              
+            }
+            if(isFinite(diffbodytail) == false){
+                return [0,0]
+            }
+            // //console.log(diffbodytail) 
+            // //console.log('-----') 
+            // //console.log(isFinite(diffbodytail)) 
+            if(diffbodytail >= 250){
+                let keybodySize = Math.abs(_data[_data.length-2][0] - _data[_data.length-2][1]) 
+                let brotherSize = Math.abs(_data[_data.length-3][0] - _data[_data.length-3][1])
+                let littleBrotherSize = Math.abs(_data[_data.length-4][0] - _data[_data.length-4][1])
+                if(littleBrotherSize > stdbarsize && littleBrotherSize > brotherSize &&  littleBrotherSize > keybodySize){
+                    // //console.log('little brother bigger than std')
+                    let openkey = _data[_data.length-2][0]
+                    let closekey = _data[_data.length-2][1]
+
+
+                    let openbrother = _data[_data.length-3][0]
+                    let closebrother = _data[_data.length-3][1]
+                   
+            
+                    let openlittlebrother = _data[_data.length-4][0]
+                    let closelittlebrother = _data[_data.length-4][1]
+
+                    if(openkey < openbrother && openbrother < openlittlebrother && closekey < closebrother && closebrother < closelittlebrother){
+                        // //console.log('little brother bigger than std and ladder')
+                        let pipchange= pipChange(parseFloat(sma100),parseFloat(_data[_data.length-2][3]),digit)
+                        // //console.log(pipchange)
+                        if(pipchange > 4 ){
+                            // //console.log(slope)
+                            //console.log('little brother bigger than std and ladder and 7 pip away')
+                            return [0,1]
+                        }else{
+                            return [0,0]  
+                        }
+                    }else{
+                        return [0,0]
+                    }
+
+                }else{
+                    return [0,0]
+                }
+            }else{
+                return [0,0]
+            }
+        }
+    }
+
     function hammer(_data,barsize,downgain,percentwick,percenttail){
         let open = _data[_data.length-1][0]
         let close = _data[_data.length-1][1]
@@ -1323,7 +1731,7 @@
 
         if(Math.abs(presentbarsize) > barSize && Math.abs(previous1) > barSize && Math.abs(previous2) > barSize && presentbarsize > 0 && previous1 > 0 && previous2 > 0){
             if(_data[_data.length-1][3] < _data[_data.length-2][3] && _data[_data.length-2][3] < _data[_data.length-3][3] &&  _data[_data.length-1][2] < _data[_data.length-2][2] && _data[_data.length-2][2] < _data[_data.length-3][2]){
-                //console.log('found two bar down')
+                ////console.log('found two bar down')
                 return true
             }else{
                 return false 
@@ -1376,7 +1784,7 @@
             }
             
             if(diffbody_previouswick_1 < 150 && diffbodytail_1 < 150 && diffbody_previouswick_2 < 150 && diffbodytail_2 < 150){
-                //console.log('found bullish engulfing 555')
+                ////console.log('found bullish engulfing 555')
                 return true
             }else{
                 return false
@@ -1396,7 +1804,7 @@
         let negative = _data[_data.length-1][1] - _data[_data.length-2][1] 
 
         if(Math.abs(previous1) > barSize && Math.abs(previous2) > barSize && Math.abs(presentbarsize) > gain*Math.abs(previous1) && Math.abs(presentbarsize) > gain*Math.abs(previous2) && negative < 0){
-            //console.log('bearish engulfing')
+            ////console.log('bearish engulfing')
             return true
         }else{
             return false
@@ -1564,7 +1972,7 @@
         ]
 
         candleSticks.forEach(candle => {
-            //console.log(candle.open)
+            ////console.log(candle.open)
         });
         // let m15body = _arr1[0] -  _arr1[1]
         return []

@@ -1177,6 +1177,90 @@
                 //     }
                 // }
 
+                if((dataMA100[dataMA100.length-2]+2.5*allstdbarsizes[0].fields.value) < dataMA35[dataMA35.length-2] && (dataMA35[dataMA35.length-2]+1.5*allstdbarsizes[0].fields.value) < dataMA20[dataMA20.length-2] && (dataMA20[dataMA20.length-2]+allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-2] && alltimeframetrend[0] == 1){
+                 if(dataBody[dataBody.length-1] > dataBody[dataBody.length-2] &&  dataBody[dataBody.length-2]  >  dataBody[dataBody.length-3]  &&  dataBody[dataBody.length-4]  >  dataBody[dataBody.length-3]  &&  dataBody[dataBody.length-5]  >  dataBody[dataBody.length-4] && dataBody[dataBody.length-3] > (dataMA6[dataMA6.length-3] + 0.5*allstdbarsizes[0].fields.value) ){
+                
+                        let inloopData = []
+                        let inloopDataGuage = []
+                        for (let i = 2; i < 10; i++) {
+                            let check = dataBody[dataBody.length-i] - dataMA6[dataMA6.length-i]
+                      
+                            if(check > 0){
+                                break
+                            }
+                            inloopData.push(dataBody[dataBody.length-i])
+                            inloopDataGuage.push(dataMA20[dataMA20.length-i])
+                        }
+                        let maxInloopData = Math.max(...inloopData);
+                        let mininloopDataGuage = Math.min(...inloopDataGuage);
+                        let swing = false
+                        if(inloopData.length < 5 && maxInloopData > mininloopDataGuage){
+                            let crossCount = 0
+                            for (let i = 1; i < 30; i++) {
+                                if(dataBody[dataBody.length-i] > dataMA6[dataMA6.length-i] && dataBody[dataBody.length-i+1] < dataMA6[dataMA6.length-i+1]){
+                                    if(dataMA100[dataMA100.length-i] < dataMA35[dataMA35.length-i] && dataMA35[dataMA35.length-i] < dataMA20[dataMA20.length-i] && dataMA20[dataMA20.length-i] < dataMA6[dataMA6.length-i]
+                                    && dataMA100[dataMA100.length-i] < dataMA20[dataMA20.length-i] && dataMA100[dataMA100.length-i] < dataMA6[dataMA6.length-i]){
+
+                                    }else{
+                                        swing = true
+                                    }
+                                    crossCount++
+                                }
+                            }
+                            console.log(crossCount)
+                            if(crossCount < 3 && swing == false){
+                                console.log('Pullback uptrend')
+                                console.log(alltimeframetrend)
+                                $('#autotest').removeClass('start');
+                                $('#autotest').text("Auto Test") ;
+                                clearInterval(backtestTimer);
+                            }
+                            
+                        }
+                 }
+                }
+
+                if(dataMA100[dataMA100.length-2] > (dataMA35[dataMA35.length-2]+2.5*allstdbarsizes[0].fields.value) && dataMA35[dataMA35.length-2] > (dataMA20[dataMA20.length-2]+1.5*allstdbarsizes[0].fields.value) && dataMA20[dataMA20.length-2] > (dataMA6[dataMA6.length-2]+allstdbarsizes[0].fields.value) && alltimeframetrend[1] == 1){
+                    if(dataBody[dataBody.length-1] > dataBody[dataBody.length-2] &&  dataBody[dataBody.length-2]  >  dataBody[dataBody.length-3]  &&  dataBody[dataBody.length-4]  >  dataBody[dataBody.length-3]  &&  dataBody[dataBody.length-5]  >  dataBody[dataBody.length-4] && (dataBody[dataBody.length-1]+0.5*allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-1]){
+                   
+                        let inloopData = []
+                        let inloopDataGuage = []
+                        for (let i = 2; i < 10; i++) {
+                            let check = dataBody[dataBody.length-i] - dataMA6[dataMA6.length-i]
+                      
+                            if(check < 0){
+                                break
+                            }
+                            inloopData.push(dataBody[dataBody.length-i])
+                            inloopDataGuage.push(dataMA20[dataMA20.length-i])
+                        }
+                        let maxInloopData = Math.max(...inloopData);
+                        let mininloopDataGuage = Math.min(...inloopDataGuage);
+                        let swing = false
+                        if(inloopData.length < 5 && maxInloopData < mininloopDataGuage){
+                            let crossCount = 0
+                            for (let i = 1; i < 30; i++) {
+                                if(dataBody[dataBody.length-i] < dataMA6[dataMA6.length-i] && dataBody[dataBody.length-i+1] > dataMA6[dataMA6.length-i+1]){
+                                    if(dataMA100[dataMA100.length-i] > dataMA35[dataMA35.length-i] && dataMA35[dataMA35.length-i] > dataMA20[dataMA20.length-i] && dataMA20[dataMA20.length-i] > dataMA6[dataMA6.length-i]
+                                    && dataMA100[dataMA100.length-i] > dataMA20[dataMA20.length-i] && dataMA100[dataMA100.length-i] > dataMA6[dataMA6.length-i]){
+
+                                    }else{
+                                        swing = true
+                                    }
+                                    crossCount++
+                                }
+                            }
+                            console.log(crossCount)
+                            if(crossCount < 3 && swing == false){
+                                console.log('Pullback downtrend')
+                                console.log(alltimeframetrend)
+                                $('#autotest').removeClass('start');
+                                $('#autotest').text("Auto Test") ;
+                                clearInterval(backtestTimer);
+                            }
+                        }
+                    }
+                }
 
   
 
@@ -1195,15 +1279,22 @@
                         }
                         let maxInloopData = Math.max(...inloopData);
                         let mininloopDataGuage = Math.min(...inloopDataGuage);
+                        let swing = false
                         if(inloopData.length < 5 && maxInloopData < mininloopDataGuage){
                             let crossCount = 0
                             for (let i = 1; i < 30; i++) {
                                 if(dataBody[dataBody.length-i] < dataMA6[dataMA6.length-i] && dataBody[dataBody.length-i+1] > dataMA6[dataMA6.length-i+1]){
+                                    if(dataMA100[dataMA100.length-i] > dataMA35[dataMA35.length-i] && dataMA35[dataMA35.length-i] > dataMA20[dataMA20.length-i] && dataMA20[dataMA20.length-i] > dataMA6[dataMA6.length-i]
+                                    && dataMA100[dataMA100.length-i] > dataMA20[dataMA20.length-i] && dataMA100[dataMA100.length-i] > dataMA6[dataMA6.length-i]){
+
+                                    }else{
+                                        swing = true
+                                    }
                                     crossCount++
                                 }
                             }
                             console.log(crossCount)
-                            if(crossCount < 3){
+                            if(crossCount < 3 && swing == false){
                                 // console.log(inloopData)
                                 // console.log(inloopDataGuage)
                                 // console.log (maxInloopData)
@@ -1235,15 +1326,22 @@
                         }
                         let maxInloopData = Math.max(...inloopData);
                         let mininloopDataGuage = Math.min(...inloopDataGuage);
+                        let swing = false
                         if(inloopData.length < 5 && maxInloopData > mininloopDataGuage){
                             let crossCount = 0
                             for (let i = 1; i < 30; i++) {
                                 if(dataBody[dataBody.length-i] > dataMA6[dataMA6.length-i] && dataBody[dataBody.length-i+1] < dataMA6[dataMA6.length-i+1]){
+                                    if(dataMA100[dataMA100.length-i] < dataMA35[dataMA35.length-i] && dataMA35[dataMA35.length-i] < dataMA20[dataMA20.length-i] && dataMA20[dataMA20.length-i] < dataMA6[dataMA6.length-i]
+                                    && dataMA100[dataMA100.length-i] < dataMA20[dataMA20.length-i] && dataMA100[dataMA100.length-i] < dataMA6[dataMA6.length-i]){
+
+                                    }else{
+                                        swing = true
+                                    }
                                     crossCount++
                                 }
                             }
                             console.log(crossCount)
-                            if(crossCount < 3){
+                            if(crossCount < 3 && swing == false){
                                 // console.log(inloopData)
                                 // console.log(inloopDataGuage)
                                 // console.log (maxInloopData)

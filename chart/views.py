@@ -616,6 +616,11 @@ def getbacktestjob(request):
     }
     # print(LotSizeFactor.objects.filter(timeframename = request.POST.get('timeframe')).first().factor)
     ids = StdBarSize.objects.all().values('symbol_id').distinct()
+
+
+    isMarketClose = 0    
+    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
+        isMarketClose = 1
     data = {
         'backtest': serializers.serialize('json', BackTest.objects.filter(id = id)),
         'symbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = ids).order_by('name')),
@@ -631,7 +636,8 @@ def getbacktestjob(request):
         'lotsizefactor' : lotsizefactor,
         'usdbase' : usdbase,
         'setting' : serializers.serialize('json', Setting.objects.all()),
-        'calculationInfo' : calculationInfo
+        'calculationInfo' : calculationInfo,
+        'isMarketClose': isMarketClose
     }
     return JsonResponse(data)    
 
@@ -776,8 +782,8 @@ def setting(request):
     lotinfo = {
         'balance': accountinfo.balance,
         'lotsize': "{:.2f}".format(stdbalance),
-        'gbpcloseprice': "{:.2f}".format(stdbalance*40),
-        'nonegbpcloseprice': "{:.2f}".format(stdbalance*25),
+        'gbpcloseprice': "{:.2f}".format(stdbalance*50),
+        'nonegbpcloseprice': "{:.2f}".format(stdbalance*35),
     }
     return render(request,'setting.html',{
         'setting': setting,
@@ -965,6 +971,30 @@ def search(request):
         'isMarketClose' : isMarketClose
     })
 
+def searchSymbol(request):
+    setting = Setting.objects.first()
+    
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+
+    accountinfo = mt5.account_info()
+    isMarketClose = 0    
+    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
+        isMarketClose = 1
+    symbol = 'USDJPY'
+    check = Symbol.objects.filter(name=request.GET.get('symbol'))   
+    if(len(check) !=0):
+        symbol = request.GET.get('symbol','')
+    return render(request,'search_gbpusd.html',{
+        'isMarketClose' : isMarketClose,
+        'symbol' : symbol
+    })
+
 def orders(request):
     setting = Setting.objects.first()
     
@@ -1012,6 +1042,170 @@ def orders(request):
         'searchtype': serializers.serialize('json', SearchType.objects.all()),
         'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = positionsymbol)),
     })
+
+def searchSingleOhlc(request):
+    sb = request.POST.get('symbol')
+    symbolid = 4
+    check = Symbol.objects.filter(name=request.POST.get('symbol'))
+    # print(len(check))
+    if(sb != '' and len(check) != 0):
+         symbolid = Symbol.objects.filter(name=request.POST.get('symbol')).first().id
+     
+    timeframeid = TimeFrame.objects.filter(name=request.POST.get('timeframe')).first().id
+
+    return JsonResponse(getNewsingleohlc(symbolid,timeframeid))
+
+def getNewsingleohlc(symbolid,timeframeid):
+    # timeframeid = 1
+    # symbolid = 4
+
+    setting = Setting.objects.first()
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+
+    accountinfo = mt5.account_info()
+
+    _symbol = Symbol.objects.filter(id = symbolid).first()
+    _timeframe = TimeFrame.objects.filter(id = timeframeid).first()
+
+    ohlcs_m1 = []
+    ohlcs_m5 = []
+    ohlcs_m15 = []
+    ohlcs_m30 = []
+    ohlcs_h1 = []
+    ohlcs_h4 = []
+    # ohlcs_d1 = []
+
+    ohlc_data_m1 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M1, 0, 450))
+    ohlc_data_m1['time']=pd.to_datetime(ohlc_data_m1['time'], unit='s',utc=True)
+    for i, data in ohlc_data_m1.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs_m1.append(ohlc)
+
+    ohlc_data_m5 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M5, 0, 450))
+    ohlc_data_m5['time']=pd.to_datetime(ohlc_data_m5['time'], unit='s',utc=True)
+    for i, data in ohlc_data_m5.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs_m5.append(ohlc)
+
+
+    ohlc_data_m15 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M15, 0, 450))
+    ohlc_data_m15['time']=pd.to_datetime(ohlc_data_m15['time'], unit='s',utc=True)
+    for i, data in ohlc_data_m15.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs_m15.append(ohlc)
+
+    ohlc_data_m30 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M30, 0, 450))
+    ohlc_data_m30['time']=pd.to_datetime(ohlc_data_m30['time'], unit='s',utc=True)
+    for i, data in ohlc_data_m30.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs_m30.append(ohlc)
+
+    ohlc_data_h1 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_H1, 0, 450))
+    ohlc_data_h1['time']=pd.to_datetime(ohlc_data_h1['time'], unit='s',utc=True)
+    for i, data in ohlc_data_h1.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs_h1.append(ohlc)
+
+    ohlc_data_h4 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_H4, 0, 450))
+    ohlc_data_h4['time']=pd.to_datetime(ohlc_data_h4['time'], unit='s',utc=True)
+    for i, data in ohlc_data_h4.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs_h4.append(ohlc)    
+
+    symbol_info=mt5.symbol_info(_symbol.name)
+
+    usdbase = 1
+
+    if symbol_info.name.find('USD') == -1:
+        usbasesymbol = symbol_info.name[0:3] + 'USD'
+        _sb = mt5.symbol_info_tick(usbasesymbol)
+        if _sb != None:
+            usdbase = _sb.ask
+
+    calculationInfo ={
+        'symbol': symbol_info.name,
+        'bid' : symbol_info.bid,
+        'ask' : symbol_info.ask,
+        'degit' : symbol_info.digits,
+        'spread' : symbol_info.spread,
+        'trade_contract_size' : symbol_info.trade_contract_size,
+        'balance' : accountinfo.balance,
+    }
+
+    isMarketClose = 0    
+    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
+        isMarketClose = 1
+
+    stdbarsize = [
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M1').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M5').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M15').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M30').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'H1').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'H4').first().value,
+    ]
+
+    data = {
+        'ohlcs_m1':ohlcs_m1,
+        'ohlcs_m5':ohlcs_m5,
+        'ohlcs_m15':ohlcs_m15,
+        'ohlcs_m30':ohlcs_m30,
+        'ohlcs_h1':ohlcs_h1,
+        'ohlcs_h4':ohlcs_h4,
+        'calculationInfo' : calculationInfo,
+        'isMarketClose' : isMarketClose,
+        'stdbarsize' : stdbarsize
+    }
+      
+    return data 
 
 def getsingleohlc(request):   
     setting = Setting.objects.first()
@@ -2661,4 +2855,9 @@ def savesetting(request):
     return redirect('/setting',{
         'setting':setting,
         'accountinfo':accountinfo
+    })
+
+def Chart(request):
+    return render(request,'chart.html',{
+        'isMarketClose' : ''
     })

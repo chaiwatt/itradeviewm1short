@@ -42,6 +42,7 @@
                                     <th>Type</th>
                                     <th>Lot</th>
                                     <th>Profit</th>
+                                    <th>Take Profit</th>
                                     <th>Comment</th>
                                     <th class="text-right">Close</th>
                                   </tr>
@@ -240,9 +241,11 @@
                         let _symbol = order.symbol
                         if(_symbol.includes("GBP") == true){
                             
-                            let gbp_price_for_lot = order.lot * 40
-                            // console.log(order.symbol + ' profit:' + _profit +' target:'+ gbp_price_for_lot)
-                            if(_profit > gbp_price_for_lot){
+                            let gbp_price_for_lot_tp = order.lot * 75
+                            let gbp_price_for_lot_sl = order.lot * 50
+                            // console.log(order.symbol + ' profit:' + _profit +' target:'+ gbp_price_for_lot_tp)
+                            if(_profit > gbp_price_for_lot_tp || _profit < -1*gbp_price_for_lot_tp){
+                            // if(_profit > gbp_price_for_lot_tp){
                                 closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
                                         // linemessage=_symbol + " Profit " +  _profit
                                         // lineNotification(linemessage).then(data => {
@@ -253,9 +256,11 @@
                             }
                         }else{
                             
-                            let none_gbp_price_for_lot = order.lot * 25
-                            console.log(order.symbol + ' profit:' + _profit +' target:'+ none_gbp_price_for_lot)
-                            if(_profit > none_gbp_price_for_lot){
+                            let none_gbp_price_for_lot_tp = order.lot * 60
+                            let none_gbp_price_for_lot_sl = order.lot * 40
+                            // console.log(order.symbol + ' profit:' + _profit +' target:'+ none_gbp_price_for_lot_tp)
+                            if(_profit > none_gbp_price_for_lot_tp || _profit < -1*none_gbp_price_for_lot_tp){
+                            // if(_profit > none_gbp_price_for_lot_tp){
                                 closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
                                     // linemessage=_symbol + " Profit " +  _profit
                                     // lineNotification(linemessage).then(data => {
@@ -273,6 +278,12 @@
                         }else if(order.type == 1){
                             type = 'sell'
                         }
+
+                        let closeprice = order.lot * 75
+
+                        if(order.symbol.includes("GBP") == false){
+                            closeprice = order.lot * 60
+                        }
                 
                         html_orders_list += `<tr>
                             <td>${order.symbol}</td>
@@ -280,6 +291,7 @@
                             <td>${type}</td>
                             <td>${order.lot}</td>
                             <td>${order.profit.toFixed(2)}</td>
+                            <td>${closeprice.toFixed(2)}</td>
                             <td>${order.comment}</td>
                             <td class="text-right"><button type="button" class="btn btn-sm btn-info closeorder" data-lot="${order.lot}" data-type="${order.type}" data-ticket="${order.ticket}" data-symbol="${order.symbol}">Close</button></td>
                             </tr>`;

@@ -6,7 +6,7 @@
         <div class="container-fluid">
           <div class="row mb-2">
             <div class="col-sm-6">
-              <h1 class="m-0 " >Back Testing: <span id="symbol"></span> <span id="timeframe"></span> <span id="headerinfo" > </span> <span id="closeorder_wrapper"></span>  </h1>
+              <h1 class="m-0 " > Back Testing: <span id="symbol"></span> <span id="timeframe"></span> <span id="headerinfo" > </span> <span id="closeorder_wrapper"></span>  <span id="holiday"></span></h1>
             </div><!-- /.col -->
             <div class="col-sm-6">
               <ol class="breadcrumb float-sm-right">
@@ -34,6 +34,7 @@
             
                             <div class="info-box-content">
                             <span class="info-box-text" style="font-size: 20px;">SPREAD (POINTS)</span>
+                            <!-- <span id="holiday_spread"></span> -->
                             <span class="info-box-number" id="spread" style="font-size: 26px;"></span>
             
                             
@@ -446,6 +447,13 @@
         $('.select2bs4').select2({
             theme: 'bootstrap4'
         })
+
+        var symbolSize = 15;
+        // var data_line = [
+        //     [2, 0.923],
+        //     [20, 0.922],
+
+        // ];
         var backtestTimer;
         var backtestTimerInterval = 500;
         var testRange = 250;
@@ -527,7 +535,7 @@
         var barDuringCrossUptrend = [];
         var foundCrossDowntrend = false;
         var barDuringCrossDowntrend = [];
-
+        var isMarketClose = 0
         var dom = document.getElementById("clockcontainer");
             var clock = echarts.init(dom);
             var app = {};
@@ -695,7 +703,7 @@
             let SMA20Arr = SSMA_Calc(closedPrice,20);
             let SMA35Arr = SSMA_Calc(closedPrice,35);
             SMA100Arr = SSMA_Calc(closedPrice,100);
-            dataBody = DataBody(data);
+            dataBody = GetBodySize(data);
             // console.log(dataBody)
             var nullSmoth_SSMA6 = Array(closedPrice.length - SMA6Arr.length).fill(null);
             var nullSmoth_SSMA10 = Array(closedPrice.length - SMA10Arr.length).fill(null);
@@ -779,20 +787,20 @@
                     $('#pricechange').html(accumulateprice.toFixed(2))
                     // console.log(orderinfo)
                     if(accumulateprice.toFixed(5) > orderinfo.takeprofit){
-                        // Swal.fire({
-                        //     icon: 'info',
-                        //     title: 'Sell',
-                        //     text: 'Profit greater than Take profit',
-                        // })
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Sell',
+                            text: 'Profit greater than Take profit',
+                        })
                         $('#autotest').removeClass('start');
                         $('#autotest').text("Auto Test") ;
                         clearInterval(backtestTimer);
                     }else if(accumulateprice.toFixed(5) < (orderinfo.stoploss*-1)){
-                        // Swal.fire({
-                        //     icon: 'warning',
-                        //     title: 'Sell',
-                        //     text: 'Lost than stop lost',
-                        // })
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Sell',
+                            text: 'Lost than stop lost',
+                        })
                         $('#autotest').removeClass('start');
                         $('#autotest').text("Auto Test") ;
                         clearInterval(backtestTimer);
@@ -1208,7 +1216,7 @@
                                 }
                             }
                             console.log(crossCount)
-                            if(crossCount < 3 && swing == false){
+                            if(crossCount < 2 && swing == false){
                                 console.log('Pullback uptrend')
                                 console.log(alltimeframetrend)
                                 $('#autotest').removeClass('start');
@@ -1251,7 +1259,7 @@
                                 }
                             }
                             console.log(crossCount)
-                            if(crossCount < 3 && swing == false){
+                            if(crossCount < 2 && swing == false){
                                 console.log('Pullback downtrend')
                                 console.log(alltimeframetrend)
                                 $('#autotest').removeClass('start');
@@ -1294,12 +1302,12 @@
                                 }
                             }
                             console.log(crossCount)
-                            if(crossCount < 3 && swing == false){
+                            if(crossCount < 2 && swing == false){
                                 // console.log(inloopData)
                                 // console.log(inloopDataGuage)
                                 // console.log (maxInloopData)
                                 // console.log (mininloopDataGuage)
-                                console.log('Data body toggle downtrend')
+                                console.log('Toggle downtrend')
                                 console.log(alltimeframetrend)
                                 $('#autotest').removeClass('start');
                                 $('#autotest').text("Auto Test") ;
@@ -1341,12 +1349,12 @@
                                 }
                             }
                             console.log(crossCount)
-                            if(crossCount < 3 && swing == false){
+                            if(crossCount < 2 && swing == false){
                                 // console.log(inloopData)
                                 // console.log(inloopDataGuage)
                                 // console.log (maxInloopData)
                                 // console.log (mininloopDataGuage)
-                                console.log('Data body toggle uptrend')
+                                console.log('Toggle uptrend')
                                 console.log(alltimeframetrend)
                                 $('#autotest').removeClass('start');
                                 $('#autotest').text("Auto Test") ;
@@ -1356,6 +1364,29 @@
                         }
                     }
                 }
+
+            let uptrendpinbar = uptrendPinbar(data,allstdbarsizes[0].fields.value,calculationinfo.degit,calculationinfo.pipdistant,dataMA100[dataMA100.length-2])
+            let downtrendpinbar = downtrendPinbar(data,allstdbarsizes[0].fields.value,calculationinfo.degit,calculationinfo.pipdistant,dataMA100[dataMA100.length-2])
+
+            if((dataMA100[dataMA100.length-2]+1.5*allstdbarsizes[0].fields.value) < dataMA35[dataMA35.length-2] && (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA20[dataMA20.length-2] && (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-2] && alltimeframetrend[0] == 1){
+                if(uptrendpinbar == true){
+                    console.log('uptrendpinbar')
+                    $('#autotest').removeClass('start');
+                    $('#autotest').text("Auto Test") ;
+                    clearInterval(backtestTimer);
+                }
+            }
+
+            if(dataMA100[dataMA100.length-2] > (dataMA35[dataMA35.length-2]+1.5*allstdbarsizes[0].fields.value) && dataMA35[dataMA35.length-2] > (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) && dataMA20[dataMA20.length-2] > (dataMA6[dataMA6.length-2]+0.5*allstdbarsizes[0].fields.value) && alltimeframetrend[1] == 1){
+                if(downtrendpinbar == true){
+                    console.log('downtrendpinbar')
+                    $('#autotest').removeClass('start');
+                    $('#autotest').text("Auto Test") ;
+                    clearInterval(backtestTimer);
+                }
+            }
+
+
 
                 // if((dataMA100[dataMA100.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA35[dataMA35.length-2] && (dataMA35[dataMA35.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA20[dataMA20.length-2] && (dataMA20[dataMA20.length-2]+0.5*allstdbarsizes[0].fields.value) < dataMA6[dataMA6.length-2] ){
                 //     if(data[data.length-2][3] > dataMA6[dataMA6.length-2] && data[data.length-2][2] > dataMA20[dataMA20.length-2] ){
@@ -2215,7 +2246,8 @@
                     lineStyle: {
                         width: 1
                     }
-                }
+                },
+                // { id: 'a', type: 'line', symbolSize: symbolSize, data: data_line },
             ]
         };
 
@@ -3449,6 +3481,43 @@
 
 
         canndleStickChart.setOption(option);
+        // canndleStickChart.setOption({
+        // graphic: echarts.util.map(data_line, function(item, dataIndex) {
+        //     return {
+        //     type: 'circle',
+        //     position: canndleStickChart.convertToPixel('grid', item),
+        //     shape: { r: symbolSize / 2 },
+        //     invisible: true,
+        //     draggable: true,
+        //     ondrag: echarts.util.curry(onPointDragging, dataIndex),
+        //     onmousemove: echarts.util.curry(showTooltip, dataIndex),
+        //     onmouseout: echarts.util.curry(hideTooltip, dataIndex),
+        //     z: 100
+        //     };
+        // })
+        // });
+     
+        // function showTooltip(dataIndex) {
+        //     canndleStickChart.dispatchAction({
+        //     type: 'showTip',
+        //     seriesIndex: 0,
+        //     dataIndex: dataIndex
+        // });
+        // }
+        // function hideTooltip(dataIndex) {
+        //     canndleStickChart.dispatchAction({ type: 'hideTip' });
+        // }
+        // function onPointDragging(dataIndex, dx, dy) {
+        // data_line[dataIndex] = canndleStickChart.convertFromPixel('grid', this.position);
+        // canndleStickChart.setOption({
+        //     series: [
+        //     {
+        //         id: 'a',
+        //         data: data_line
+        //     }
+        //     ]
+        // });
+        // }
         // macdChart.setOption(option_macd);
         canndleStickChartZoom.setOption(option_zoom);
         canndle_stick_tf_all.setOption(option_canndle_stick_tf_all);
@@ -4008,6 +4077,12 @@
                 let _orderbuy_entry_specs = JSON.parse(data.entryspecs).filter(x => x.fields.order_type == 0);
                 let _ordersell_entry_specs = JSON.parse(data.entryspecs).filter(x => x.fields.order_type == 1);
                 _ohlc_timeframe = JSON.parse(data.ohlctimeframes)
+                isMarketClose = data.isMarketClose
+                console.log()
+                if(isMarketClose == 1){
+                    $('#holiday').html('(HOLIDAY FIXED SPREAD)')
+                    // $('#holiday_spread').html('(Fixed spread)')
+                }
               
             //    ////console.log(_ohlc_timeframe)
 
@@ -4127,6 +4202,12 @@
                 let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
                 $('#spread').html(calculationinfo.spread);
                 $('#spreadprice').html(-spreadprice+'$');
+                if(isMarketClose == 1){
+                    let fixspread = 7
+                    let spreadprice = (fixspread * pippriceperlotsize/10).toFixed(5)
+                    $('#spread').html(fixspread);
+                    $('#spreadprice').html(-spreadprice+'$');
+                }
                 $('#pricechange').html(0);
                 $('#pipprice').html(pippriceperlotsize.toFixed(5));
                 $('#symbolname').html(`(${$(this).find(':selected').data('name')})`);

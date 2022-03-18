@@ -12,6 +12,38 @@
     width: 97%;
 }
 
+#canndle_stick_chart_m1 {
+    margin: 20px;
+    height: 900px !important;
+    width: 97%;
+}
+#canndle_stick_chart_m5 {
+    margin: 20px;
+    height: 900px !important;
+    width: 97%;
+}
+#canndle_stick_chart_m15 {
+    margin: 20px;
+    height: 900px !important;
+    width: 97%;
+}
+#canndle_stick_chart_m30 {
+    margin: 20px;
+    height: 900px !important;
+    width: 97%;
+}
+#canndle_stick_chart_h1 {
+    margin: 20px;
+    height: 900px !important;
+    width: 97%;
+}
+
+#canndle_stick_chart_h4 {
+    margin: 20px;
+    height: 900px !important;
+    width: 97%;
+}
+
 #canndle_stick_tf_all {
     margin: 20px;
     height: 500px !important;

@@ -720,7 +720,128 @@
         }
     }
 
-    function DataBody(arr){
+    function TenkanSen(highArr,lowArr,n){
+        let maxhigharr = []
+        let minlowarr = []
+        let tenkansenarr = []
+        for (let i = 0 ; i < highArr.length-8 ; i++){
+            let _highArr = highArr.slice(i, n+i);
+            maxhigharr.push(Math.max(..._highArr));
+        }
+
+        for (let i = 0 ; i < lowArr.length-8 ; i++){
+            let _lowArr = lowArr.slice(i, n+i);
+            minlowarr.push(Math.min(..._lowArr));
+        }
+
+        for (let i = 0 ; i < maxhigharr.length ; i++){
+            tenkansenarr.push((maxhigharr[i] + minlowarr[i])/2)
+        }
+
+        // console.log(tenkansenarr)
+        return tenkansenarr
+    }
+
+    function KijunSen(highArr,lowArr,n){
+        let maxhigharr = []
+        let minlowarr = []
+        let kijunsen = []
+        for (let i = 0 ; i < highArr.length-25 ; i++){
+            let _highArr = highArr.slice(i, n+i);
+            maxhigharr.push(Math.max(..._highArr));
+        }
+
+        for (let i = 0 ; i < lowArr.length-25 ; i++){
+            let _lowArr = lowArr.slice(i, n+i);
+            minlowarr.push(Math.min(..._lowArr));
+        }
+
+        for (let i = 0 ; i < maxhigharr.length ; i++){
+            kijunsen.push((maxhigharr[i] + minlowarr[i])/2)
+        }
+
+        // console.log(kijunsen)
+        return kijunsen
+    }
+
+    function SenkouSpanA(tenkanSenArr,kijunSenArr){
+        let senkouspana = []
+        for (let i = 0 ; i < kijunSenArr.length ; i++){
+            senkouspana.push((tenkanSenArr[i+17]+kijunSenArr[i])/2)
+        }
+        return senkouspana
+    }
+
+    function SenkouSpanB(highArr,lowArr,n){
+        let maxhigharr = []
+        let minlowarr = []
+        let senkouspanb = []
+        for (let i = 0 ; i < highArr.length-26 ; i++){
+            let _highArr = highArr.slice(i, n+i);
+            maxhigharr.push(Math.max(..._highArr));
+        }
+
+        for (let i = 0 ; i < lowArr.length-26 ; i++){
+            let _lowArr = lowArr.slice(i, n+i);
+            minlowarr.push(Math.min(..._lowArr));
+        }
+
+        for (let i = 0 ; i < maxhigharr.length-25 ; i++){
+            senkouspanb.push((maxhigharr[i]+minlowarr[i])/2);
+        }
+
+        // console.log(senkouspanb)
+        return senkouspanb
+    }
+
+    function ChikouSpan(closepriceArr){
+        let chikouSpan = closepriceArr.slice(25, closepriceArr.length);
+        return chikouSpan
+    }
+    
+
+    function MaxHigh(arr,n){
+        let maxarr = []
+        for (var i = 0 ; i < arr.length-8 ; i++){
+            var temp = arr.slice(i, n+i);
+            maxarr.push(Math.max(...temp));
+        }
+        return maxarr
+    }
+
+    function IchimokuCheckUptrend(data,tenkan,kijun,chisou,spanA,spanB){
+        let datalow = data[data.length-1][2]
+        if(datalow > spanA[spanA.length-26] 
+                && datalow > spanB[spanB.length-26] 
+                && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+                && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+                && kijun[kijun.length-26] > spanA[spanA.length-26] 
+                && kijun[kijun.length-26] > spanB[spanB.length-26] 
+
+            ){
+            return true
+        }else{
+            return false
+        }
+    }
+
+    function IchimokuCheckDowntrend(data,tenkan,kijun,chisou,spanA,spanB){
+        let datahigh = data[data.length-1][3]
+        if(datahigh < spanA[spanA.length-26] 
+                && datahigh < spanB[spanB.length-26] 
+                && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+                && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+                && kijun[kijun.length-26] < spanA[spanA.length-26] 
+                && kijun[kijun.length-26] < spanB[spanB.length-26] 
+
+            ){
+            return true
+        }else{
+            return false
+        }
+    }
+
+    function GetBodySize(arr){
         var bodyArr = [];
         for (var i = 0 ; i < arr.length ; i++){
             if(arr[i][0] == arr[i][1]){
@@ -1427,23 +1548,23 @@
     }
 
     function uptrendPinbar(_data,stdbarsize,digit,pipdistant,sma100){
-        let openSubtractClose_confirm = _data[_data.length-2][0] - _data[_data.length-2][1]
-        let openSubtractClose_key = _data[_data.length-3][0] - _data[_data.length-3][1]
+        // let openSubtractClose_confirm = _data[_data.length-2][0] - _data[_data.length-2][1]
+        let openSubtractClose_key = _data[_data.length-2][0] - _data[_data.length-2][1]
 
-        let highLowSize_key = _data[_data.length-3][3] - _data[_data.length-3][2]
+        let highLowSize_key = _data[_data.length-2][3] - _data[_data.length-2][2]
         if(highLowSize_key > stdbarsize*2 ){
             if(openSubtractClose_key<0){
-                let wick = _data[_data.length-3][3] - _data[_data.length-3][1]
+                let wick = _data[_data.length-2][3] - _data[_data.length-2][1]
                 diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key))  
 
-                let tail = _data[_data.length-3][0] - _data[_data.length-3][2]
+                let tail = _data[_data.length-2][0] - _data[_data.length-2][2]
                 diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))          
             }else{
                 
-                let wick = _data[_data.length-3][3] - _data[_data.length-3][0]
+                let wick = _data[_data.length-2][3] - _data[_data.length-2][0]
                 diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key)) 
 
-                let tail = _data[_data.length-3][1] - _data[_data.length-3][2]
+                let tail = _data[_data.length-2][1] - _data[_data.length-2][2]
                 diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))
             }
           
@@ -1451,16 +1572,17 @@
                 // //console.log('diffbodywick:' + diffbodywick_key)
                 // //console.log('diffbodytail:'+diffbodytail_key)
                 
-                if (openSubtractClose_confirm <= 0){
-                    if(_data[_data.length-3][2] > sma100){
-                        return true
-                    }else{
-                        return false
-                    }
+                // if (openSubtractClose_confirm <= 0){
+                //     if(_data[_data.length-3][2] > sma100){
+                //         return true
+                //     }else{
+                //         return false
+                //     }
                     
-                }else{
-                    return false
-                }
+                // }else{
+                //     return false
+                // }
+                return true
             }else{
                 return false
             }
@@ -1470,21 +1592,21 @@
     }
 
     function downtrendPinbar(_data,stdbarsize,digit,pipdistant,sma100){
-        let openSubtractClose_confirm = _data[_data.length-2][0] - _data[_data.length-2][1]
-        let openSubtractClose_key = _data[_data.length-3][0] - _data[_data.length-3][1]
-        let highLowSize_key = _data[_data.length-3][3] - _data[_data.length-3][2]
+        // let openSubtractClose_confirm = _data[_data.length-2][0] - _data[_data.length-2][1]
+        let openSubtractClose_key = _data[_data.length-2][0] - _data[_data.length-2][1]
+        let highLowSize_key = _data[_data.length-2][3] - _data[_data.length-2][2]
         if(highLowSize_key > stdbarsize*2 ){
             if(openSubtractClose_key < 0){ //green
-                let wick = _data[_data.length-3][3] - _data[_data.length-3][1]
+                let wick = _data[_data.length-2][3] - _data[_data.length-2][1]
                 diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key))  
 
-                let tail = _data[_data.length-3][0] - _data[_data.length-3][2]
+                let tail = _data[_data.length-2][0] - _data[_data.length-2][2]
                 diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))   
             }else{
-                let wick = _data[_data.length-3][3] - _data[_data.length-3][0]
+                let wick = _data[_data.length-2][3] - _data[_data.length-2][0]
                 diffbodywick_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(wick))*100/Math.abs(openSubtractClose_key)) 
 
-                let tail = _data[_data.length-3][1] - _data[_data.length-3][2]
+                let tail = _data[_data.length-2][1] - _data[_data.length-2][2]
                 diffbodytail_key = 100-((Math.abs(openSubtractClose_key) - Math.abs(tail))*100/Math.abs(openSubtractClose_key))
             }
 
@@ -1492,15 +1614,16 @@
                 // //console.log('diffbodywick:' + diffbodywick_key)
                 // //console.log('diffbodytail:'+diffbodytail_key)
                 
-                if (openSubtractClose_confirm >= 0){
-                    if(_data[_data.length-3][3] < sma100){
-                        return true
-                    }else{
-                        return false
-                    }
-                }else{
-                    return false
-                }
+                // if (openSubtractClose_confirm >= 0){
+                //     if(_data[_data.length-3][3] < sma100){
+                //         return true
+                //     }else{
+                //         return false
+                //     }
+                // }else{
+                //     return false
+                // }
+                return true
             }else{
                 return false
             }

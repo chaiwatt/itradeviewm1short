@@ -62,4 +62,8 @@ urlpatterns = [
     path('getordersymbols',views.getordersymbols,name='getordersymbols'),
     path('setting',views.setting,name='setting'),
     path('savesetting',views.savesetting,name='savesetting'),
+    path('searchsymbol',views.searchSymbol,name='searchsymbol'),
+    path('searchsingleohlc',views.searchSingleOhlc,name='searchsingleohlc'),
+    path('chart',views.Chart,name='chart'),
+    
 ]

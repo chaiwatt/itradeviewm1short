@@ -239,37 +239,44 @@
                         
                         let _profit = order.profit
                         let _symbol = order.symbol
-                        if(_symbol.includes("GBP") == true){
+
+                        console.log(order.comment)
+                        if(order.comment == 'AutoClose=True'){
                             
-                            let gbp_price_for_lot_tp = order.lot * 75
-                            let gbp_price_for_lot_sl = order.lot * 50
-                            // console.log(order.symbol + ' profit:' + _profit +' target:'+ gbp_price_for_lot_tp)
+                        }else{
+                            console.log('manual close')
+                            let gbp_price_for_lot_tp = order.lot * 100
+                            let gbp_price_for_lot_sl = order.lot * 75
+
                             if(_profit > gbp_price_for_lot_tp || _profit < -1*gbp_price_for_lot_tp){
                             // if(_profit > gbp_price_for_lot_tp){
-                                closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
-                                        // linemessage=_symbol + " Profit " +  _profit
-                                        // lineNotification(linemessage).then(data => {
-                                        //     beep();
-                                        //     location.reload(true);
-                                        // }).catch(error => {})
-                                }).catch(error => {})
-                            }
-                        }else{
-                            
-                            let none_gbp_price_for_lot_tp = order.lot * 60
-                            let none_gbp_price_for_lot_sl = order.lot * 40
-                            // console.log(order.symbol + ' profit:' + _profit +' target:'+ none_gbp_price_for_lot_tp)
-                            if(_profit > none_gbp_price_for_lot_tp || _profit < -1*none_gbp_price_for_lot_tp){
-                            // if(_profit > none_gbp_price_for_lot_tp){
-                                closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
-                                    // linemessage=_symbol + " Profit " +  _profit
-                                    // lineNotification(linemessage).then(data => {
-                                    //         beep();
-                                    //     location.reload(true);
-                                    // }).catch(error => {})
-                                }).catch(error => {})
+                                // closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+          
+                                // }).catch(error => {})
                             }
                         }
+                        // if(_symbol.includes("GBP") == true){
+                            
+                        //     let gbp_price_for_lot_tp = order.lot * 100
+                        //     let gbp_price_for_lot_sl = order.lot * 75
+
+                        //     if(_profit > gbp_price_for_lot_tp || _profit < -1*gbp_price_for_lot_tp){
+                        //     // if(_profit > gbp_price_for_lot_tp){
+                        //         // closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+          
+                        //         // }).catch(error => {})
+                        //     }
+                        // }else{
+                            
+                        //     let none_gbp_price_for_lot_tp = order.lot * 60
+                        //     let none_gbp_price_for_lot_sl = order.lot * 40
+                        //     // console.log(order.symbol + ' profit:' + _profit +' target:'+ none_gbp_price_for_lot_tp)
+                        //     if(_profit > none_gbp_price_for_lot_tp || _profit < -1*none_gbp_price_for_lot_tp){
+                        //         // closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+                  
+                        //         // }).catch(error => {})
+                        //     }
+                        // }
                    
                         
                         let type = ''
@@ -335,9 +342,9 @@
                     data_item.orders.forEach((order,i) => {
 
                         if(order.profit > 50){
-                            closeOrder(order.symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
-                                location.reload(true);
-                            }).catch(error => {})
+                            // closeOrder(order.symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+                            //     location.reload(true);
+                            // }).catch(error => {})
                         }
             
                         let type = ''
@@ -1012,9 +1019,9 @@
        }
 
        $(document).on('click','.closeorder',function(){
-            closeOrder($(this).data('symbol'),$(this).data('ticket'),parseInt($(this).data('type')),parseFloat($(this).data('lot'))).then(data => { //0=order on Buy 1=order on Sell
-                location.reload(true);
-            }).catch(error => {})
+            // closeOrder($(this).data('symbol'),$(this).data('ticket'),parseInt($(this).data('type')),parseFloat($(this).data('lot'))).then(data => { //0=order on Buy 1=order on Sell
+            //     location.reload(true);
+            // }).catch(error => {})
         })
 
        function closeOrder(symbol,position,type,lot){   

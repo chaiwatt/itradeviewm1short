@@ -782,8 +782,8 @@ def setting(request):
     lotinfo = {
         'balance': accountinfo.balance,
         'lotsize': "{:.2f}".format(stdbalance),
-        'gbpcloseprice': "{:.2f}".format(stdbalance*50),
-        'nonegbpcloseprice': "{:.2f}".format(stdbalance*35),
+        'gbpcloseprice': "{:.2f}".format(stdbalance*100),
+        'nonegbpcloseprice': "{:.2f}".format(stdbalance*75),
     }
     return render(request,'setting.html',{
         'setting': setting,
@@ -2293,8 +2293,6 @@ def openorder(request):
     order_dict = {'buy': 0, 'sell': 1};
     price_dict = {'buy': float(tick.ask), 'sell': float(tick.bid)};
 
-    # print(price_dict[ordertype])
-
     deviation = 20
     n = int(setting.numorder)
     for i in range(n):
@@ -2860,4 +2858,65 @@ def savesetting(request):
 def Chart(request):
     return render(request,'chart.html',{
         'isMarketClose' : ''
+    })
+
+
+def openorder(request):
+    setting = Setting.objects.first()
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+    accountinfo = mt5.account_info()
+
+    stdbalance= accountinfo.balance/2500
+    lotinfo = {
+        'balance': accountinfo.balance,
+        'lotsize': "{:.2f}".format(stdbalance),
+        'takeprofit': "{:.2f}".format(stdbalance*100),
+        'stoplost': "{:.2f}".format(stdbalance*60),
+    }
+
+    return render(request,'openorder.html',{
+        'setting': setting,
+        'lotinfo': lotinfo,
+        'symbols':Symbol.objects.filter(status="1",broker_id=myaccount.broker_id).order_by('name'),
+    })   
+
+def saveopenorder(request):
+    setting = Setting.objects.first()
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+    accountinfo = mt5.account_info()
+
+    symbolid = request.POST.get('symbol')
+    lotsize = request.POST.get('lotsize')
+    tradestyle = request.POST.get('tradestyle')
+    takeprofit = request.POST.get('takeprofit')
+    stoplost = request.POST.get('stoplost')
+    numoforder = request.POST.get('numoforder')
+    ordertype = request.POST.get('ordertype')
+    
+
+    stdbalance= accountinfo.balance/2500
+    lotinfo = {
+        'balance': accountinfo.balance,
+        'lotsize': "{:.2f}".format(stdbalance),
+        'takeprofit': "{:.2f}".format(stdbalance*100),
+        'stoplost': "{:.2f}".format(stdbalance*60),
+    }
+   
+    return redirect('/openorder',{
+        'setting': setting,
+        'lotinfo': lotinfo,
+        'symbols':Symbol.objects.filter(status="1",broker_id=myaccount.broker_id).order_by('name'),
     })

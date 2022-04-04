@@ -145,7 +145,10 @@ class StdBarSize(models.Model):
     value=models.FloatField(max_length=15, null=True)
     stoplostpip=models.IntegerField(default = 20)
     stoplostpercent=models.FloatField(default = 0.015)
+    macdslope=models.FloatField(default = 0)
+    bodyslope=models.FloatField(default = 0)
     lotsizeoffset=models.FloatField(default = 1)
+    
     class Meta:
         db_table = "std_bar_sizes"   
             

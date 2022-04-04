@@ -504,39 +504,39 @@ def getbacktestohlcdata(symbol,tf):
     return rates_frame
 
 
-def getbacktestohlch4(symbol,num):
-    symbol_info_tick_dict = mt5.symbol_info_tick(symbol)
-    dt_object = datetime.fromtimestamp(symbol_info_tick_dict.time, tz=pytz.timezone("UTC"))
-    # print('present date')
-    # print(dt_object)
+# def getbacktestohlch4(symbol,num):
+#     symbol_info_tick_dict = mt5.symbol_info_tick(symbol)
+#     dt_object = datetime.fromtimestamp(symbol_info_tick_dict.time, tz=pytz.timezone("UTC"))
+#     # print('present date')
+#     # print(dt_object)
 
-    hour  = timedelta(hours=4)
-    initial_datetime = datetime(dt_object.year, dt_object.month, dt_object.day, dt_object.hour, dt_object.minute, 0)
-    formatted_date = initial_datetime - hour 
-    # print('minute 4 hour')
-    # print(formatted_date)
+#     hour  = timedelta(hours=4)
+#     initial_datetime = datetime(dt_object.year, dt_object.month, dt_object.day, dt_object.hour, dt_object.minute, 0)
+#     formatted_date = initial_datetime - hour 
+#     # print('minute 4 hour')
+#     # print(formatted_date)
 
-    stdate = str(formatted_date.year) + '-' + str(formatted_date.month).zfill(2) + "-"+ str(formatted_date.day).zfill(2) +"T" + str(formatted_date.hour).zfill(2) + ":"+str(formatted_date.minute).zfill(2)+":00Z"
+#     stdate = str(formatted_date.year) + '-' + str(formatted_date.month).zfill(2) + "-"+ str(formatted_date.day).zfill(2) +"T" + str(formatted_date.hour).zfill(2) + ":"+str(formatted_date.minute).zfill(2)+":00Z"
 
-    # print(stdate)
+#     # print(stdate)
 
-    to_datetime = datetime.strptime(stdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
-    numofbar = num
-    timeframe = 240
-    minute = int(to_datetime.minute/timeframe)*timeframe
+#     to_datetime = datetime.strptime(stdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
+#     numofbar = num
+#     timeframe = 240
+#     minute = int(to_datetime.minute/timeframe)*timeframe
 
-    initial_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day, to_datetime.hour, minute, 0)
-    total_minutes = timedelta(minutes=timeframe * numofbar)
-    from_datetime = initial_datetime - total_minutes 
+#     initial_datetime = datetime(to_datetime.year, to_datetime.month, to_datetime.day, to_datetime.hour, minute, 0)
+#     total_minutes = timedelta(minutes=timeframe * numofbar)
+#     from_datetime = initial_datetime - total_minutes 
 
-    utc_from = datetime(from_datetime.year, from_datetime.month, from_datetime.day,from_datetime.hour,minute, tzinfo=pytz.timezone("UTC"))
-    utc_to = datetime(to_datetime.year, to_datetime.month, to_datetime.day,to_datetime.hour,to_datetime.minute, tzinfo=pytz.timezone("UTC"))
+#     utc_from = datetime(from_datetime.year, from_datetime.month, from_datetime.day,from_datetime.hour,minute, tzinfo=pytz.timezone("UTC"))
+#     utc_to = datetime(to_datetime.year, to_datetime.month, to_datetime.day,to_datetime.hour,to_datetime.minute, tzinfo=pytz.timezone("UTC"))
 
-    rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H4, utc_from, utc_to)
+#     rates = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_H4, utc_from, utc_to)
 
-    rates_frame = pd.DataFrame(rates)
-    rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
-    return rates_frame   
+#     rates_frame = pd.DataFrame(rates)
+#     rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
+#     return rates_frame   
 
 
 def addBackTestOHLCTimeframe(btsize,backtest_id,symbolid,symbol):
@@ -778,12 +778,13 @@ def setting(request):
     mt5.login(myaccount.login,myaccount.password,myaccount.server)
 
     accountinfo = mt5.account_info()
-    stdbalance= accountinfo.balance/2500
+    stdbalance= accountinfo.balance/250
+
     lotinfo = {
         'balance': accountinfo.balance,
         'lotsize': "{:.2f}".format(stdbalance),
-        'gbpcloseprice': "{:.2f}".format(stdbalance*100),
-        'nonegbpcloseprice': "{:.2f}".format(stdbalance*75),
+        'takeprofit': "{:.2f}".format(stdbalance*75),
+        # 'nonegbpcloseprice': "{:.2f}".format(stdbalance*75),
     }
     return render(request,'setting.html',{
         'setting': setting,
@@ -990,7 +991,8 @@ def searchSymbol(request):
     check = Symbol.objects.filter(name=request.GET.get('symbol'))   
     if(len(check) !=0):
         symbol = request.GET.get('symbol','')
-    return render(request,'search_gbpusd.html',{
+    return render(request,'searchsymbol.html',{
+        'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id)),
         'isMarketClose' : isMarketClose,
         'symbol' : symbol
     })
@@ -1044,16 +1046,20 @@ def orders(request):
     })
 
 def searchSingleOhlc(request):
-    sb = request.POST.get('symbol')
-    symbolid = 4
-    check = Symbol.objects.filter(name=request.POST.get('symbol'))
-    # print(len(check))
-    if(sb != '' and len(check) != 0):
-         symbolid = Symbol.objects.filter(name=request.POST.get('symbol')).first().id
-     
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    # ordercount=mt5.positions_total()
+    # print(ordercount)
+
+    # current_time = datetime.utcnow()
+    # current_hour = int(current_time.strftime("%H"))
+    # print(current_hour)
+    # print('HALO')
     timeframeid = TimeFrame.objects.filter(name=request.POST.get('timeframe')).first().id
 
-    return JsonResponse(getNewsingleohlc(symbolid,timeframeid))
+    return JsonResponse(getNewsingleohlc(request.POST.get('symbol'),timeframeid))
 
 def getNewsingleohlc(symbolid,timeframeid):
     # timeframeid = 1
@@ -1069,6 +1075,8 @@ def getNewsingleohlc(symbolid,timeframeid):
     mt5.login(myaccount.login,myaccount.password,myaccount.server)
 
     accountinfo = mt5.account_info()
+    # print(accountinfo)
+    
 
     _symbol = Symbol.objects.filter(id = symbolid).first()
     _timeframe = TimeFrame.objects.filter(id = timeframeid).first()
@@ -1079,7 +1087,7 @@ def getNewsingleohlc(symbolid,timeframeid):
     ohlcs_m30 = []
     ohlcs_h1 = []
     ohlcs_h4 = []
-    # ohlcs_d1 = []
+    ohlcs_d1 = []
 
     ohlc_data_m1 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M1, 0, 450))
     ohlc_data_m1['time']=pd.to_datetime(ohlc_data_m1['time'], unit='s',utc=True)
@@ -1160,6 +1168,21 @@ def getNewsingleohlc(symbolid,timeframeid):
         }
         ohlcs_h4.append(ohlc)    
 
+
+    ohlc_data_d1 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_D1, 0, 450))
+    ohlc_data_d1['time']=pd.to_datetime(ohlc_data_d1['time'], unit='s',utc=True)
+    for i, data in ohlc_data_d1.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs_d1.append(ohlc)  
+
+
     symbol_info=mt5.symbol_info(_symbol.name)
 
     usdbase = 1
@@ -1169,7 +1192,7 @@ def getNewsingleohlc(symbolid,timeframeid):
         _sb = mt5.symbol_info_tick(usbasesymbol)
         if _sb != None:
             usdbase = _sb.ask
-
+    # print(symbol_info)
     calculationInfo ={
         'symbol': symbol_info.name,
         'bid' : symbol_info.bid,
@@ -1178,6 +1201,7 @@ def getNewsingleohlc(symbolid,timeframeid):
         'spread' : symbol_info.spread,
         'trade_contract_size' : symbol_info.trade_contract_size,
         'balance' : accountinfo.balance,
+        'equity' : accountinfo.equity,
     }
 
     isMarketClose = 0    
@@ -1191,8 +1215,9 @@ def getNewsingleohlc(symbolid,timeframeid):
         StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M30').first().value,
         StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'H1').first().value,
         StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'H4').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'D1').first().value,
     ]
-
+    # print(ohlcs_d1)
     data = {
         'ohlcs_m1':ohlcs_m1,
         'ohlcs_m5':ohlcs_m5,
@@ -1200,9 +1225,18 @@ def getNewsingleohlc(symbolid,timeframeid):
         'ohlcs_m30':ohlcs_m30,
         'ohlcs_h1':ohlcs_h1,
         'ohlcs_h4':ohlcs_h4,
+        'ohlcs_d1':ohlcs_d1,
         'calculationInfo' : calculationInfo,
         'isMarketClose' : isMarketClose,
-        'stdbarsize' : stdbarsize
+        'stdbarsize' : stdbarsize,
+        'stdbarsm1': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe='M1')),
+        'stdbarsm5': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe='M5')),
+        'stdbarsm15': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe='M15')),
+        'stdbarsm30': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe='M30')),
+        'stdbarsh1': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe='H1')),
+        'stdbarsh4': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe='H4')),
+        'stdbarsd1': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe='D1')),
+        # 'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id)),
     }
       
     return data 
@@ -1218,6 +1252,7 @@ def getsingleohlc(request):
     mt5.login(myaccount.login,myaccount.password,myaccount.server)
 
     accountinfo = mt5.account_info()
+    # print(accountinfo)
 
     timeframeid = request.POST.get('timeframe')
     symbolid = request.POST.get('symbol')
@@ -1705,96 +1740,10 @@ def getorders(request):
     timeframeid = request.POST.get('timeframe')
     symbolid = request.POST.get('symbol')
 
-    # print(timeframeid)
 
     _symbol = Symbol.objects.filter(id = symbolid).first()
     _timeframe = TimeFrame.objects.filter(id = timeframeid).first()
-    # dataframe = getattr(mt5, f'TIMEFRAME_{_timeframe.name}')
 
-    ohlcs_m1 = []
-    ohlcs_m5 = []
-    ohlcs_m15 = []
-    ohlcs_m30 = []
-    ohlcs_h1 = []
-    # ohlcs_h4 = []
-    # ohlcs_d1 = []
-
-    ohlc_data_m1 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M1, 0, 450))
-    ohlc_data_m1['time']=pd.to_datetime(ohlc_data_m1['time'], unit='s',utc=True)
-    for i, data in ohlc_data_m1.iterrows():
-        ohlc = {
-            'time':data['time'],
-            'open':data['open'],
-            'high':data['high'],
-            'low':data['low'],
-            'close':data['close'], 
-            'tick':data['tick_volume'],
-        }
-        ohlcs_m1.append(ohlc)
-
-    ohlc_data_m5 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M5, 0, 450))
-    ohlc_data_m5['time']=pd.to_datetime(ohlc_data_m5['time'], unit='s',utc=True)
-    for i, data in ohlc_data_m5.iterrows():
-        ohlc = {
-            'time':data['time'],
-            'open':data['open'],
-            'high':data['high'],
-            'low':data['low'] ,
-            'close':data['close'], 
-            'tick':data['tick_volume'],
-        }
-        ohlcs_m5.append(ohlc)
-
-    ohlc_data_m15 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M15, 0, 450))
-    ohlc_data_m15['time']=pd.to_datetime(ohlc_data_m15['time'], unit='s',utc=True)
-    for i, data in ohlc_data_m15.iterrows():
-        ohlc = {
-            'time':data['time'],
-            'open':data['open'],
-            'high':data['high'],
-            'low':data['low'] ,
-            'close':data['close'], 
-            'tick':data['tick_volume'],
-        }
-        ohlcs_m15.append(ohlc)
-
-    ohlc_data_m30 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_M30, 0, 2))
-    ohlc_data_m30['time']=pd.to_datetime(ohlc_data_m30['time'], unit='s',utc=True)
-    for i, data in ohlc_data_m30.iterrows():
-        ohlc = {
-            'time':data['time'],
-            'open':data['open'] ,
-            'high':data['high'],
-            'low':data['low'] ,
-            'close':data['close'], 
-            'tick':data['tick_volume'],
-        }
-        ohlcs_m30.append(ohlc)
-
-    ohlc_data_h1 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_H1, 0, 2))
-    ohlc_data_h1['time']=pd.to_datetime(ohlc_data_h1['time'], unit='s',utc=True)
-    for i, data in ohlc_data_h1.iterrows():
-        ohlc = {
-            'time':data['time'],
-            'open':data['open'] ,
-            'high':data['high'],
-            'low':data['low'] ,
-            'close':data['close'], 
-            'tick':data['tick_volume'],
-        }
-        ohlcs_h1.append(ohlc)
-
-      
-    ohlctimeframe = []
-    ohlctimeframe = [
-        
-        # {'h4': ohlcs_h4[len(ohlcs_h4)-1]},
-        {'h1': ohlcs_h1[len(ohlcs_h1)-1]},
-        {'m30': ohlcs_m30[len(ohlcs_m30)-1]},
-        {'m15': ohlcs_m15[len(ohlcs_m15)-1]},          
-        {'m5': ohlcs_m5[len(ohlcs_m5)-1]},     
-        {'m1': ohlcs_m1[len(ohlcs_m1)-1]},     
-    ]
 
     m1barsize = [
         StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M1').first().value,
@@ -1825,156 +1774,15 @@ def getorders(request):
         'balance' : accountinfo.balance,
     }
 
-    ids = StdBarSize.objects.all().values('symbol_id').distinct()
     positions=mt5.positions_get()
-    positionsymbol = []
-    if positions==None:
-        print("No positions found")
-    elif len(positions)>0:
-        for position in positions:
-            sb = Symbol.objects.filter(name=position.symbol).first()
-            positionsymbol.append(sb.id)  
 
-    greenOrred = []
-    searchs = Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = positionsymbol)
-    
-    for search in searchs:
-        allred = True
-        allgreen = True
-        _ohlcs_m1 = []
-        m1_data = pd.DataFrame(mt5.copy_rates_from_pos(search.name, mt5.TIMEFRAME_M1, 0, 70))
-        m1_data['time']=pd.to_datetime(m1_data['time'], unit='s',utc=True)
-        for i, data in m1_data.iterrows():
-            ohlc = {
-                'open':float(data['open']) ,
-                'high':float(data['high']),
-                'low':float(data['low']) ,
-                'close':float(data['close']), 
-            }
-            _ohlcs_m1.append(ohlc)
-
-        ohlcs_m1_arr = _ohlcs_m1[-1:][0]
-
-      
-        m1from_m1_data = {
-            'open':ohlcs_m1_arr['open'],
-            'high':ohlcs_m1_arr['high'],
-            'low':ohlcs_m1_arr['low'],
-            'close':ohlcs_m1_arr['close'], 
-        }    
-
-        if float(m1from_m1_data['close']) > float(m1from_m1_data['open']) :
-            allred = False
-        else:
-            allgreen = False
-
-        ohlcs_m5_arr = _ohlcs_m1[-5:]
-        max_high_ohlcs_m5 = 0
-        for i in ohlcs_m5_arr:
-            if i['high'] > max_high_ohlcs_m5:
-                max_high_ohlcs_m5 = i['high']
-                
-        min_low_ohlcs_m5 = max_high_ohlcs_m5        
-        for i in ohlcs_m5_arr:
-            if i['low'] < min_low_ohlcs_m5:
-                min_low_ohlcs_m5 = i['low']
-
-        open_ohlcs_m5 = ohlcs_m5_arr[0]['open']
-        close_ohlcs_m5 = ohlcs_m5_arr[len(ohlcs_m5_arr)-1]['close']
-
-        m5from_m1_data = {
-            'open':open_ohlcs_m5,
-            'high':max_high_ohlcs_m5,
-            'low':min_low_ohlcs_m5,
-            'close':close_ohlcs_m5, 
-        }
-
-        if float(m5from_m1_data['close']) > float(m5from_m1_data['open']) :
-            allred = False
-        else:
-            allgreen = False
-
-        ohlcs_m15_arr = _ohlcs_m1[-15:]
-        max_high_ohlcs_m15 = 0
-        for i in ohlcs_m15_arr:
-            if i['high'] > max_high_ohlcs_m15:
-                max_high_ohlcs_m15 = i['high']
-                
-        min_low_ohlcs_m15 = max_high_ohlcs_m15        
-        for i in ohlcs_m15_arr:
-            if i['low'] < min_low_ohlcs_m15:
-                min_low_ohlcs_m15 = i['low']
-
-        open_ohlcs_m15 = ohlcs_m15_arr[0]['open']
-        close_ohlcs_m15 = ohlcs_m15_arr[len(ohlcs_m15_arr)-1]['close']
-
-        m15from_m1_data = {
-            'open':open_ohlcs_m15,
-            'high':max_high_ohlcs_m15,
-            'low':min_low_ohlcs_m15,
-            'close':close_ohlcs_m15, 
-        }
-
-        if float(m15from_m1_data['close']) > float(m15from_m1_data['open']) :
-            allred = False
-        else:
-            allgreen = False
-
-        ohlcs_m30_arr = _ohlcs_m1[-30:]
-        max_high_ohlcs_m30 = 0
-        for i in ohlcs_m30_arr:
-            if i['high'] > max_high_ohlcs_m30:
-                max_high_ohlcs_m30 = i['high']
-                
-        min_low_ohlcs_m30 = max_high_ohlcs_m30        
-        for i in ohlcs_m30_arr:
-            if i['low'] < min_low_ohlcs_m30:
-                min_low_ohlcs_m30 = i['low']
-
-        open_ohlcs_m30 = ohlcs_m30_arr[0]['open']
-        close_ohlcs_m30 = ohlcs_m30_arr[len(ohlcs_m30_arr)-1]['close']
-
-        m30from_m1_data = {
-            'open':open_ohlcs_m30,
-            'high':max_high_ohlcs_m30,
-            'low':min_low_ohlcs_m30,
-            'close':close_ohlcs_m30, 
-        }
-
-        if float(m30from_m1_data['close']) > float(m30from_m1_data['open']) :
-            allred = False
-        else:
-            allgreen = False
-
-
-        if allred == True or allgreen == True:
-            # m5_body = abs(m5from_m1_data['open'] - m5from_m1_data['close'])
-            # std_m5_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M5').first().value
-            # m5_percent = ((std_m5_barsize - m5_body)/m5_body)*100
-
-            # m15_body = abs(m15from_m1_data['open'] - m15from_m1_data['close'])
-            # std_m15_barsize = StdBarSize.objects.filter(symbolname = search.name,timeframe = 'M15').first().value
-            # m15_percent = ((std_m15_barsize - m15_body)/m15_body)*100
-            
-            # if m5_percent < 0 and m15_percent < 0 :
-            greenOrred.append(search.id)
-
-           
-
-    isMarketClose = 0    
-    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
-        isMarketClose = 1
-
-    positions=mt5.positions_get()
-    positionsymbol = []
     orders = []
+    print("AHA")
     if positions==None:
         print("No positions found")
     elif len(positions)>0:
         for position in positions:
-            # print(position.symbol)
-            sb = Symbol.objects.filter(name=position.symbol).first()
-            positionsymbol.append(sb.id)  
+            print(position.ticket)
             orders.append({
                 'symbol' : position.symbol,
                 'ticket' : position.ticket,
@@ -1984,21 +1792,15 @@ def getorders(request):
                 'comment' : position.comment,
             })   
 
-
     data = {
         'symbol':_symbol.name,
         'timeframe':_timeframe.name,
         'm1barsize' : m1barsize,
-        'ohlc':ohlcs_m1, 
-        'ohlctimeframe':ohlctimeframe, 
-        'entryspecs': serializers.serialize('json', Spec.objects.filter(symbol_id = symbolid, status =1, spec_type =1)),
-        'exitspecs': serializers.serialize('json', Spec.objects.filter(symbol_id = symbolid, status =1, spec_type =2)),
         'calculationInfo': calculationInfo,
         'usdbase': usdbase,
         'barsize' : serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid, timeframe = 'M1')),
-        'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = greenOrred)),
-        # 'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id)),
-        'isMarketClose' : isMarketClose,
+        'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id)),
+
         'orders' : orders
         
     }
@@ -2006,41 +1808,22 @@ def getorders(request):
     return JsonResponse(data)
 
 def getordersymbols(request):
-    # setting = Setting.objects.first()
-    # myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
-    
-    # if not mt5.initialize():
-    #     print("initialize() failed")
-    #     mt5.shutdown()
-
-    # mt5.login(myaccount.login,myaccount.password,myaccount.server)
-    # accountinfo = mt5.account_info()
-
-    # positions=mt5.positions_get()
-    # positionsymbol = []
-    # if positions==None:
-    #     print("No positions found")
-    # elif len(positions)>0:
-    #     for position in positions:
-    #         sb = Symbol.objects.filter(name=position.symbol).first()
-    #         positionsymbol.append(sb.id)  
-    # # greenOrred = []
-    # # searchs = Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = positionsymbol)
-    # print(positionsymbol)
-    # data = {
-    #     'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id,id__in = positionsymbol)), 
-    # }
-    # return JsonResponse(data)
+    if not mt5.initialize():
+        print("initialize() failed, error code =",mt5.last_error())
+        quit()
     positions=mt5.positions_get()
     positionsymbol = []
     orders = []
+    
     if positions==None:
         print("No positions found")
     elif len(positions)>0:
+       
         for position in positions:
-            # print(position.symbol)
+            
             sb = Symbol.objects.filter(name=position.symbol).first()
             positionsymbol.append(sb.id)  
+            symbol_info=mt5.symbol_info(position.symbol)
             orders.append({
                 'symbol' : position.symbol,
                 'ticket' : position.ticket,
@@ -2048,10 +1831,16 @@ def getordersymbols(request):
                 'type' : position.type,
                 'profit' : position.profit,
                 'comment' : position.comment,
+                'spread' : symbol_info.spread,
             })  
+            
+   
+    
     data = {
          'orders' : orders
     }
+    # positions_total=mt5.positions_total()
+    # print(positions_total)
     return JsonResponse(data)        
 
 
@@ -2273,15 +2062,15 @@ def entrybuyposition(request):
 def openorder(request):
     setting = Setting.objects.first()
     
-    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    # myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
     
     if not mt5.initialize():
         print("initialize() failed")
         mt5.shutdown()
 
-    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+    # mt5.login(myaccount.login,myaccount.password,myaccount.server)
 
-    accountinfo = mt5.account_info()
+    # accountinfo = mt5.account_info()
     # print(accountinfo)
 
     ordertype = request.POST.get('ordertype')   
@@ -2289,33 +2078,49 @@ def openorder(request):
 
     symbol = request.POST.get('symbol') #Symbol.objects.filter(id = request.POST.get('symbol') ).first().name
     tick = mt5.symbol_info_tick(symbol)
-
-    order_dict = {'buy': 0, 'sell': 1};
-    price_dict = {'buy': float(tick.ask), 'sell': float(tick.bid)};
-
-    deviation = 20
-    n = int(setting.numorder)
-    for i in range(n):
-        myuuid = str(uuid.uuid4().hex[:8])
-        request = {
-            "action": mt5.TRADE_ACTION_DEAL,
-            "symbol": symbol,
-            "volume": float(lot),
-            "type": order_dict[ordertype],
-            "price": price_dict[ordertype],
-            "sl": 0.0,
-            "tp": 0.0,
-            "deviation": deviation,
-            "magic": 234000,
-            "comment": symbol,
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
-        }
-        # send a trading request
-        result = mt5.order_send(request)
-        print(result) 
-
+    symbol_info=mt5.symbol_info(symbol)
     positions=mt5.positions_get()
+    # print(len(positions))
+    isMarketClose = False    
+    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
+        isMarketClose = True
+    current_time = datetime.utcnow()
+    current_hour = int(current_time.strftime("%H"))
+    # print(current_hour)
+
+    # positions=mt5.positions_get()
+    # print(positions)
+    ordercount =mt5.positions_total()
+    # print(ordercount)
+    result = ''
+    if(symbol_info.spread <=25 and ordercount <= 3 and isMarketClose == False and (current_hour > 0 and current_hour < 19)):
+    
+        order_dict = {'buy': 0, 'sell': 1};
+        price_dict = {'buy': float(tick.ask), 'sell': float(tick.bid)};
+
+        deviation = 20
+        n = int(setting.numorder)
+        for i in range(n):
+            myuuid = str(uuid.uuid4().hex[:8])
+            request = {
+                "action": mt5.TRADE_ACTION_DEAL,
+                "symbol": symbol,
+                "volume": float(lot),
+                "type": order_dict[ordertype],
+                "price": price_dict[ordertype],
+                "sl": 0.0,
+                "tp": 0.0,
+                "deviation": deviation,
+                "magic": 234000,
+                "comment": symbol,
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_IOC,
+            }
+            # send a trading request
+            result = mt5.order_send(request)
+            print(result) 
+
+    
     # print(positions)
     orders = []
     if positions==None:
@@ -2382,6 +2187,7 @@ def closeorder(request):
     
             deviation=20
             tick=mt5.symbol_info_tick(symbol)
+            print(tick)
 
             price_dict = {0: tick.ask, 1: tick.bid}
 
@@ -2749,7 +2555,7 @@ def manualaddbarsize(request):
 
 
 def deletesymbol(request):
-    id = 65
+    id = 72
     Symbol.objects.filter(id = id).delete()
     data = {
         'backtestjobs' :  '', 
@@ -2861,30 +2667,30 @@ def Chart(request):
     })
 
 
-def openorder(request):
-    setting = Setting.objects.first()
-    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+# def openorder(request):
+#     setting = Setting.objects.first()
+#     myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
     
-    if not mt5.initialize():
-        print("initialize() failed")
-        mt5.shutdown()
+#     if not mt5.initialize():
+#         print("initialize() failed")
+#         mt5.shutdown()
 
-    mt5.login(myaccount.login,myaccount.password,myaccount.server)
-    accountinfo = mt5.account_info()
+#     mt5.login(myaccount.login,myaccount.password,myaccount.server)
+#     accountinfo = mt5.account_info()
 
-    stdbalance= accountinfo.balance/2500
-    lotinfo = {
-        'balance': accountinfo.balance,
-        'lotsize': "{:.2f}".format(stdbalance),
-        'takeprofit': "{:.2f}".format(stdbalance*100),
-        'stoplost': "{:.2f}".format(stdbalance*60),
-    }
+#     stdbalance= accountinfo.balance/2500
+#     lotinfo = {
+#         'balance': accountinfo.balance,
+#         'lotsize': "{:.2f}".format(stdbalance),
+#         'takeprofit': "{:.2f}".format(stdbalance*100),
+#         'stoplost': "{:.2f}".format(stdbalance*60),
+#     }
 
-    return render(request,'openorder.html',{
-        'setting': setting,
-        'lotinfo': lotinfo,
-        'symbols':Symbol.objects.filter(status="1",broker_id=myaccount.broker_id).order_by('name'),
-    })   
+#     return render(request,'openorder.html',{
+#         'setting': setting,
+#         'lotinfo': lotinfo,
+#         'symbols':Symbol.objects.filter(status="1",broker_id=myaccount.broker_id).order_by('name'),
+#     })   
 
 def saveopenorder(request):
     setting = Setting.objects.first()
@@ -2907,11 +2713,11 @@ def saveopenorder(request):
     ordertype = request.POST.get('ordertype')
     
 
-    stdbalance= accountinfo.balance/2500
+    stdbalance= accountinfo.balance/250
     lotinfo = {
         'balance': accountinfo.balance,
         'lotsize': "{:.2f}".format(stdbalance),
-        'takeprofit': "{:.2f}".format(stdbalance*100),
+        'takeprofit': "{:.2f}".format(stdbalance*75),
         'stoplost': "{:.2f}".format(stdbalance*60),
     }
    
@@ -2920,3 +2726,376 @@ def saveopenorder(request):
         'lotinfo': lotinfo,
         'symbols':Symbol.objects.filter(status="1",broker_id=myaccount.broker_id).order_by('name'),
     })
+
+def ichimokubacktest(request):
+    setting = Setting.objects.first()
+    
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+
+    accountinfo = mt5.account_info()
+    isMarketClose = 0    
+    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
+        isMarketClose = 1
+    symbol = 'USDJPY'
+    check = Symbol.objects.filter(name=request.GET.get('symbol'))   
+    if(len(check) !=0):
+        symbol = request.GET.get('symbol','')
+    return render(request,'ichimokubacktest.html',{
+        'symbols':Symbol.objects.filter(status="1",broker_id=myaccount.broker_id).order_by('name'),
+        'timeframes':TimeFrame.objects.all(),
+        'backtestsizes':BackTestSize.objects.all(),
+        'apisymbols': serializers.serialize('json', Symbol.objects.filter(status="1",broker_id=myaccount.broker_id)),
+        'isMarketClose' : isMarketClose,
+        'symbol' : symbol
+    })
+
+
+def searchIchimokuOhlc(request):
+
+    # current_time = datetime.utcnow()
+    # current_hour = int(current_time.strftime("%H"))
+    # print(current_hour)
+    timeframeid = TimeFrame.objects.filter(name=request.POST.get('timeframe')).first().id
+
+    return JsonResponse(getichimokuohlc(request.POST.get('symbol'),timeframeid,request.POST.get('timeframe')))
+
+def getichimokuohlc(symbolid,timeframeid,timeframename):
+    # timeframeid = 1
+    # symbolid = 4
+
+    setting = Setting.objects.first()
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+
+    accountinfo = mt5.account_info()
+    # print(accountinfo)
+    
+
+    _symbol = Symbol.objects.filter(id = symbolid).first()
+    _timeframe = TimeFrame.objects.filter(id = timeframeid).first()
+
+
+    ohlcs = []
+
+
+    ohlc_data_h1 = pd.DataFrame(mt5.copy_rates_from_pos(_symbol.name, mt5.TIMEFRAME_H1, 0, 450))
+    ohlc_data_h1['time']=pd.to_datetime(ohlc_data_h1['time'], unit='s',utc=True)
+    for i, data in ohlc_data_h1.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs.append(ohlc)
+
+    symbol_info=mt5.symbol_info(_symbol.name)
+
+    usdbase = 1
+
+    if symbol_info.name.find('USD') == -1:
+        usbasesymbol = symbol_info.name[0:3] + 'USD'
+        _sb = mt5.symbol_info_tick(usbasesymbol)
+        if _sb != None:
+            usdbase = _sb.ask
+    # print(symbol_info)
+    calculationInfo ={
+        'symbol': symbol_info.name,
+        'bid' : symbol_info.bid,
+        'ask' : symbol_info.ask,
+        'degit' : symbol_info.digits,
+        'spread' : symbol_info.spread,
+        'trade_contract_size' : symbol_info.trade_contract_size,
+        'balance' : accountinfo.balance,
+    }
+
+    isMarketClose = 0    
+    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
+        isMarketClose = 1
+
+    stdbarsize = [
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M1').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M5').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M15').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'M30').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'H1').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'H4').first().value,
+        StdBarSize.objects.filter(symbol_id = symbolid,timeframe = 'D1').first().value,
+    ]
+    # print(timeframeid)
+    data = {
+
+        'ohlcs':ohlcs,
+
+        'calculationInfo' : calculationInfo,
+        'isMarketClose' : isMarketClose,
+        'stdbarsize' : stdbarsize,
+        'stdbars': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbolid,timeframe=timeframename)),
+    }
+      
+    return data 
+
+
+def getfirstbar(request):
+    setting = Setting.objects.first()
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+
+    accountinfo = mt5.account_info()
+    symbol = Symbol.objects.filter(id = request.POST.get('symbol')).first()
+    timeframe = TimeFrame.objects.filter(id = request.POST.get('timeframe')).first()
+    barposition =  BackTestSize.objects.filter(id = request.POST.get('barposition')).first()
+    # print(barposition.size)
+
+    # testdate = request.POST.get('currentdate')
+   
+
+
+    # currentdata = mt5.copy_rates_from_pos(symbol.name, mt5.TIMEFRAME_M1, 0, 1)
+
+    currentdata = pd.DataFrame(mt5.copy_rates_from_pos(symbol.name, mt5.TIMEFRAME_M1, 0, 1))
+    currentdata['time']=pd.to_datetime(currentdata['time'], unit='s',utc=True)
+    
+    # print(currentdata.iloc[0]['time'])
+    
+
+    refohlc = []
+    df = pd.DataFrame(mt5.copy_rates_from_pos(symbol.name,getattr(mt5, f'TIMEFRAME_{timeframe.name}'), 0, 450+barposition.size))
+    df['time']=pd.to_datetime(df['time'], unit='s',utc=True)
+    for i, data in df.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        refohlc.append(ohlc)
+
+    data = {
+        'refohlc':refohlc,
+    }
+
+    return JsonResponse(data)
+
+def getichimokuohlc(request):
+    setting = Setting.objects.first()
+    myaccount = MyAccount.objects.filter(id = setting.myaccount_id).first()
+    
+    if not mt5.initialize():
+        print("initialize() failed")
+        mt5.shutdown()
+
+    mt5.login(myaccount.login,myaccount.password,myaccount.server)
+
+    accountinfo = mt5.account_info()
+    symbol = Symbol.objects.filter(id = request.POST.get('symbol')).first()
+    timeframe = TimeFrame.objects.filter(id = request.POST.get('timeframe')).first()
+    rates = []
+    # print(request.POST.get('startdate'))
+    if timeframe.name == 'M5':
+        rates = getbacktestohlcm5(request.POST.get('startdate'),symbol.name,450)
+    elif timeframe.name == 'M15':
+        rates = getbacktestohlcm15(request.POST.get('startdate'),symbol.name,450)
+    elif timeframe.name == 'M30':
+        rates = getbacktestohlcm30(request.POST.get('startdate'),symbol.name,450)
+    elif timeframe.name == 'H1':
+        rates = getbacktestohlch1(request.POST.get('startdate'),symbol.name,450)
+    elif timeframe.name == 'H4':
+        rates = getbacktestohlch4(request.POST.get('startdate'),symbol.name,450)
+    elif timeframe.name == 'D1':
+        rates = getbacktestohlcd1(request.POST.get('startdate'),symbol.name,450)
+    
+    # print(getbacktestohlcd1(request.POST.get('startdate'),symbol.name,10))
+
+    # print(initial_datetime)
+
+    ohlcs = []
+    for i, data in rates.iterrows():
+        ohlc = {
+            'time':data['time'],
+            'open':data['open'] ,
+            'high':data['high'],
+            'low':data['low'] ,
+            'close':data['close'], 
+            'tick':data['tick_volume'],
+        }
+        ohlcs.append(ohlc)
+
+    symbol_info=mt5.symbol_info(symbol.name)
+    # print()
+    usdbase = 1
+
+    if symbol_info.name.find('USD') == -1:
+        usbasesymbol = symbol_info.name[0:3] + 'USD'
+        _sb = mt5.symbol_info_tick(usbasesymbol)
+        if _sb != None:
+            usdbase = _sb.ask
+    # print(symbol_info)
+    calculationInfo ={
+        'symbol': symbol_info.name,
+        'bid' : symbol_info.bid,
+        'ask' : symbol_info.ask,
+        'degit' : symbol_info.digits,
+        'spread' : symbol_info.spread,
+        'trade_contract_size' : symbol_info.trade_contract_size,
+        'balance' : accountinfo.balance,
+    }
+
+    isMarketClose = 0    
+    if datetime.today().strftime('%A') == 'Saturday' or datetime.today().strftime('%A') == 'Sunday':
+        isMarketClose = 1
+
+    stdbarsize = [
+        StdBarSize.objects.filter(symbol_id = symbol.id,timeframe = 'M1').first().value,
+        StdBarSize.objects.filter(symbol_id = symbol.id,timeframe = 'M5').first().value,
+        StdBarSize.objects.filter(symbol_id = symbol.id,timeframe = 'M15').first().value,
+        StdBarSize.objects.filter(symbol_id = symbol.id,timeframe = 'M30').first().value,
+        StdBarSize.objects.filter(symbol_id = symbol.id,timeframe = 'H1').first().value,
+        StdBarSize.objects.filter(symbol_id = symbol.id,timeframe = 'H4').first().value,
+        StdBarSize.objects.filter(symbol_id = symbol.id,timeframe = 'D1').first().value,
+    ]
+
+    data = {
+        'ohlcs':ohlcs,
+        'calculationInfo' : calculationInfo,
+        'isMarketClose' : isMarketClose,
+        'stdbarsize' : stdbarsize,
+        'stdbars': serializers.serialize('json', StdBarSize.objects.filter(symbol_id = symbol.id,timeframe=timeframe.name)),
+    }
+
+    return JsonResponse(data)
+
+def getbacktestohlcm5(startdate,sb,num):
+    todate = datetime.strptime(startdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
+    hour  = timedelta(minutes=num*5)
+    initial_datetime = datetime(todate.year, todate.month, todate.day, todate.hour, todate.minute, 0)
+    fromdate = initial_datetime - hour 
+
+    # print('from')
+    # print(fromdate)
+    
+    # print('to')
+    # print(todate)
+
+    utc_from = datetime(fromdate.year, fromdate.month, fromdate.day,fromdate.hour,fromdate.minute, tzinfo=pytz.timezone("UTC"))
+    utc_to = datetime(todate.year, todate.month, todate.day,todate.hour,todate.minute, tzinfo=pytz.timezone("UTC"))
+    rates = mt5.copy_rates_range(sb, mt5.TIMEFRAME_M5, utc_from, utc_to)
+    rates_frame = pd.DataFrame(rates)
+    rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
+    return rates_frame   
+
+def getbacktestohlcm15(startdate,sb,num):
+    todate = datetime.strptime(startdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
+    hour  = timedelta(minutes=num*15)
+    initial_datetime = datetime(todate.year, todate.month, todate.day, todate.hour, todate.minute, 0)
+    fromdate = initial_datetime - hour 
+
+    # print('from')
+    # print(fromdate)
+    
+    # print('to')
+    # print(todate)
+
+    utc_from = datetime(fromdate.year, fromdate.month, fromdate.day,fromdate.hour,fromdate.minute, tzinfo=pytz.timezone("UTC"))
+    utc_to = datetime(todate.year, todate.month, todate.day,todate.hour,todate.minute, tzinfo=pytz.timezone("UTC"))
+    rates = mt5.copy_rates_range(sb, mt5.TIMEFRAME_M15, utc_from, utc_to)
+    rates_frame = pd.DataFrame(rates)
+    rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
+    return rates_frame   
+
+def getbacktestohlcm30(startdate,sb,num):
+    todate = datetime.strptime(startdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
+    hour  = timedelta(minutes=num*30)
+    initial_datetime = datetime(todate.year, todate.month, todate.day, todate.hour, todate.minute, 0)
+    fromdate = initial_datetime - hour 
+
+    # print('from')
+    # print(fromdate)
+    
+    # print('to')
+    # print(todate)
+
+    utc_from = datetime(fromdate.year, fromdate.month, fromdate.day,fromdate.hour,fromdate.minute, tzinfo=pytz.timezone("UTC"))
+    utc_to = datetime(todate.year, todate.month, todate.day,todate.hour,todate.minute, tzinfo=pytz.timezone("UTC"))
+    rates = mt5.copy_rates_range(sb, mt5.TIMEFRAME_M30, utc_from, utc_to)
+    rates_frame = pd.DataFrame(rates)
+    rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
+    return rates_frame      
+
+def getbacktestohlch1(startdate,sb,num):
+    todate = datetime.strptime(startdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
+    hour  = timedelta(hours=num*1)
+    initial_datetime = datetime(todate.year, todate.month, todate.day, todate.hour, todate.minute, 0)
+    fromdate = initial_datetime - hour 
+
+    # print('from')
+    # print(fromdate)
+    
+    # print('to')
+    # print(todate)
+
+    utc_from = datetime(fromdate.year, fromdate.month, fromdate.day,fromdate.hour,fromdate.minute, tzinfo=pytz.timezone("UTC"))
+    utc_to = datetime(todate.year, todate.month, todate.day,todate.hour,todate.minute, tzinfo=pytz.timezone("UTC"))
+    rates = mt5.copy_rates_range(sb, mt5.TIMEFRAME_H1, utc_from, utc_to)
+    rates_frame = pd.DataFrame(rates)
+    rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
+    return rates_frame   
+
+
+def getbacktestohlch4(startdate,sb,num):
+    todate = datetime.strptime(startdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
+    hour  = timedelta(hours=num*4)
+    initial_datetime = datetime(todate.year, todate.month, todate.day, todate.hour, todate.minute, 0)
+    fromdate = initial_datetime - hour 
+
+    # print('from')
+    # print(fromdate)
+    
+    # print('to')
+    # print(todate)
+
+    utc_from = datetime(fromdate.year, fromdate.month, fromdate.day,fromdate.hour,fromdate.minute, tzinfo=pytz.timezone("UTC"))
+    utc_to = datetime(todate.year, todate.month, todate.day,todate.hour,todate.minute, tzinfo=pytz.timezone("UTC"))
+    rates = mt5.copy_rates_range(sb, mt5.TIMEFRAME_H4, utc_from, utc_to)
+    rates_frame = pd.DataFrame(rates)
+    rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
+    return rates_frame   
+
+def getbacktestohlcd1(startdate,sb,num):
+    todate = datetime.strptime(startdate.strip().replace("T", " ").replace("Z", ""), '%Y-%m-%d %H:%M:%S')
+    hour  = timedelta(hours=num*24)
+    initial_datetime = datetime(todate.year, todate.month, todate.day, todate.hour, todate.minute, 0)
+    fromdate = initial_datetime - hour 
+
+    # print('from')
+    # print(fromdate)
+    
+    # print('to')
+    # print(todate)
+
+    utc_from = datetime(fromdate.year, fromdate.month, fromdate.day,fromdate.hour,fromdate.minute, tzinfo=pytz.timezone("UTC"))
+    utc_to = datetime(todate.year, todate.month, todate.day,todate.hour,todate.minute, tzinfo=pytz.timezone("UTC"))
+    rates = mt5.copy_rates_range(sb, mt5.TIMEFRAME_D1, utc_from, utc_to)
+    rates_frame = pd.DataFrame(rates)
+    rates_frame['time']=pd.to_datetime(rates_frame['time'], unit='s',utc=True)
+    return rates_frame      

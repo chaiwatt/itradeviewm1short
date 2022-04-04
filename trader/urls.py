@@ -66,5 +66,10 @@ urlpatterns = [
     path('searchsingleohlc',views.searchSingleOhlc,name='searchsingleohlc'),
     path('chart',views.Chart,name='chart'),
     path('saveopenorder',views.saveopenorder,name='saveopenorder'),
+    path('ichimokubacktest',views.ichimokubacktest,name='ichimokubacktest'),
+    path('searchichimokuohlc',views.searchIchimokuOhlc,name='searchichimokuohlc'),
+    path('getfirstbar',views.getfirstbar,name='getfirstbar'),
+    path('getichimokuohlc',views.getichimokuohlc,name='getichimokuohlc'),
+    
     
 ]

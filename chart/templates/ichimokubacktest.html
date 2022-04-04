@@ -1,0 +1,1640 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0 " ><span id="symbol"></span></h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Search</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+  
+      <!-- Main content -->
+      <div class="content">
+        {% csrf_token %}
+        <div class="container-fluid">
+     
+          <div class="row">
+            <div class="col-lg-9">
+
+                <div class="row">
+
+                    <!-- /.col -->
+                    <div class="col-md-4 col-sm-6 col-12">
+                        <div class="info-box bg-primary">
+                            <span class="info-box-icon"><i class="fas fa-sort-amount-up-alt"></i></span>
+            
+                            <div class="info-box-content">
+                            <span class="info-box-text" style="font-size: 20px;">SPREAD (POINTS)</span>
+                            <span class="info-box-number" id="spread" style="font-size: 26px;"></span>
+            
+                            
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-md-4 col-sm-6 col-12">
+                          <div class="info-box bg-success">
+                            <span class="info-box-icon"><i class="far fa-money-bill-alt"></i></span>
+              
+                            <div class="info-box-content">
+                              <span class="info-box-text" style="font-size: 20px;">SPREAD PRICE/LOT</span>
+                              <span class="info-box-number" id="spreadprice" style="font-size: 26px;"></span>
+              
+                           
+                            </div>
+                            <!-- /.info-box-content -->
+                          </div>
+                          <!-- /.info-box -->
+                        </div>
+             
+                        <div class="col-md-4 col-sm-6 col-12">
+                          <div class="info-box bg-info">
+                            <span class="info-box-icon"><i class="fas fa-search-dollar"></i></span>
+              
+                            <div class="info-box-content">
+                              <span class="info-box-text" style="font-size: 20px;">PIP PRICE/LOT</span>
+                              <span class="info-box-number" id="pipprice" style="font-size: 26px;"></span>
+              
+                            </div>
+                            <!-- /.info-box-content -->
+                          </div>
+                          <!-- /.info-box -->
+                        </div>
+                      </div>
+               
+              <div class="card">
+                <div class="card-body">
+                    <!-- <div id="canndle_stick_tf_m5" style="width: 98%; "></div> -->
+                    <!-- <div id="canndle_stick_chart_m1" ></div>
+                    <div id="canndle_stick_chart_m5" ></div>
+                    <div id="canndle_stick_chart_m15"></div>
+                    <div id="canndle_stick_chart_m30"></div> -->
+                    <div id="canndle_stick_chart"></div>
+                    <!-- <div id="canndle_stick_chart_h4"></div>
+                    <div id="canndle_stick_chart_d1"></div> -->
+                    <!-- <div id="macd_chart"></div> -->
+                </div>
+              </div>
+         
+  
+            </div>
+            <!-- /.col-md-6 -->
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Setting</h3>
+                      </div>
+                    <div class="card-body" >
+                        <!-- <div class="col-md-6"> -->
+                            <div class="form-group">
+                                
+                                    <label>Symbol</label>
+                                <div class="form-group">    
+                                    <select class="form-control"  name="selectedSymbol" id="symbolid" >
+                                        {% for symbol in symbols %}
+                                      
+                                            <option value="{{ symbol.id }}"
+                                                    {% if symbol.id  == backtest.symbol_id %}
+                                                        selected
+                                                    {% endif %}
+                                                >{{ symbol.name }}
+                                            </option>
+                                           
+                                            {% endfor %}
+                                    </select>
+                                  </div>
+                                
+                              </div>
+                          <!-- </div> -->
+        
+                          <!-- <div class="col-md-6"> -->
+                            <div class="form-group"> 
+                                <label for="backtesttimeframe">Time frame</label>
+                                <select class="form-control" name="selectedTimeframe" id="backtesttimeframe" >
+                                    {% for timeframe in timeframes %}
+                                    {% if timeframe.id  > 1 and timeframe.id  < 8 %}
+                                        <option value="{{ timeframe.id }}"
+                                            {% if timeframe.id == 5 %}
+                                                selected
+                                            {% endif %}
+                                        >{{ timeframe.name }}</option>
+                                        {%endif%}
+                                        {% endfor %}
+                                    
+                                </select>
+                            </div>
+                          <!-- </div>
+                          <div class="col-md-6"> -->
+                            <div class="form-group"> 
+                                <label for="timeframe">Previous Bar</label>
+                                <select class="form-control" name="backtestSize" id="backtestSize" >
+                                    <option value="0">== Select previous bar ==</option>
+                                    {% for backtestsize in backtestsizes %}
+                                        <option value="{{ backtestsize.id }}"
+                                            {% if backtest.backtestsize_id  == backtestsize.id %}
+                                                selected
+                                            {% endif %}
+                                        >{{ backtestsize.size }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group float-right">
+
+                                <button type="button" id="startBacktest" class="btn btn-primary">Start Testing</button>
+                                <!-- <button type="button" id="uploadImage" class="btn btn-primary">Upload Image</button> -->
+                                <!-- <button type="button" id="openbuyorder" class="btn btn-primary">Open Buy</button>
+                                <button type="button" id="opensellorder" class="btn btn-primary">Open Sell</button> -->
+                            </div>
+                          </div>
+                         
+                    <!-- </div> -->
+                </div>
+
+   
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ichimoku Information</h3>
+                      </div>
+                    <div class="card-body" >
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Detail</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                            <td>Date</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Symbol</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Timeframe</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Trend</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kumo SpanA Slope</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kumo SpanB Slope</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tenkan sen Slope</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kijun sen Slope</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chikou span Clear</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chikou span Slope</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>SMA200 Slope</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Stochastic Main</td>
+                                            <td>xx</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Stochastic Signal</td>
+                                            <td>xx</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                          
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+   
+
+    
+
+                 <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Orders</h3>
+                      </div>
+                    <div class="card-body" >
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group float-right">
+
+                                    <button type="button" id="btnGetSingleOhlc" class="btn btn-primary">Start Search</button>
+                                    <!-- <button type="button" id="uploadImage" class="btn btn-primary">Upload Image</button> -->
+                                    <!-- <button type="button" id="openbuyorder" class="btn btn-primary">Open Buy</button>
+                                    <button type="button" id="opensellorder" class="btn btn-primary">Open Sell</button> -->
+                                </div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+
+            </div>
+            <!-- /.col-md-6 -->
+          </div>
+          <!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+
+      <div class="modal fade" id="openorder_modal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">OPEN ORDER</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        
+                        <div class="form-group">
+                            <label for="stoplost">Symbol</label>
+                            <input type="text" class="form-control" id="symbolname" value="" readonly>
+                        </div>
+                     </div>
+                    <div class="col-md-12">
+                        
+                        <div class="form-group">
+                            <label for="stoplost">Stop Lost (0.01%)</label>
+                            <input type="text" class="form-control" id="stoplost" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="takeprofit">Take Profit (2xSL)</label>
+                            <input type="text" class="form-control" id="takeprofit" value="" >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="lotsize">Lot size</label>
+                            <input type="text" class="form-control" id="lotsize" value=""  >
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input type="text" class="form-control" id="price" value="" readonly >
+                        </div>
+                     </div>
+
+                     <div class="col-md-12">
+                        <label for="ordertype">Order Type</label>
+                        <select class="form-control" name="ordertype" id="ordertype" >
+                            <option value="0" >Order Buy</option>
+                            <option value="1" >Order Sell</option>
+                        </select>
+                     </div>
+
+                     <div class="col-md-12">
+                         <div class="form-group d-flex justify-content-between align-items-center">
+                            <button type="button" id="viewalltimeframe" class="btn btn-primary mt-3">View All TIMEFRAME</button>
+                            <button type="button" id="ordering" data-dismiss="modal" class="btn btn-info mt-3">Open Order</button>
+                         </div>
+                        
+                     </div>
+                     
+                </div>
+               
+            </div>
+       
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+
+      <div class="modal fade" id="modal-viewtimeframe">
+        <div class="modal-dialog" style="max-width: 80%;">
+          <div class="modal-content" >
+            <div class="modal-header">
+              <h4 class="modal-title" >TIMEFRAME: <span id="tfviewer"></span> </h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="canndle_stick_tf"></div>
+                     </div>
+                     <div class="col-md-12">
+                         <div class="form-group float-right">
+                            <button type="button" data-dismiss="modal" class="btn btn-default mt-3">close</button>
+                         </div>
+                     </div> 
+                </div>
+               
+            </div>
+       
+          </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+      </div>
+
+
+      <!-- /.modal -->
+      <!-- /.modal -->
+      <!-- /.content -->
+      <script>
+
+        // //Initialize Select2 Elements
+        $('.select2').select2();
+
+        // //Initialize Select2 Elements
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        })
+        var searchTimer;
+        var timerInterval = 5000;
+        var testRange = 250;
+        var count = 0;
+        var _rawData = [];
+        var slopeSpec = 0.00001;
+        var refohlcs = []
+        var stdbardata = null
+        
+
+        // var canndle_stick_chart_m1 = echarts.init(document.getElementById('canndle_stick_chart_m1'));  
+        // var canndle_stick_chart_m5 = echarts.init(document.getElementById('canndle_stick_chart_m5'));  
+        // var canndle_stick_chart_m15 = echarts.init(document.getElementById('canndle_stick_chart_m15'));  
+        // var canndle_stick_chart_m30 = echarts.init(document.getElementById('canndle_stick_chart_m30'));  
+        var canndle_stick_chart = echarts.init(document.getElementById('canndle_stick_chart')); 
+        // var canndle_stick_chart_h4 = echarts.init(document.getElementById('canndle_stick_chart_h4')); 
+        // var canndle_stick_chart_d1 = echarts.init(document.getElementById('canndle_stick_chart_d1')); 
+
+        var apisymbols = JSON.parse("{{apisymbols|escapejs}}"); 
+        // console.log(apisymbols)
+
+        var updateapisymbols = []
+        var responseData = [] ; 
+        var orderbuy_entry_specs = [];
+        var ordersale_entry_specs = [];
+
+        var orderbuy_close_specs = [];
+        var ordersell_close_specs = [];
+        var rsi_data = []
+        // var data_m1 = []
+        // var data_m5 = []
+        // var data_m15 = []
+        // var data_m30 = []
+        var data = []
+        // var data_h4 = []
+        // var data_d1 = []
+        // var data_tf_m1 = []
+        // var data_tf_m5 = []
+
+        // var axisData_m1 = [];
+        // var axisData_m5 = [];
+        // var axisData_m15 = [];
+        // var axisData_m30 = [];
+        var axisData = [];
+        // var axisData_h4 = [];
+        // var axisData_d1 = [];
+
+        // var SSMA20Arr = [];
+        // var SSMA50Arr = [];
+        // var SSMA100Arr = [];
+        
+        // var dataMA6_m1 = [];
+        // var dataMA6_m5 = [];
+        // var dataMA6_m15 = [];
+        // var dataMA6_m30 = [];
+        var dataMA6 = [];
+        // var dataMA6_h4 = [];
+        // var dataMA6_d1 = [];
+
+        // var dataMA10_m1 = [];
+        // var dataMA10_m5 = [];
+        // var dataMA10_m15 = [];
+        // var dataMA10_m30 = [];
+        var dataMA10 = [];
+        // var dataMA10_h4 = [];
+        // var dataMA10_d1= [];
+
+        // var dataMA20_m1 = [];
+        // var dataMA20_m5 = [];
+        // var dataMA20_m15 = [];
+        // var dataMA20_m30 = [];
+        var dataMA20 = [];
+        // var dataMA20_h4 = [];
+        // var dataMA20_d1 = [];
+
+        // var dataMA35_m1 = [];
+        // var dataMA35_m5 = [];
+        // var dataMA35_m15 = [];
+        // var dataMA35_m30 = [];
+        var dataMA35 = [];
+        // var dataMA35_h4 = [];
+        // var dataMA35_d1 = [];
+
+        // var dataMA100_m1 = [];
+        // var dataMA100_m5 = [];
+        // var dataMA100_m15 = [];
+        // var dataMA100_m30 = [];
+        var dataMA100 = [];
+        // var dataMA100_h4 = [];
+        // var dataMA100_d1 = [];
+
+        // var dataMA150_m1 = [];
+        // var dataMA150_m5 = [];
+        // var dataMA150_m15 = [];
+        // var dataMA150_m30 = [];
+        var dataMA150 = [];
+        // var dataMA150_h4 = [];
+        // var dataMA150_d1 = [];
+
+        // var dataMA200_m1 = [];
+        // var dataMA200_m5 = [];
+        // var dataMA200_m15 = [];
+        // var dataMA200_m30 = [];
+        var dataMA200 = [];
+        // var dataMA200_h4 = [];
+        // var dataMA200_d1 = [];
+
+        // var dataBody_m1 = [];
+        // var dataBody_m5 = [];
+        // var dataBody_m15 = [];
+        // var dataBody_m30 = [];
+        var dataBody = [];
+        // var dataBody_h4 = [];
+        // var dataBody_d1 = [];
+
+        // var tenkan_sen_d1 = [];
+        // var kijun_sen_d1 = [];
+        // var chisou_span_d1 = [];
+        // var senkou_span_a_d1 = [];
+        // var senkou_span_b_d1 = [];
+
+        // var tenkan_sen_h4 = [];
+        // var kijun_sen_h4 = [];
+        // var chisou_span_h4 = [];
+        // var senkou_span_a_h4 = [];
+        // var senkou_span_b_h4 = [];
+
+        var tenkan_sen = [];
+        var kijun_sen = [];
+        var chisou_span = [];
+        var senkou_span_a = [];
+        var senkou_span_b = [];
+
+        // var tenkan_sen_m30 = [];
+        // var kijun_sen_m30 = [];
+        // var chisou_span_m30 = [];
+        // var senkou_span_a_m30 = [];
+        // var senkou_span_b_m30 = [];
+
+        // var tenkan_sen_m15 = [];
+        // var kijun_sen_m15 = [];
+        // var chisou_span_m15 = [];
+        // var senkou_span_a_m15 = [];
+        // var senkou_span_b_m15 = [];
+
+        // var tenkan_sen_m5 = [];
+        // var kijun_sen_m5 = [];
+        // var chisou_span_m5 = [];
+        // var senkou_span_a_m5 = [];
+        // var senkou_span_b_m5 = [];
+
+        // var tenkan_sen_m1 = [];
+        // var kijun_sen_m1 = [];
+        // var chisou_span_m1 = [];
+        // var senkou_span_a_m1 = [];
+        // var senkou_span_b_m1 = [];
+
+        var MarkData = [];
+        var MarkDataTF = [];
+        var MarkDataTF_FromM1 = []
+        var MarkDataTFViewser = [];
+        var MacdCrossData  = [];
+        var markMA100LineCord = [];
+        var MarkMA100Slope  = [];
+        var sma100Trend = [];
+        var dataResult = null
+        var sma100ArrowLevel = null
+        var sma100PresentLevel = null
+        var orderBuyEntryPointflag = false;
+        var orderSellEntryPointflag = false;
+        var testResult = [];
+        var tmpDataIn = null;
+        var lineLenght = 10;
+        var momenttumBar = false;
+        var trendPattern = false;
+        var barSize = 0;
+        var selectedTimeframe = '';
+        var calculationinfo = null;
+        var orderStatus = false;
+        var orderinfo = null;
+        var accumulateprice = 0;
+        var presentBarInfo = null;
+        var currentselecteddate = '';
+        var measurepip = false;
+        var measurepipvalue = [];
+        var countfromorderposition = 0;
+        let positionmark = 0;
+        let usdbase = 1;
+        let _ohlc_timeframe = []
+        var allstdbarsizes = []
+        var symbolCountId = 0;
+        var bullishall = false;
+        var bearishall = false
+        var alltimeframetrend =[]
+        var stdbarsize = 0;
+
+        var macd_data =[]
+        var SignalArr = []
+        var HistogramArr = []
+        const freechikouRange = 3
+        let stochastic_data = []
+        var chikouspanSlope = []
+        var macdSlope = []
+        var databodySlope = []
+
+
+        function autoSearch(){
+            function searching(){
+                searchMarket();
+            }
+            searchTimer = setInterval(searching,timerInterval);
+        }
+
+        $(document).on('click','#btnGetSingleOhlc', function(){
+            // if (this.classList.contains('start')) {
+            //     this.classList.remove('start');
+            //     this.textContent = "Start Search";
+            //     clearInterval(searchTimer);
+            // } else {
+            //     this.classList.add('start');
+            //     this.textContent = "Stop Search";
+            //     autoSearch();
+            // }
+           
+            searchMarket(1);
+        })
+
+        $( document ).ready(function () {   
+            
+            // searchMarket(apisymbols[symbolCountId].pk);
+          
+            // setInterval(function(){
+            //     symbolCountId++
+            //     if(symbolCountId>=apisymbols.length){
+            //         symbolCountId = 0
+            //     }
+                
+            //     searchMarket(apisymbols[symbolCountId].pk);
+                
+            //  },5000)
+        });
+        function beep() {
+        (new Audio("data:audio/wav;base64,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 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU="
+            )).play();
+        }
+
+        function searchMarket(symbol){
+                let timeframe = 1;
+                let html_entrypoint_testspecs = ``
+                let html_openbuy_testspecs = ``
+                let html_opensell_testspecs = ``
+                console.log('stupid')
+                $("#symbol").html(apisymbols[symbolCountId].fields.name)
+                SearchIchimokuohlc(symbol,'M1').then(data_item => {
+                    usdbase = data_item.usdbase
+                    calculationinfo = data_item.calculationInfo;
+                    stdbarsize = data_item.stdbarsize[0]
+
+                    console.log('data_item.stdbarsize')
+                    
+                    
+               
+                    isMarketClose = data_item.isMarketClose
+                    let html_monitoring_symbol = ''
+       
+                    let pippriceperlotsize = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,1,usdbase)*10;
+                    let stoplossprice = parseFloat(stopLossPrice(stdbarsize.stoplostpercent,parseFloat(calculationinfo.balance)))
+                    let lotsize = getLotSize(stoplossprice,stdbarsize.stoplostpip,pippriceperlotsize).toFixed(5)*stdbarsize.lotsizeoffset
+                    let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
+                    $('#pipprice').html(pippriceperlotsize.toFixed(5));
+                    $('#spreadprice').html(-spreadprice+'$');
+                    $('#spread').html(calculationinfo.spread);
+
+          
+              
+                   
+                    createData(data_item);
+                }).catch(error => {})
+
+       
+        }
+
+        function SearchIchimokuohlc(symbol,timeframe){
+            return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    timeframe: timeframe,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'searchichimokuohlc' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+
+        function getApiSymbols(){
+            return new Promise((resolve, reject) => {
+                data = {
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getapisymbols' %}",
+                    dataType : "json",
+                    data: data,
+                    success: function(data) {
+                        resolve(data)
+                    },
+                    error: function(error) {
+                        reject(error)
+                    },
+                })
+            })
+        }
+
+        const sumArray = arr =>
+        (arr || Array.of(arr))
+            .sort((a, b) => a - b)
+            .slice(1, (arr && (arr.length - 1)))
+            .reduce((sum, n) => sum + n, 0)
+
+        function createData(response){
+            // m1 = response.ohlcs_m1;
+            // m5 = response.ohlcs_m5;
+            // m15 = response.ohlcs_m15;
+            // m30 = response.ohlcs_m30;
+            ohlcs = response.ohlcs;
+            // h4 = response.ohlcs_h4;
+            // d1 = response.ohlcs_d1;
+
+            // console.log('h4')
+            // console.log(h4)
+            
+            // data_m1 = getData(m1);
+            // data_m5 = getData(m5);
+            // data_m15 = getData(m15);
+            // data_m30 = getData(m30);
+            data = getData(ohlcs);
+            // data_h4 = getData(h4);
+            // data_d1 = getData(d1);
+
+            // let closedPrice_m1 = getClosedPrice(m1);
+            // let closedPrice_m5 = getClosedPrice(m5);
+            // let closedPrice_m15 = getClosedPrice(m15);
+            // let closedPrice_m30 = getClosedPrice(m30);
+            let closedPrice = getClosedPrice(ohlcs);
+            // let closedPrice_h4 = getClosedPrice(h4);
+            // let closedPrice_d1 = getClosedPrice(d1);
+
+            // let _tenkan_sen_d1 =  TenkanSen(getHighPrice(d1),getLowPrice(d1),9); 
+            // let _kijun_sen_d1 = KijunSen(getHighPrice(d1),getLowPrice(d1),26)
+            // let _senkou_span_a_d1 = SenkouSpanA(_tenkan_sen_d1,_kijun_sen_d1)
+            // senkou_span_a_d1 = Array(50).fill(null).concat(_senkou_span_a_d1);
+            // let _chisou_span_d1 = ChikouSpan(closedPrice_d1);
+            // let _senkou_span_b_d1 = SenkouSpanB(getHighPrice(d1),getLowPrice(d1),52);
+            // let dataLenght_d1 = senkou_span_a_d1.length
+            // tenkan_sen_d1 = Array(8).fill(null).concat(_tenkan_sen_d1).concat( Array(dataLenght_d1-_tenkan_sen_d1.length-8).fill(null));
+            // kijun_sen_d1 = Array(25).fill(null).concat(_kijun_sen_d1).concat( Array(dataLenght_d1-_kijun_sen_d1.length-25).fill(null));
+            // chisou_span_d1 = _chisou_span_d1.concat(Array(dataLenght_d1-_chisou_span_d1.length).fill(null));
+            // senkou_span_b_d1 = Array(76).fill(null).concat(_senkou_span_b_d1);
+            
+            // let _tenkan_sen_h4 =  TenkanSen(getHighPrice(h4),getLowPrice(h4),9); 
+            // let _kijun_sen_h4 = KijunSen(getHighPrice(h4),getLowPrice(h4),26)
+            // let _senkou_span_a_h4 = SenkouSpanA(_tenkan_sen_h4,_kijun_sen_h4)
+            // senkou_span_a_h4 = Array(50).fill(null).concat(_senkou_span_a_h4);
+            // let _chisou_span_h4 = ChikouSpan(closedPrice_h4);
+            // let _senkou_span_b_h4 = SenkouSpanB(getHighPrice(h4),getLowPrice(h4),52);
+            // let dataLenght_h4 = senkou_span_a_h4.length
+            // tenkan_sen_h4 = Array(8).fill(null).concat(_tenkan_sen_h4).concat( Array(dataLenght_h4-_tenkan_sen_h4.length-8).fill(null));
+            // kijun_sen_h4 = Array(25).fill(null).concat(_kijun_sen_h4).concat( Array(dataLenght_h4-_kijun_sen_h4.length-25).fill(null));
+            // chisou_span_h4 = _chisou_span_h4.concat(Array(dataLenght_h4-_chisou_span_h4.length).fill(null));
+            // senkou_span_b_h4 = Array(76).fill(null).concat(_senkou_span_b_h4);
+
+            
+
+            let _tenkan_sen =  TenkanSen(getHighPrice(ohlcs),getLowPrice(ohlcs),9); 
+            let _kijun_sen = KijunSen(getHighPrice(ohlcs),getLowPrice(ohlcs),26)
+            let _senkou_span_a = SenkouSpanA(_tenkan_sen,_kijun_sen)
+            senkou_span_a = Array(50).fill(null).concat(_senkou_span_a);
+            let _chisou_span = ChikouSpan(closedPrice);
+            let _senkou_span_b = SenkouSpanB(getHighPrice(ohlcs),getLowPrice(ohlcs),52);
+            let dataLenght = senkou_span_a.length
+            tenkan_sen = Array(8).fill(null).concat(_tenkan_sen).concat( Array(dataLenght-_tenkan_sen.length-8).fill(null));
+            kijun_sen = Array(25).fill(null).concat(_kijun_sen).concat( Array(dataLenght-_kijun_sen.length-25).fill(null));
+            chisou_span = _chisou_span.concat(Array(dataLenght-_chisou_span.length).fill(null));
+            senkou_span_b = Array(76).fill(null).concat(_senkou_span_b);
+
+            // console.log(chisou_span)
+
+
+            axisData = getDateLabel(ohlcs); 
+
+            let SSMA6Arr = SSMA_Calc(closedPrice,6);
+            let SSMA10Arr = SSMA_Calc(closedPrice,10);
+            let SSMA20Arr = SSMA_Calc(closedPrice,20);
+            let SSMA35Arr = SSMA_Calc(closedPrice,35);
+            let SSMA100Arr = SSMA_Calc(closedPrice,100);
+            let SSMA150Arr = SSMA_Calc(closedPrice,150);
+            let SSMA200Arr = SSMA_Calc(closedPrice,200);
+
+            let EMA_SHORT = EMACalc(closedPrice,12);
+            let EMA_LONG = EMACalc(closedPrice,26);
+            let MACD = MACDCalc(EMA_LONG,EMA_SHORT,26,12);
+            let nullForMACD = Array(closedPrice.length - MACD.length).fill(null);
+
+
+            macd_data = nullForMACD.concat(MACD); 
+
+
+            let RSI = RS(closedPrice,14);
+            var nullRSI = Array(closedPrice.length - RSI.length).fill(null);
+            rsi_data = nullRSI.concat(RSI); 
+
+            
+            var nullSmoth_SSMA6 = Array(closedPrice.length - SSMA6Arr.length).fill(null);
+            var nullSmoth_SSMA10 = Array(closedPrice.length - SSMA10Arr.length).fill(null);
+            var nullSmoth_SSMA20 = Array(closedPrice.length - SSMA20Arr.length).fill(null);
+            var nullSmoth_SSMA35 = Array(closedPrice.length - SSMA35Arr.length).fill(null);
+            var nullSmoth_SSMA100 = Array(closedPrice.length - SSMA100Arr.length).fill(null);
+            var nullSmoth_SSMA150 = Array(closedPrice.length - SSMA150Arr.length).fill(null);
+            var nullSmoth_SSMA200 = Array(closedPrice.length - SSMA200Arr.length).fill(null);
+ 
+            dataMA6 =  nullSmoth_SSMA6.concat(SSMA6Arr); 
+            dataMA10 =  nullSmoth_SSMA10.concat(SSMA10Arr);
+            dataMA20 =  nullSmoth_SSMA20.concat(SSMA20Arr); 
+            dataMA35 =  nullSmoth_SSMA35.concat(SSMA35Arr); 
+            dataMA100 =  nullSmoth_SSMA100.concat(SSMA100Arr); 
+            dataMA150 =  nullSmoth_SSMA150.concat(SSMA150Arr); 
+            dataMA200 =  nullSmoth_SSMA200.concat(SSMA200Arr); 
+            dataBody = GetBodySize(data);
+
+            stochastic_data = Stochastic(getHighPrice(ohlcs),getLowPrice(ohlcs),getClosedPrice(ohlcs))
+
+            let regressiveEq = genRegressionLine(dataMA100,lineLenght)
+
+            let tmpchisou_span = chisou_span
+            chikouspanSlope = genRegressionLine(chisou_span.slice(0,chisou_span.length-50),10)
+            macdSlope = genRegressionLine(macd_data,26)
+            databodySlope = genRegressionLine(dataBody,26)
+
+            // console.log('macdSlope:' + macdSlope[0].toFixed(8) + ' databodySlope:' + databodySlope[0].toFixed(8))
+           
+            // if(macdSlope[0] > stdbardata.macdslope && databodySlope[0] < (-1)*stdbardata.bodyslope || macdSlope[0] < (-1)*stdbardata.macdslope && databodySlope[0] > stdbardata.bodyslope ){
+            //     console.log('divergent')
+            //     console.log('macdSlope:' + macdSlope[0].toFixed(8) + ' databodySlope:' + databodySlope[0].toFixed(8))
+            // }
+   
+            $('#h1_slope').html(regressiveEq[0].toFixed(8))
+      
+            //////////////  CALCULATION SECTION ////////////////////
+
+           
+            let std_lot = (calculationinfo.balance/250).toFixed(2)
+            if(std_lot > 50){
+                std_lot = 50
+            }
+            
+            let onOrder =false;
+
+
+
+            
+            // let ichimokuMajorUptrend = IchimokuMajorUptrend(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,52,5,'H1',calculationinfo.symbol,rsi_data,false,false)
+
+            // // let ichimokuMajorUptrendH4 = IchimokuMajorUptrend(data_h4,tenkan_sen_h4,kijun_sen_h4,chisou_span_h4,senkou_span_a_h4,senkou_span_b_h4,dataMA200_h4,52,5,'H4',calculationinfo.symbol)
+
+            // let ichimokuMajorDowntrend = IchimokuMajorDowntrend(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,52,5,'H1',calculationinfo.symbol,rsi_data,false,false)
+
+            // // let ichimokuMajorDowntrendH4 = IchimokuMajorDowntrend(data_h4,tenkan_sen_h4,kijun_sen_h4,chisou_span_h4,senkou_span_a_h4,senkou_span_b_h4,dataMA200_h4,52,5,'H4',calculationinfo.symbol)
+
+
+            // let ichimokuCheckUptrendM15 = IchimokuCheckUptrendEntry(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,52,5,'M15',rsi_data)
+            // let ichimokuCheckDowntrendM15 = IchimokuCheckDowntrendEntry(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,52,5,'M15',rsi_data)
+     
+            // console.log('macd_data: ' + macd_data[macd_data.length-1])
+
+            // console.log(chisou_span.length)
+            let uptrendEntryPoint = UptrendEntryPoint(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,freechikouRange,rsi_data,stochastic_data.main,macd_data,macdSlope,chikouspanSlope,stdbardata,dataBody,'xx',calculationinfo.symbol)
+            let downtrendEntryPoint = DowntrendEntryPoint(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,freechikouRange,rsi_data,stochastic_data.main,macd_data,macdSlope,chikouspanSlope,stdbardata,dataBody,'xx',calculationinfo.symbol)
+             
+            // let stochastic = Stochastic(tmphigh,tmplow,tmpCLose)
+            // console.log(stochastic_data.main)
+
+          
+            // console.log('chikouspanSlope:' + chikouspanSlope)
+           
+            // if(ichimokuCheckUptrendM15 == true){
+            //     // console.log('ichimokuMajorUptrend:' + ichimokuCheckUptrendM15)
+            // }
+
+            // if(ichimokuCheckDowntrendM15 == true){
+            //     // console.log('ichimokuCheckDowntrendM15:' + ichimokuCheckDowntrendM15)
+            // }
+
+            
+            // let ichimokuMajorUptrendWithRSI = IchimokuMajorUptrendWithRSI(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,52,5,'M5',calculationinfo.symbol,rsi_data,false)
+            // let ichimokuMajorDowntrendWithRSI = IchimokuMajorDowntrendWithRSI(data,tenkan_sen,kijun_sen,chisou_span,senkou_span_a,senkou_span_b,dataMA200,52,5,'M5',calculationinfo.symbol,rsi_data,false)
+
+            // let checkrsi = checkRSI(rsi_data)
+
+            // if(checkrsi == true){
+            //     let bartime = data[data.length-1][5]
+            //     console.log('check RSI diff ' + calculationinfo.symbol + ' ' + bartime)
+            // }
+
+            // if(ichimokuMajorUptrend == true && ichimokuMajorUptrendWithRSI == true){
+            //     let bartime = data[data.length-1][5]
+            //     console.log('ichimoku Major Uptrend ' + calculationinfo.symbol + ' ' + bartime)
+            //     alert('Ichimoku uptrend matched on')
+            
+
+            // }
+
+            // if(ichimokuMajorDowntrend == true && ichimokuMajorDowntrendWithRSI == true){
+            //     let bartime = data[data.length-1][5]
+            //     console.log('ichimoku Major Uptrend ' + calculationinfo.symbol + ' ' + bartime)
+            //     alert('Ichimoku downtrend matched on')
+            // }
+        
+
+        // if(ichimokuMajorUptrendWithRSI == ){
+
+        // }
+                
+
+ 
+            canndle_stick_chart.setOption({
+                series : [
+                    
+                    {
+                        name: 'OHLC',
+                        data: data,
+                    } , 
+                    // {
+                    //     name: 'BODY OHLC',
+                    //     data: dataBody,
+                    // }
+                    // , 
+                    // {
+                    //     name: 'MA6',
+                    //     data: dataMA6,
+                    // }
+                    // , 
+                    // {
+                    //     name: 'MA20',
+                    //     data: dataMA20,
+                    // }
+                    // , 
+                    // {
+                    //     name: 'MA35',
+                    //     data: dataMA35,
+                    // }
+                    // ,  
+                    // {
+                    //     name: 'MA100',
+                    //     data: dataMA100,
+                    // } ,     
+                    {
+                        name: 'MA200',
+                        data: dataMA200,
+                    },              
+                    {
+                        name: 'Tenkan',
+                        data: tenkan_sen,
+                    }
+                    ,  
+                    {
+                        name: 'Kijun',
+                        data: kijun_sen,
+                    }
+                    ,  
+                    {
+                        name: 'SpanA',
+                        data: senkou_span_a,
+                    }
+                    ,  
+                    {
+                        name: 'SpanB',
+                        data: senkou_span_b,
+                    }
+                    ,  
+                    {
+                        name: 'Chisou',
+                        data: chisou_span,
+                    }
+   
+                ],                
+                xAxis : [
+                    {
+                        data : axisData
+                    }
+                ],
+                dataZoom : {
+                    // start : 90.5,
+                    start : 60,
+                    end : 100
+                },
+            }); 
+
+                 
+       // let ma100slope = regressiveEq[0]
+            
+            // let currentDate = new Date(data_m1[data_m1.length-1][5]);
+            // let currentHour = currentDate.getUTCHours()
+
+        }
+
+      option_canndle_stick_chart = {
+            backgroundColor: '#21202D',
+            title : {
+                // text: 'OHLC',
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            tooltip : {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross'
+                },
+                showDelay: 0,             // delay ms
+                // formatter: function (params) {
+                //     var res = params[0].name;
+                //     res += '<br/>' + params[0].seriesName;
+                //     res += '<br/>  Open : ' + params[0].value[1] + '  High : ' + params[0].value[4];
+                //     res += '<br/>  Close : ' + params[0].value[2] + '  Low : ' + params[0].value[3];
+                //     return res;
+                // }
+            },
+            legend: {
+                // data:['H1 OHLC','BODY OHLC','MA6','MA20','MA35','MA100','MA200','Tenkan','Kijun','SpanA','SpanB','Chisou'],
+                data:['OHLC','MA200','Tenkan','Kijun','SpanA','SpanB','Chisou'],
+                // selected:{'BODY OHLC':false,'MA6':false,'MA35':false,'MA100':false},
+                textStyle: {
+                    color: '#fff'
+                }
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    // mark : {show: true},
+                    // dataZoom : {show: true},
+                    // magicType : {show: true, type: ['line', 'bar']},
+                    // restore : {show: true},
+                    saveAsImage : {
+                        show: true,
+                        title: 'Save As picture'
+                    }
+                }
+            },            
+            dataZoom : 
+                {
+                    show : true,
+                    realtime: true,
+                    start : Math.round((data.length-90)/(data.length)*100),
+                    end : 100,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    textStyle: {
+                        color: '#fff'
+                    },
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                },
+            grid: {
+                left: 80,
+                top: 40,
+                right: 20,
+                bottom: 85
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : true,
+                    axisTick: {onGap:false},
+                    splitLine: {show:false},
+                    data : axisData,
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            yAxis : [
+                {
+                    type : 'value',
+                    scale:true,
+                    boundaryGap: [0.05, 0.05],
+                    splitArea : {show : true},
+                    
+                    axisLine:{
+                        lineStyle:{
+                            color:'#aca9a9'
+                        }
+                    },
+                }
+            ],
+            series : [
+                {
+                    name:'M1 OHLC',
+                    type:'candlestick',
+                    data: data,
+                    // markPoint: {
+                    //     label: {
+                    //         normal: {
+                    //             formatter: function (param) {
+                    //                 return param != null ? param.data['name'] : '';
+                    //             }
+                    //         }
+                    //     },
+                    //     data: MarkData,
+                    // },
+                    markLine : {
+                        data: [
+                            [{
+                                coord: [10,0.93],
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                            }, 
+                            {
+                                coord:  [100,0.94],
+                                lineStyle: {
+                                    color: 'white'
+                                }
+                            }]
+                        ],
+                    },
+                    itemStyle: {
+                        color: upColor,
+                        color0: downColor,
+                        borderColor: null,
+                        borderColor0: null
+                    },
+                }, 
+                // {
+                //     name: 'BODY OHLC',
+                //     type: 'line',
+                //     data: dataBody,
+                //     smooth: true,
+                //     showSymbol: false,
+                //     lineStyle: {
+                //         width: 1
+                //     }
+                // }, 
+                // {
+                //     name: 'MA6',
+                //     type: 'line',
+                //     data: dataMA6,
+                //     smooth: true,
+                //     showSymbol: false,
+                //     lineStyle: {
+                //         width: 1
+                //     }
+                // }, 
+                // {
+                //     name: 'MA20',
+                //     type: 'line',
+                //     data: dataMA20,
+                //     smooth: true,
+                //     showSymbol: false,
+                //     lineStyle: {
+                //         width: 1
+                //     }
+                // }, 
+                // {
+                //     name: 'MA35',
+                //     type: 'line',
+                //     data: dataMA35,
+                //     smooth: true,
+                //     showSymbol: false,
+                //     lineStyle: {
+                //         width: 1
+                //     }
+                // },  
+                // {
+                //     name: 'MA100',
+                //     type: 'line',
+                //     data: dataMA100,
+                //     smooth: true,
+                //     showSymbol: false,
+                //     lineStyle: {
+                //         width: 1
+                //     }
+                // } , 
+                {
+                    name: 'MA200',
+                    type: 'line',
+                    data: dataMA200,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }
+                , 
+                {
+                    name: 'Tenkan',
+                    type: 'line',
+                    data: tenkan_sen,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                } ,  
+                {
+                    name: 'Kijun',
+                    type: 'line',
+                    data: kijun_sen,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                } ,  
+                {
+                    name: 'SpanA',
+                    type: 'line',
+                    data: senkou_span_a,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                } ,  
+                {
+                    name: 'SpanB',
+                    type: 'line',
+                    data: senkou_span_b,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                } ,  
+                {
+                    name: 'Chisou',
+                    type: 'line',
+                    data: chisou_span,
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                }
+ 
+         
+            ]
+        };
+
+
+
+        // canndle_stick_chart_m1.setOption(option_canndle_stick_chart_m1);
+        // canndle_stick_chart_m5.setOption(option_canndle_stick_chart_m5);
+        // canndle_stick_chart_m15.setOption(option_canndle_stick_chart_m15);
+        // canndle_stick_chart_m30.setOption(option_canndle_stick_chart_m30);
+        canndle_stick_chart.setOption(option_canndle_stick_chart);
+        // canndle_stick_chart_h4.setOption(option_canndle_stick_chart_h4);
+        // canndle_stick_chart_d1.setOption(option_canndle_stick_chart_d1);
+
+
+        // canndle_stick_tf_m5.setOption(option_canndle_stick_tf_m5);
+   ;
+        
+        // echarts.connect([canndleStickChart,macdChart,canndleStickChartZoom,canndle_stick_tf_m5]);
+
+        if(responseData.length !== 0){
+            createData(responseData);
+            window.onresize = function () {
+                // canndle_stick_chart_m1.resize();
+                // canndle_stick_chart_m5.resize();
+                // canndle_stick_chart_m15.resize();
+                // canndle_stick_chart_m30.resize();
+                canndle_stick_chart.resize();
+                // canndle_stick_chart_h4.resize();
+                // canndle_stick_chart_d1.resize();
+            }
+        }
+
+
+    $(document).on('click','.openorder',function(){
+        $('#btnGetSingleOhlc').removeClass('start').addClass('stop');
+        $('#btnGetSingleOhlc').html('Start Search');
+        clearInterval(searchTimer);
+        console.log($(this).data('symbol'))
+        getSymbolInfo($(this).data('symbol')).then(data => { //0=order on Buy 1=order on Sell
+            let _calculationinfo = data.calculationInfo;
+            let _stdbarsize = JSON.parse(data.barsize)[0].fields
+
+            var ohlc_timeframe_arr = data.ohlctimeframe
+           
+
+            let pippriceperlotsize = pipPricePerLotsize(_calculationinfo.symbol,_calculationinfo.degit,_calculationinfo.ask,_calculationinfo.trade_contract_size,1,usdbase)*10;
+            let stoplossprice = parseFloat(stopLossPrice(_stdbarsize.stoplostpercent,parseFloat(_calculationinfo.balance)))
+            let lotsize = getLotSize(stoplossprice,_stdbarsize.stoplostpip,pippriceperlotsize).toFixed(5)*_stdbarsize.lotsizeoffset
+
+            // let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
+
+            bullishall = bullishAllTimeframe(ohlc_timeframe_arr)
+            bearishall = bearishAllTimeframe(ohlc_timeframe_arr)
+
+            // console.log('bullishall: ' + bullishall)
+            // console.log('bearishall: ' + bearishall)
+      
+            // console.log(ohlc_timeframe_arr)
+
+            $('#stoplost').val(stoplossprice)
+            $('#takeprofit').val(2*stoplossprice)
+            $('#lotsize').val(lotsize)
+            if(bullishall == true){
+                $("#ordertype option[value='0']").attr("selected","selected");
+                $('#price').val(_calculationinfo.bid)
+            }else if(bearishall == true){
+                $("#ordertype option[value='1']").attr("selected","selected");
+                $('#price').val(_calculationinfo.ask)
+            }
+            
+            $('#symbolname').val(_calculationinfo.symbol)
+        }).catch(error => {})
+
+        $('#openorder_modal').modal('show');
+
+    })
+
+    $(document).on('click','#ordering',function(){
+        let order_type = 'sell'
+        if (parseInt($('#ordertype option:selected').val()) == 0){
+            order_type = 'buy'
+        }
+        // console.log($('#symbolname').val())
+        openOrder($('#symbolname').val(),order_type,parseFloat($('#lotsize').val()),'M1').then(data => { //0=order on Buy 1=order on Sell
+
+            location.reload(true);
+            // Swal.fire({
+            //     icon: 'info',
+            //     title: 'Result',
+            //     html: `<h2>${data.result[7]}</h2>` 
+            // })
+        }).catch(error => {})
+    })
+
+    $(document).on('click','#openbuyorder',function(){
+        let std_lot = (calculationinfo.balance/250).toFixed(2)
+        if(std_lot > 50){
+            std_lot = 50
+        }
+
+
+       if (alltimeframetrend[0] != 1){
+        Swal.fire({
+                title: 'Not trend',
+                text: "Confirm to open order",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    openOrder(calculationinfo.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+   
+                    }).catch(error => {})
+                 
+                }
+            })
+       }else{
+            openOrder(calculationinfo.symbol,'buy',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+   
+            }).catch(error => {})
+       }
+    })
+
+    $(document).on('click','#opensellorder',function(){
+        let std_lot = (calculationinfo.balance/250).toFixed(2)
+        if(std_lot > 50){
+            std_lot = 50
+        }
+
+        if (alltimeframetrend[1] != 1){
+        Swal.fire({
+                title: 'Not trend',
+                text: "Confirm to open order",
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    openOrder(calculationinfo.symbol,'sell',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+
+                    }).catch(error => {})
+                 
+                }
+            })
+       }else{
+        openOrder(calculationinfo.symbol,'sell',std_lot,'M1').then(data => { //0=order on Buy 1=order on Sell                                    
+
+        }).catch(error => {})
+       }
+
+    })
+
+    function getSymbolInfo(symbol){   
+        return new Promise((resolve, reject) => {
+            data = {
+                symbol: symbol,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+            }
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getsymbolinfo' %}",
+                dataType : "json",
+                data: data,
+                success: function(data) {
+                    resolve(data)
+                },
+                error: function(error) {
+                    reject(error)
+                },
+            })
+        })
+    }
+
+    function openOrder(symbol,ordertype,lot,comment){   
+        return new Promise((resolve, reject) => {
+            data = {
+                symbol: symbol,
+                ordertype: ordertype,
+                lot: lot,
+                comment: comment,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+            }
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'openorder' %}",
+                dataType : "json",
+                data: data,
+                success: function(data) {
+                    resolve(data)
+                },
+                error: function(error) {
+                    reject(error)
+                },
+            })
+        })
+    }
+
+       function lineNotification(message){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    message: message,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'lineNotification' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       var viewsymbol = '';
+       
+       $(document).on('click','.viewtimeframe',function(){
+        viewsymbol = $(this).data('symbol')
+
+            $('#modal-viewtimeframe').modal('show')
+        })
+
+
+        $('#modal-viewtimeframe').on('shown.bs.modal', function (e) {
+            getSingleOhlc(viewsymbol,1).then(data_item => {
+                createDataViewer(data_item);
+            }).catch(error => {})
+        })
+
+        // let timestamp = null
+        $(document).on('click','#uploadImage',function(){
+            fname = $('#symbol').html() +'-'+data_m1[data_m1.length-1][5].replaceAll(":", "-");
+            var img_tf_from_m1 = new Image();
+            var img_tf_all = new Image();
+            var img_ohlc = new Image();
+            var img_ohlc_zoom = new Image();
+            img_tf_from_m1.src = canndle_stick_tf_from_m1data.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+            
+            img_tf_all.src = canndle_stick_tf_all.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+            img_ohlc.src = canndleStickChart.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+
+            img_ohlc_zoom.src = canndleStickChartZoom.getDataURL({
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+
+
+            uploadImage(fname,img_tf_from_m1.src,img_tf_all.src,img_ohlc.src,img_ohlc_zoom.src).then(data_item => {
+                
+            }).catch(error => {})
+        })
+
+        function uploadImage(fname,base64_tf_from_m1,base64_tf_all,base64_ohlc,base64_ohlc_zoom){   
+           return new Promise((resolve, reject) => {
+                _data = {
+                    fname : fname,
+                    base64_tf_from_m1: base64_tf_from_m1,
+                    base64_tf_all: base64_tf_all,
+                    base64_ohlc: base64_ohlc,
+                    base64_ohlc_zoom : base64_ohlc_zoom,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'uploadimage' %}",
+                   dataType : "json",
+                   data: _data,
+                   success: function(_data) {
+                       resolve(_data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       $(document).on('change','#backtestSize',function(){
+        //    console.log($('#symbolid').val())
+        //    console.log($('#backtesttimeframe').val())
+        $("#symbol").html($("#symbolid option:selected").text())
+       
+            GetFirstBar($('#symbolid').val(),$('#backtesttimeframe').val(),$(this).val()).then(data => {
+                // console.log(data.refohlc)
+                refohlcs = data.refohlc
+                $(this).prop("selectedIndex", 0);
+            }).catch(error => {})
+        })
+
+        function GetFirstBar(symbol,timeframe,barposition){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    timeframe: timeframe,
+                    barposition: barposition,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'getfirstbar' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+       $(document).on('click','#startBacktest',function(){
+
+            autosearch()
+        })
+
+        function autosearch(){
+            if(count < refohlcs.length){
+            getIchimokuOhlc($('#symbolid').val(),$('#backtesttimeframe').val(),refohlcs[count].time).then(data_item => {
+                usdbase = data_item.usdbase
+                calculationinfo = data_item.calculationInfo;
+                stdbarsize = data_item.stdbarsize[0]
+                stdbardata = JSON.parse(data_item.stdbars)[0].fields
+                
+                
+
+                isMarketClose = data_item.isMarketClose
+                let html_monitoring_symbol = ''
+
+                let pippriceperlotsize = pipPricePerLotsize(calculationinfo.symbol,calculationinfo.degit,calculationinfo.ask,calculationinfo.trade_contract_size,1,usdbase)*10;
+                let stoplossprice = parseFloat(stopLossPrice(stdbarsize.stoplostpercent,parseFloat(calculationinfo.balance)))
+                let lotsize = getLotSize(stoplossprice,stdbarsize.stoplostpip,pippriceperlotsize).toFixed(5)*stdbarsize.lotsizeoffset
+                let spreadprice = (calculationinfo.spread * pippriceperlotsize/10).toFixed(5)
+                $('#pipprice').html(pippriceperlotsize.toFixed(5));
+                $('#spreadprice').html(-spreadprice+'$');
+                $('#spread').html(calculationinfo.spread);
+            
+                createData(data_item);
+            
+            }).catch(error => {})
+            count++
+            }
+        }
+
+        // getIchimokuOhlc
+
+        function getIchimokuOhlc(symbol,timeframe,startdate){   
+           return new Promise((resolve, reject) => {
+                data = {
+                    symbol: symbol,
+                    timeframe: timeframe,
+                    startdate: startdate,
+                    csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+                }
+               $.ajax({
+                   type: 'POST',
+                   url: "{% url 'getichimokuohlc' %}",
+                   dataType : "json",
+                   data: data,
+                   success: function(data) {
+                       resolve(data)
+                   },
+                   error: function(error) {
+                       reject(error)
+                   },
+               })
+           })
+       }
+
+    </script>
+
+{% endblock %} 

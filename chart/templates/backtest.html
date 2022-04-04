@@ -3925,16 +3925,16 @@
             }
 
                     
-        if($('#timeframesync').is(":checked")){
-            if($('#selectedBacktestJob option:selected').data('timeframe') != "M1"){
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Timeframe Error',
-                    text: 'Timeframe sync only available on M15',
-                })
-                return
-            }
-        }
+        // if($('#timeframesync').is(":checked")){
+        //     if($('#selectedBacktestJob option:selected').data('timeframe') != "M1"){
+        //         Swal.fire({
+        //             icon: 'error',
+        //             title: 'Timeframe Error',
+        //             text: 'Timeframe sync only available on M15',
+        //         })
+        //         return
+        //     }
+        // }
 
             if(_rawData.length === 0) return 
             if(count == _rawData.length  - testRange +1 ){

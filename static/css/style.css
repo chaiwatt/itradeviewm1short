@@ -44,6 +44,12 @@
     width: 97%;
 }
 
+#canndle_stick_chart_d1 {
+    margin: 20px;
+    height: 900px !important;
+    width: 97%;
+}
+
 #canndle_stick_tf_all {
     margin: 20px;
     height: 500px !important;
@@ -105,6 +111,42 @@
 #rsi_chart {
     margin: 20px;
     height: 700px !important;
+    width: 97%;
+}
+
+#rsi_chart_m1 {
+    margin: 20px;
+    height: 400px !important;
+    width: 97%;
+}
+#rsi_chart_m5 {
+    margin: 20px;
+    height: 400px !important;
+    width: 97%;
+}
+#rsi_chart_m15 {
+    margin: 20px;
+    height: 400px !important;
+    width: 97%;
+}
+#rsi_chart_m30 {
+    margin: 20px;
+    height: 400px !important;
+    width: 97%;
+}
+#rsi_chart_h1 {
+    margin: 20px;
+    height: 400px !important;
+    width: 97%;
+}
+#rsi_chart_h4 {
+    margin: 20px;
+    height: 400px !important;
+    width: 97%;
+}
+#rsi_chart_d1 {
+    margin: 20px;
+    height: 400px !important;
     width: 97%;
 }
 #macd_chart {

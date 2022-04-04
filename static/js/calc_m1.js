@@ -738,7 +738,6 @@
             tenkansenarr.push((maxhigharr[i] + minlowarr[i])/2)
         }
 
-        // console.log(tenkansenarr)
         return tenkansenarr
     }
 
@@ -809,37 +808,1095 @@
         return maxarr
     }
 
-    function IchimokuCheckUptrend(data,tenkan,kijun,chisou,spanA,spanB){
+    function IchimokuCheckUptrendKumoSingleCrossEntry(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname){
+        // if(){
+
+        // }
+        let span_a = spanA[spanA.length-26]
+        let span_b = spanB[spanB.length-26]
         let datalow = data[data.length-1][2]
-        if(datalow > spanA[spanA.length-26] 
-                && datalow > spanB[spanB.length-26] 
+        // console.log('spanA:' + span_a)
+        // console.log('spanB:' + span_b)
+
+
+
+        // console.log('tenkan27:' + tenkan[tenkan.length-27])
+        // console.log('----')
+
+
+
+        let freechikoucount = true
+        for(let i = 0; i < freechisou; i++){
+            if(chisou[chisou.length-51-i] < data[data.length-26-i][3] || chisou[chisou.length-51-i] < spanA[spanA.length-26-i] || chisou[chisou.length-51-i] < spanB[spanB.length-26-i]){
+                freechikoucount = false
+                break
+            }
+        }
+
+        // console.log('uptrend tfname' + tfname + ' ' +freechikoucount)
+
+        if(span_b > span_a){
+            // console.log('spanB > spanA')
+            if(tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+                && (tenkan[tenkan.length-28] <= spanB[spanB.length-28])   
+                && sma200[sma200.length-1] < datalow
+                && freechikoucount == true
+                ){
+                    console.log('spanB[spanB.length-27]: ' + spanB[spanB.length-27])
+                    console.log('spanB[spanB.length-28]: ' + spanB[spanB.length-27])
+                    console.log('spanB[spanB.length-29]: ' + spanB[spanB.length-27])
+                    console.log('spanB[spanB.length-30]: ' + spanB[spanB.length-27])
+
+                    if(spanB[spanB.length-27] == spanB[spanB.length-28] 
+                        && spanB[spanB.length-28] == spanB[spanB.length-29] 
+                        && spanB[spanB.length-29] == spanB[spanB.length-30] 
+                        ){
+                        return true
+                    }else{
+                        false
+                    }
+                   
+                    //case2 strong support
+        
+            }else{
+                return false
+            }
+        }else if(span_a > span_b){
+            if(tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+                && (tenkan[tenkan.length-28] <= spanA[spanA.length-28])   
+                && sma200[sma200.length-1] < datalow
+                && freechikoucount == true
+                ){
+                    console.log('spanA[spanA.length-27]: ' + spanA[spanA.length-27])
+                    console.log('spanA[spanA.length-28]: ' + spanA[spanA.length-27])
+                    console.log('spanA[spanA.length-29]: ' + spanA[spanA.length-27])
+                    console.log('spanA[spanA.length-30]: ' + spanA[spanA.length-27])
+                    if(spanA[spanA.length-27] == spanA[spanA.length-28] 
+                        && spanA[spanA.length-28] == spanA[spanA.length-29] 
+                        && spanA[spanA.length-29] == spanA[spanA.length-30] 
+                        ){
+                        return true
+                    }else{
+                        false
+                    }
+        
+            }else{
+                return false
+            }
+        }
+        
+    }
+
+    function IchimokuCheckDowntrendKumoSingleCrossEntry(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname){
+        let span_a = spanA[spanA.length-26]
+        let span_b = spanB[spanB.length-26]
+        let datahigh = data[data.length-1][3]
+
+        let freechikoucount = true
+        for(let i = 0; i < freechisou; i++){
+            if(chisou[chisou.length-51-i] > data[data.length-26-i][2] || chisou[chisou.length-51-i] > spanB[spanB.length-26-i] || chisou[chisou.length-51-i] > spanA[spanA.length-26-i]  ){
+                freechikoucount = false
+                break
+            }
+        }
+
+        // console.log('downtrend tfname' + tfname + ' ' +freechikoucount)
+        // console.log('span_a:' + span_a)
+        // console.log('span_b:' + span_b)
+        // console.log('sma200:' + sma200[sma200.length-1])
+        // console.log('----')
+        // console.log('tk26: ' + tenkan[tenkan.length-26] + ' tk27: ' + tenkan[tenkan.length-27] + ' tk28: ' + tenkan[tenkan.length-28])
+
+        if(span_b > span_a){
+            if(tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+                && (tenkan[tenkan.length-28] >= spanA[spanA.length-28])  
+                && sma200[sma200.length-1] > datahigh
+                && freechikoucount == true
+                ){
+                    console.log('spanA[spanA.length-27]: ' + spanA[spanA.length-27])
+                    console.log('spanA[spanA.length-28]: ' + spanA[spanA.length-27])
+                    console.log('spanA[spanA.length-29]: ' + spanA[spanA.length-27])
+                    console.log('spanA[spanA.length-30]: ' + spanA[spanA.length-27])
+                    if(spanA[spanA.length-27] == spanA[spanA.length-28] 
+                        && spanA[spanA.length-28] == spanA[spanA.length-29] 
+                        && spanA[spanA.length-29] == spanA[spanA.length-30] 
+                        ){
+                        return true
+                    }else{
+                        false
+                    }
+
+
+
+            }else{
+                return false
+            }
+        }else if(span_a > span_b){
+            if(tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+                && (tenkan[tenkan.length-28] >= spanB[spanB.length-28])  
+                && sma200[sma200.length-1] > datahigh
+                && freechikoucount == true
+                ){
+                    console.log('spanB[spanB.length-27]: ' + spanB[spanB.length-27])
+                    console.log('spanB[spanB.length-28]: ' + spanB[spanB.length-27])
+                    console.log('spanB[spanB.length-29]: ' + spanB[spanB.length-27])
+                    console.log('spanB[spanB.length-30]: ' + spanB[spanB.length-27])
+
+                    if(spanB[spanB.length-27] == spanB[spanB.length-28] 
+                        && spanB[spanB.length-28] == spanB[spanB.length-29] 
+                        && spanB[spanB.length-29] == spanB[spanB.length-30] 
+                        ){
+                        return true
+                    }else{
+                        false
+                    }
+            }else{
+                return false
+            }
+        }
+    }
+
+    function IchimokuCheckUptrendMainEntry(data,datam30,datah1,tenkan,tenkanm30,tenkanh1,kijun,kijunm30,kijunh1,chisou,spanA,spanAm30,spanAh1,spanB,spanBm30,spanBh1,sma200,sma200m30,sma200h1,maxcross,freechisou,tfname){
+        let dataopen = data[data.length-1][0]
+        let dataclose = data[data.length-1][1]
+        let datalow = data[data.length-1][2]
+        let datalowm30 = datam30[datam30.length-1][2]
+        let datalowh1 = datah1[datah1.length-1][2]
+        let datahigh = data[data.length-1][3]
+        
+        let countcross = 0
+        for(let i = tenkan.length-26; i > 0 ; i--){
+            countcross++
+            if(tenkan[i] <= kijun[i]){
+                break
+            }
+        }
+
+        let freechikoucount = true
+        for(let i = 0; i < freechisou; i++){
+            // if(chisou[chisou.length-51-i] < data[data.length-26-i][3] ){
+            if(chisou[chisou.length-51-i] < data[data.length-26-i][3] || chisou[chisou.length-51-i] < spanA[spanA.length-26-i] || chisou[chisou.length-51-i] < spanB[spanB.length-26-i]){
+                freechikoucount = false
+                break
+            }
+        }
+
+        let realhigh = true
+        for(let i = 1; i < 5; i++){
+            if(data[data.length-1-i][3] < tenkan[tenkan.length-26-i]  ){
+               
+                realhigh = false
+                break
+            }
+        }
+
+        if(((tenkan[tenkan.length-26] > dataopen && tenkan[tenkan.length-26] < dataclose) || (tenkan[tenkan.length-26] < dataopen && tenkan[tenkan.length-26] > dataclose)) 
+            && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+            && kijun[kijun.length-26] > spanA[spanA.length-26] 
+            && kijun[kijun.length-26] > spanB[spanB.length-26] 
+            && spanA[spanA.length-1] > spanB[spanB.length-1] 
+            && freechikoucount == true
+            && sma200[sma200.length-1] < datalow
+            && sma200m30[sma200m30.length-1] < datalowm30
+            && sma200h1[sma200h1.length-1] < datalowh1
+            && countcross <= maxcross
+            && realhigh == true
+            && tenkanm30[tenkanm30.length-26] > spanAm30[spanAm30.length-26]
+            && tenkanm30[tenkanm30.length-26] > spanBm30[spanBm30.length-26] 
+            && kijunm30[kijunm30.length-26] > spanAm30[spanAm30.length-26] 
+            && kijunm30[kijunm30.length-26] > spanBm30[spanBm30.length-26] 
+            // && spanAm30[spanAm30.length-1] > spanBm30[spanBm30.length-1] 
+            && tenkanh1[tenkanh1.length-26] > spanAh1[spanAh1.length-26]
+            && tenkanh1[tenkanh1.length-26] > spanBh1[spanBh1.length-26] 
+            && kijunh1[kijunh1.length-26] > spanAh1[spanAh1.length-26] 
+            && kijunh1[kijunh1.length-26] > spanBh1[spanBh1.length-26] 
+            // && spanAh1[spanAh1.length-1] > spanBh1[spanBh1.length-1] 
+            ){
+                return true
+        }else{
+            return false
+        }
+    }
+
+    function IchimokuCheckDowntrendMainEntry(data,datam30,datah1,tenkan,tenkanm30,tenkanh1,kijun,kijunm30,kijunh1,chisou,spanA,spanAm30,spanAh1,spanB,spanBm30,spanBh1,sma200,sma200m30,sma200h1,maxcross,freechisou,tfname){
+        let dataopen = data[data.length-1][0]
+        let dataclose = data[data.length-1][1]
+        let datalow = data[data.length-1][2]
+        let datahigh = data[data.length-1][3]
+        let datahighm30 = datam30[datam30.length-1][3]
+        let datahighh1 = datah1[datah1.length-1][3]
+        let datahigh1 = data[data.length-2][3]
+        let datahigh2 = data[data.length-3][3]
+        let datahigh3 = data[data.length-4][3]
+
+        let countcross = 0
+        for(let i = kijun.length-26; i > 0 ; i--){
+            countcross++
+            if(kijun[i] <= tenkan[i]){
+                break
+            }
+        }
+
+        let freechikoucount = true
+        for(let i = 0; i < freechisou; i++){
+            if(chisou[chisou.length-51-i] > data[data.length-26-i][2] || chisou[chisou.length-51-i] > spanB[spanB.length-26-i] || chisou[chisou.length-51-i] > spanA[spanA.length-26-i]  ){
+                freechikoucount = false
+                break
+            }
+        }
+
+        let reallow = true
+        for(let i = 1; i < 5; i++){
+            if(data[data.length-1-i][2] > tenkan[tenkan.length-26-i]  ){
+                // console.log('reallow break: ' + i)
+                reallow = false
+                break
+            }
+        }
+
+        if(((tenkan[tenkan.length-26] > dataopen && tenkan[tenkan.length-26] < dataclose) || (tenkan[tenkan.length-26] < dataopen && tenkan[tenkan.length-26] > dataclose)) 
+            && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+            && kijun[kijun.length-26] < spanA[spanA.length-26] 
+            && kijun[kijun.length-26] < spanB[spanB.length-26] 
+            && spanA[spanA.length-1] < spanB[spanB.length-1] 
+            && freechikoucount == true
+            && sma200[sma200.length-1] > datahigh
+            && sma200m30[sma200m30.length-1] > datahighm30
+            && sma200h1[sma200h1.length-1] > datahighh1
+            && countcross <= maxcross
+            && reallow == true
+
+
+            && tenkanm30[tenkanm30.length-26] < spanAm30[spanAm30.length-26]
+            && tenkanm30[tenkanm30.length-26] < spanBm30[spanBm30.length-26] 
+            && kijunm30[kijunm30.length-26] < spanAm30[spanAm30.length-26] 
+            && kijunm30[kijunm30.length-26] < spanBm30[spanBm30.length-26] 
+
+            && tenkanh1[tenkanh1.length-26] < spanAh1[spanAh1.length-26]
+            && tenkanh1[tenkanh1.length-26] < spanBh1[spanBh1.length-26] 
+            && kijunh1[kijunh1.length-26] < spanAh1[spanAh1.length-26] 
+            && kijunh1[kijunh1.length-26] < spanBh1[spanBh1.length-26] 
+            
+            ){
+                return true    
+            }else{
+                return false
+            }
+    }
+
+
+    function IchimokuCheckUptrendEntry(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname,rsi){
+        let dataopen = data[data.length-1][0]
+        let dataclose = data[data.length-1][1]
+        let datalow = data[data.length-1][2]
+        let datahigh = data[data.length-1][3]
+        
+        let datalow1 = data[data.length-2][2]
+        let datalow2 = data[data.length-3][2]
+        let datalow3 = data[data.length-4][2]
+
+        let open1 = data[data.length-2][0]
+        let open2 = data[data.length-3][0]
+        let open3 = data[data.length-4][0]
+
+        let close1 = data[data.length-2][1]
+        let close2 = data[data.length-3][1]
+        let close3 = data[data.length-4][1]
+
+        let dataup1 = open1
+        let dataup2 = open2
+        let dataup3 = open3
+
+        if(close1 > open1){
+            dataup1 = close1 
+        }
+        if(close2 > open2){
+            dataup2 = close2
+        }
+        if(close3 > open3){
+            dataup3 = close3
+        }
+
+
+
+    
+        // let countcross = 0
+        // for(let i = tenkan.length-26; i > 0 ; i--){
+        //     countcross++
+        //     if(tenkan[i] <= kijun[i]){
+        //         break
+        //     }
+        // }
+
+        // console.log(chisou[chisou.length-51])
+        let freechikoucount = true
+        for(let i = 0; i < freechisou; i++){
+            // if(chisou[chisou.length-51-i] < data[data.length-26-i][3] ){
+            if(chisou[chisou.length-51-i] < data[data.length-26-i][3] || chisou[chisou.length-51-i] < spanA[spanA.length-26-i] || chisou[chisou.length-51-i] < spanB[spanB.length-26-i]){
+                freechikoucount = false
+                break
+            }
+        }
+
+        let realhigh = true
+        for(let i = 1; i < 5; i++){
+            if(data[data.length-1-i][3] < tenkan[tenkan.length-26-i]  ){
+               
+                realhigh = false
+                break
+            }
+        }
+        // console.log('realhigh break: ' + realhigh + ' ' + tfname)
+        // console.log('freechikoucount: ' + freechikoucount + ' ' + tfname)
+        // console.log('countcross: ' + countcross  + ' ' + tfname)
+
+        let lastrsiarr = rsi.slice(Math.max(rsi.length - 5, 1))
+        // console.log(lastrsiarr)
+        let maxrsi = Math.max(...lastrsiarr)
+        let minrsi = Math.min(...lastrsiarr)
+        
+        let diffrsi = maxrsi-minrsi
+        let rsijump = false
+        if(diffrsi >= 20 ){
+            console.log('rsi jump')
+            rsijump = true
+        }
+
+        let rsicup = false
+        if( (rsi[rsi.length-1] >= 70 && rsi[rsi.length-1] > rsi[rsi.length-2] & rsi[rsi.length-3] > rsi[rsi.length-2] & rsi[rsi.length-2] < 70  & rsi[rsi.length-3] >= 70) || (rsi[rsi.length-1] >= 60 && rsi[rsi.length-1] > rsi[rsi.length-2] & rsi[rsi.length-3] > rsi[rsi.length-2]  & rsi[rsi.length-2] < 60 & rsi[rsi.length-3] >= 60)){
+            console.log('rsi cup')
+            rsicup = true
+        }
+
+
+        // if( ((datahigh > tenkan[tenkan.length-26] && datalow < tenkan[tenkan.length-26]) || (dataopen < dataup1 && dataup1 < dataup2) )
+        if( ((datahigh > tenkan[tenkan.length-26] && datalow < tenkan[tenkan.length-26]) || ( dataopen < dataup1 && dataup1 < dataup2 && dataup2 < dataup3) || rsijump == true || rsicup == true)
+        // if(((tenkan[tenkan.length-26] > dataopen && tenkan[tenkan.length-26] < dataclose) || (tenkan[tenkan.length-26] < dataopen && tenkan[tenkan.length-26] > dataclose)) 
+            // && datalow < tenkan[tenkan.length-26] 
+            // && (dataopen < dataup1 && dataup1 < dataup2)
+            && datalow1 > tenkan[tenkan.length-27] && datalow2 > tenkan[tenkan.length-28] && datalow3 > tenkan[tenkan.length-29]
+            && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+            && kijun[kijun.length-26] > spanA[spanA.length-26] 
+            && kijun[kijun.length-26] > spanB[spanB.length-26] 
+            // && spanA[spanA.length-1] > spanB[spanB.length-1] 
+            && freechikoucount == true
+            && sma200[sma200.length-1] < datalow
+            // && countcross <= maxcross
+            && realhigh == true
+            ){
+                return true
+        }else{
+            return false
+        }
+    }
+
+    function IchimokuMajorUptrend(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname,symbolname,rsi,reduceconfition,isRsiCheck){
+        let rsi0 = rsi[rsi.length-1]
+        let rsi1 = rsi[rsi.length-2]
+        // console.log(rsi1)
+        let datalow = data[data.length-1][2]
+        let freechikoucount = true
+        if(reduceconfition == true){
+            freechisou = 3
+            for(let i = 0; i < freechisou; i++){
+                if(chisou[chisou.length-51-i] < data[data.length-26-i][3]){
+                    freechikoucount = false
+                    break
+                }
+            }
+        }else{
+            for(let i = 0; i < freechisou; i++){
+                if(chisou[chisou.length-51-i] < data[data.length-26-i][3] || chisou[chisou.length-51-i] < spanA[spanA.length-26-i] || chisou[chisou.length-51-i] < spanB[spanB.length-26-i]){
+                    freechikoucount = false
+                    break
+                }
+            }
+        }
+
+        let spancross = 0
+        for(let i = 0; i < 26 ; i++){            
+            if(spanA[spanA.length-26-i] >= spanB[spanB.length-26-i] && spanA[spanA.length-27-i] <= spanB[spanB.length-27-i]){
+                spancross++
+            }
+        }
+
+        // console.log('spancross' + spancross)
+
+        // if(tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+        //     && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+        //     && kijun[kijun.length-26] > spanA[spanA.length-26] 
+        //     && kijun[kijun.length-26] > spanB[spanB.length-26] 
+        //     && tenkan[tenkan.length-26] >= kijun[kijun.length-26] 
+        //     && sma200[sma200.length-1] < datalow
+        //     && spanA[spanA.length-1] > spanB[spanB.length-1] 
+        //     && freechikoucount == true
+        //     && spancross <= 1
+        //     ){
+        //         console.log('น่าจะ uptrend' + spancross + ' ' + tfname + ' ' + symbolname)
+        // } 
+
+
+        let rsiuptrend = false
+        if(tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+            && kijun[kijun.length-26] > spanA[spanA.length-26] 
+            && kijun[kijun.length-26] > spanB[spanB.length-26] 
+            && tenkan[tenkan.length-26] >= kijun[kijun.length-26] 
+            && sma200[sma200.length-1] < datalow
+            && spanA[spanA.length-1] > spanB[spanB.length-1] 
+            && freechikoucount == true
+            && spancross <= 1
+            && rsi[rsi.length-1]>70 && rsi[rsi.length-3]<70
+            ){
+            rsiuptrend =true
+            console.log('rsi uptrend ' + + rsi[rsi.length-1].tofix(5) + ' '+ rsi[rsi.length-3].tofix(5) +  ' spancross:' +  spancross+ ' ' + tfname + ' ' + symbolname)
+        }
+
+        let percentdiffSpanA = ((spanA[spanA.length-1] - spanA[spanA.length-2])/spanA[spanA.length-1])*100
+        let percentdiffSpanB = ((spanB[spanB.length-1] - spanB[spanB.length-2])/spanB[spanB.length-1])*100
+        let percentdiffTenkan = ((tenkan[tenkan.length-26] - tenkan[tenkan.length-27])/tenkan[tenkan.length-26])*100
+        let percentdiffKijun = ((kijun[kijun.length-26] - kijun[kijun.length-27])/kijun[kijun.length-26])*100
+        let percentdiffChisou= ((chisou[chisou.length-51] - chisou[chisou.length-52])/chisou[chisou.length-51])*100
+
+        // console.log('percentdiffSpanA: ' + percentdiffSpanA + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffSpanB: ' + percentdiffSpanB + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffTenkan: ' + percentdiffTenkan + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffKijun: ' + percentdiffKijun + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffChisou: ' + percentdiffChisou + ' ' + tfname + ' ' + symbolname)
+
+
+        if(reduceconfition == false){
+            if(spanB[spanB.length-1] < spanA[spanA.length-1]
+                && percentdiffSpanA > 0.03
+                && percentdiffSpanB > 0.03
+                && percentdiffTenkan >= 0
+                && percentdiffKijun > 0.03
+                // && percentdiffChisou > 0.03
                 && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
                 && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
                 && kijun[kijun.length-26] > spanA[spanA.length-26] 
                 && kijun[kijun.length-26] > spanB[spanB.length-26] 
-
-            ){
-            return true
+                && tenkan[tenkan.length-26] >= kijun[kijun.length-26] 
+                && sma200[sma200.length-1] < datalow
+                && spanA[spanA.length-1] > spanB[spanB.length-1] 
+                && freechikoucount == true
+                && spancross <= 1
+          
+       
+                ){
+                    if(isRsiCheck == false){
+                        // console.log('aha')
+                        return true
+                    }else{
+                        return rsiuptrend
+                    }
+                    
+            }else{
+                return false
+            }
         }else{
-            return false
+            if(spanB[spanB.length-1] < spanA[spanA.length-1]
+                && percentdiffSpanA > 0.03
+                && percentdiffSpanB > 0.03
+                && percentdiffTenkan >= 0
+                && percentdiffKijun > 0.03
+                && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+                && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+                && kijun[kijun.length-26] > spanA[spanA.length-26] 
+                && kijun[kijun.length-26] > spanB[spanB.length-26] 
+                && tenkan[tenkan.length-26] >= kijun[kijun.length-26] 
+                // && sma200[sma200.length-1] < datalow
+                && spanA[spanA.length-1] > spanB[spanB.length-1] 
+                && freechikoucount == true
+                && spancross <= 1
+                ){
+
+                    return true
+            }else{
+                return false
+            }
         }
+
+
     }
 
-    function IchimokuCheckDowntrend(data,tenkan,kijun,chisou,spanA,spanB){
+    function IchimokuMajorDowntrend(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname,symbolname,rsi,reduceconfition,isRsiCheck){
+        let rsi0 = rsi[rsi.length-1]
+        let rsi1 = rsi[rsi.length-2]
         let datahigh = data[data.length-1][3]
-        if(datahigh < spanA[spanA.length-26] 
-                && datahigh < spanB[spanB.length-26] 
+        let freechikoucount = true
+        if(reduceconfition == true){
+            freechisou = 3
+            for(let i = 0; i < freechisou; i++){
+                if(chisou[chisou.length-51-i] > data[data.length-26-i][2]  ){
+                    freechikoucount = false
+                    break
+                }
+            }
+    
+        }else{
+            for(let i = 0; i < freechisou; i++){
+                if(chisou[chisou.length-51-i] > data[data.length-26-i][2] || chisou[chisou.length-51-i] > spanB[spanB.length-26-i] || chisou[chisou.length-51-i] > spanA[spanA.length-26-i]  ){
+                    freechikoucount = false
+                    break
+                }
+            }
+    
+        }
+ 
+        let spancross = 0
+        for(let i = 0; i < 26 ; i++){
+            // console.log(spanA[spanA.length-26-i]  + ' ' + spanB[spanB.length-26-i]  + ' ' +  spanA[spanA.length-27-i]  + ' ' +  spanB[spanB.length-27-i])
+            
+            if(spanA[spanA.length-26-i] <= spanB[spanB.length-26-i] && spanA[spanA.length-27-i] >= spanB[spanB.length-27-i]){
+                spancross++
+            }
+        }
+
+        // console.log('spancross' + rsidowntrend)
+
+        let rsidowntrend = false
+        if(tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+            && kijun[kijun.length-26] < spanA[spanA.length-26] 
+            && kijun[kijun.length-26] < spanB[spanB.length-26] 
+            && tenkan[tenkan.length-26] < kijun[kijun.length-26] 
+            && sma200[sma200.length-1] > datahigh
+            && spanA[spanA.length-1] < spanB[spanB.length-1] 
+            && freechikoucount == true
+            && spancross <= 1
+            && rsi[rsi.length-1]>30 && rsi[rsi.length-3]<30
+            ){
+            rsidowntrend =true
+            console.log('rsi downtrend ' + rsi[rsi.length-1].tofix(5) + ' '+ rsi[rsi.length-3].tofix(5) +  ' spancross:' +  spancross+ ' ' + tfname + ' ' + symbolname)
+        }
+
+        let percentdiffSpanA = ((spanA[spanA.length-2] - spanA[spanA.length-1])/spanA[spanA.length-2])*100
+        let percentdiffSpanB = ((spanB[spanB.length-2] - spanB[spanB.length-1])/spanB[spanB.length-2])*100
+        let percentdiffTenkan = ((tenkan[tenkan.length-27] - tenkan[tenkan.length-26])/tenkan[tenkan.length-27])*100
+        let percentdiffKijun = ((kijun[kijun.length-27] - kijun[kijun.length-26])/kijun[kijun.length-27])*100
+        let percentdiffChisou= ((chisou[chisou.length-52] - chisou[chisou.length-51])/chisou[chisou.length-52])*100
+
+        // console.log('percentdiffSpanA: ' + percentdiffSpanA + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffSpanB: ' + percentdiffSpanB + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffTenkan: ' + percentdiffTenkan + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffKijun: ' + percentdiffKijun + ' ' + tfname + ' ' + symbolname)
+        // console.log('percentdiffChisou: ' + percentdiffChisou + ' ' + tfname + ' ' + symbolname)
+
+
+        if(reduceconfition == false){
+            if(spanB[spanB.length-1] > spanA[spanA.length-1]
+                && percentdiffSpanA > 0.03
+                && percentdiffSpanB > 0.03
+                && percentdiffTenkan >= 0
+                && percentdiffKijun > 0.03
+                // && percentdiffChisou > 0.03
                 && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
                 && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
                 && kijun[kijun.length-26] < spanA[spanA.length-26] 
                 && kijun[kijun.length-26] < spanB[spanB.length-26] 
+                && tenkan[tenkan.length-26] < kijun[kijun.length-26] 
+                && sma200[sma200.length-1] > datahigh
+                && spanA[spanA.length-1] < spanB[spanB.length-1] 
+                && freechikoucount == true
+                && spancross <= 1
+                // && rsi0 >= 30
+                
+                ){
+                    if(isRsiCheck == false){
+                        return true
+                    }else{
+                        return rsidowntrend
+                    }
 
+                   
+            }else{
+                // console.log('No trend')
+                return false
+            }
+        }else{
+            if(spanB[spanB.length-1] > spanA[spanA.length-1]
+                && percentdiffSpanA > 0.03
+                && percentdiffSpanB > 0.03
+                && percentdiffTenkan >= 0
+                && percentdiffKijun > 0.03
+                && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+                && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+                && kijun[kijun.length-26] < spanA[spanA.length-26] 
+                && kijun[kijun.length-26] < spanB[spanB.length-26] 
+                && tenkan[tenkan.length-26] < kijun[kijun.length-26] 
+                && spanA[spanA.length-1] < spanB[spanB.length-1] 
+                && freechikoucount == true
+                && spancross <= 1
+                
+                ){
+
+                    return true
+            }else{
+                // console.log('No trend')
+                return false
+            }
+        }
+    }
+ 
+    function IchimokuCheckDowntrendEntry(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname,rsi){
+        let dataopen = data[data.length-1][0]
+        let dataclose = data[data.length-1][1]
+        let datalow = data[data.length-1][2]
+        let datahigh = data[data.length-1][3]
+        let datahigh1 = data[data.length-2][3]
+        let datahigh2 = data[data.length-3][3]
+        let datahigh3 = data[data.length-4][3]
+
+        let open1 = data[data.length-2][0]
+        let open2 = data[data.length-3][0]
+        let open3 = data[data.length-4][0]
+
+        let close1 = data[data.length-2][1]
+        let close2 = data[data.length-3][1]
+        let close3 = data[data.length-4][1]
+
+        let datadown1 = open1
+        let datadown2 = open2
+    
+
+        if(close1 < open1){
+            datadown1 = close1 
+        }
+        if(close2 < open2){
+            datadown2 = close2
+        }
+    
+       
+        // if(dataopen > datadown1 && datadown1 > datadown2){
+        //     console.log('dataopen: ' + dataopen + 'datadown1: ' + datadown1 + 'datadown2: ' + datadown2)
+        // }
+
+        // let countcross = 0
+        // for(let i = kijun.length-26; i > 0 ; i--){
+        //     countcross++
+        //     if(kijun[i] <= tenkan[i]){
+        //         break
+        //     }
+        // }
+
+        let lastrsiarr = rsi.slice(Math.max(rsi.length - 5, 1))
+        // console.log(lastrsiarr)
+        let maxrsi = Math.max(...lastrsiarr)
+        let minrsi = Math.min(...lastrsiarr)
+        
+        let diffrsi = maxrsi-minrsi
+        let rsijump = false
+        if(diffrsi >= 20 ){
+            console.log('rsi jump')
+            rsijump = true
+        }
+
+        let rsidome = false
+        if( (rsi[rsi.length-1] <= 30 && rsi[rsi.length-1] < rsi[rsi.length-2] & rsi[rsi.length-3] < rsi[rsi.length-2]  & rsi[rsi.length-2] > 30 && rsi[rsi.length-3] <= 30) || (rsi[rsi.length-1] <= 40 && rsi[rsi.length-1] < rsi[rsi.length-2] & rsi[rsi.length-3] < rsi[rsi.length-2]  & rsi[rsi.length-2] > 40 && rsi[rsi.length-3] <= 40)){
+            console.log('rsi rsidome')
+            rsidome = true
+        }
+
+
+        let freechikoucount = true
+        for(let i = 0; i < freechisou; i++){
+            // console.log(i)
+            // if(chisou[chisou.length-51-i] > data[data.length-26-i][2] ){
+            if(chisou[chisou.length-51-i] > data[data.length-26-i][2] || chisou[chisou.length-51-i] > spanB[spanB.length-26-i] || chisou[chisou.length-51-i] > spanA[spanA.length-26-i]  ){
+                // console.log('break at: ' + i)
+                freechikoucount = false
+                break
+            }
+        }
+
+        let reallow = true
+        for(let i = 1; i < 5; i++){
+            if(data[data.length-1-i][2] > tenkan[tenkan.length-26-i]  ){
+                // console.log('reallow break: ' + i)
+                reallow = false
+                break
+            }
+        }
+
+
+        if(((datahigh > tenkan[tenkan.length-26] && datalow < tenkan[tenkan.length-26] ) || (dataopen > datadown1 && datadown1 > datadown2) || rsijump == true || rsidome == true)
+            && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+            && kijun[kijun.length-26] < spanA[spanA.length-26] 
+            && kijun[kijun.length-26] < spanB[spanB.length-26] 
+            // && spanA[spanA.length-1] < spanB[spanB.length-1] 
+            && freechikoucount == true
+            && sma200[sma200.length-1] > datahigh
+            // && countcross <= maxcross
+            && reallow == true
+            
             ){
-            return true
+                return true    
+            }else{
+                return false
+            }
+
+    }
+
+  function KumobreakUptrend(data,tenkan,kijun,spanA,spanB,range){
+    let spanbcontinue = true
+    for (var i = 1 ; i < range ; i++){
+        
+        if (spanB[spanB.length-26-i] != spanB[spanB.length-26-i-1]){
+            // console.log(spanB[spanB.length-26-i] +' ' + spanB[spanB.length-26-i-1])
+            spanbcontinue = false
+            break
+        }
+    }
+    
+    if(data[data.length-1][0] > spanB[spanB.length-26] 
+        && data[data.length-1][1] > spanB[spanB.length-26] 
+        && (data[data.length-3][1] < spanB[spanB.length-28] || data[data.length-4][1] < spanB[spanB.length-29])
+        && spanB[spanB.length-26] > spanA[spanA.length-26]
+        && spanbcontinue == true
+        ){
+        return true
+       
+    }else{
+        return false
+    }
+
+    return spanbcontinue
+    
+  }
+
+  function IchimokuMajorUptrendWithRSI(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname,symbolname,rsi,reduceconfition){
+    let rsi0 = rsi[rsi.length-1]
+    let rsi1 = rsi[rsi.length-2]
+    // console.log(rsi1)
+    let datalow = data[data.length-1][2]
+    let freechikoucount = true
+    if(reduceconfition == true){
+        freechisou = 3
+        for(let i = 0; i < freechisou; i++){
+            if(chisou[chisou.length-51-i] < data[data.length-26-i][3]){
+                freechikoucount = false
+                break
+            }
+        }
+    }else{
+        for(let i = 0; i < freechisou; i++){
+            if(chisou[chisou.length-51-i] < data[data.length-26-i][3] || chisou[chisou.length-51-i] < spanA[spanA.length-26-i] || chisou[chisou.length-51-i] < spanB[spanB.length-26-i]){
+                freechikoucount = false
+                break
+            }
+        }
+    }
+
+    // let percentdiffRSI = ((rsi[rsi.length-1] - rsi[rsi.length-3])/rsi[rsi.length-1])*100
+
+    let rsiuptrend = false
+    if((rsi[rsi.length-1] > 70 && rsi[rsi.length-2] < 70 && rsi[rsi.length-3] > 70) || (rsi[rsi.length-1] > 60 && rsi[rsi.length-2] < 60 && rsi[rsi.length-3] > 60) || (rsi[rsi.length-1] > 50 && rsi[rsi.length-2] < 50 && rsi[rsi.length-3] > 50) ){
+        rsiuptrend =true
+    }
+
+
+
+    // console.log('RSI: ' + rsi[rsi.length-1] +' ' + rsi[rsi.length-3] + ' ' + tfname + ' ' + symbolname)
+
+    if(reduceconfition == false){
+        if(spanB[spanB.length-1] < spanA[spanA.length-1]
+
+            && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+            && kijun[kijun.length-26] > spanA[spanA.length-26] 
+            && kijun[kijun.length-26] > spanB[spanB.length-26] 
+            && tenkan[tenkan.length-26] >= kijun[kijun.length-26] 
+            && sma200[sma200.length-1] < datalow
+            && spanA[spanA.length-1] > spanB[spanB.length-1] 
+            // && spanA[spanA.length-26] > spanB[spanB.length-26] 
+            && freechikoucount == true
+            && rsiuptrend == true
+   
+            ){
+
+                return true
+        }else{
+            return false
+        }
+    }else{
+        if(spanB[spanB.length-1] < spanA[spanA.length-1]
+            && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+            && kijun[kijun.length-26] > spanA[spanA.length-26] 
+            && kijun[kijun.length-26] > spanB[spanB.length-26] 
+            && tenkan[tenkan.length-26] >= kijun[kijun.length-26] 
+            // && sma200[sma200.length-1] < datalow
+            && spanA[spanA.length-1] > spanB[spanB.length-1] 
+            // && spanA[spanA.length-26] > spanB[spanB.length-26] 
+            && freechikoucount == true
+            ){
+                return true
         }else{
             return false
         }
     }
+
+
+}
+
+
+function IchimokuMajorDowntrendWithRSI(data,tenkan,kijun,chisou,spanA,spanB,sma200,maxcross,freechisou,tfname,symbolname,rsi,reduceconfition){
+    // console.log(chisou)
+    // console.log(chisou[chisou.length-1])
+    let rsi0 = rsi[rsi.length-1]
+    let rsi1 = rsi[rsi.length-2]
+    let datahigh = data[data.length-1][3]
+    let freechikoucount = true
+    if(reduceconfition == true){
+        freechisou = 3
+        for(let i = 0; i < freechisou; i++){
+            if(chisou[chisou.length-51-i] > data[data.length-26-i][2]  ){
+                freechikoucount = false
+                break
+            }
+        }
+
+    }else{
+        for(let i = 0; i < freechisou; i++){
+            if(chisou[chisou.length-51-i] > data[data.length-26-i][2] || chisou[chisou.length-51-i] > spanB[spanB.length-26-i] || chisou[chisou.length-51-i] > spanA[spanA.length-26-i]  ){
+                freechikoucount = false
+                break
+            }
+        }
+
+    }
+
+    let rsidowntrend = false
+    if((rsi[rsi.length-1]>30 && rsi[rsi.length-3]<30) || (rsi[rsi.length-1]>40 && rsi[rsi.length-3]<40)){
+        rsidowntrend =true
+    }
+    // console.log(rsi)
+   
+
+
+
+    if(reduceconfition == false){
+        if(spanB[spanB.length-1] > spanA[spanA.length-1]
+
+            && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+            && kijun[kijun.length-26] < spanA[spanA.length-26] 
+            && kijun[kijun.length-26] < spanB[spanB.length-26] 
+            && tenkan[tenkan.length-26] < kijun[kijun.length-26] 
+            && sma200[sma200.length-1] > datahigh
+            && spanA[spanA.length-1] < spanB[spanB.length-1] 
+            && freechikoucount == true
+            && rsidowntrend == true
+            
+            ){
+                return true
+        }else{
+            // console.log('No trend')
+            return false
+        }
+    }else{
+        if(spanB[spanB.length-1] > spanA[spanA.length-1]
+            && percentdiffSpanA > 0.03
+            && percentdiffSpanB > 0.03
+            && percentdiffTenkan >= 0
+            && percentdiffKijun > 0.03
+            && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+            && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+            && kijun[kijun.length-26] < spanA[spanA.length-26] 
+            && kijun[kijun.length-26] < spanB[spanB.length-26] 
+            && tenkan[tenkan.length-26] < kijun[kijun.length-26] 
+            // && sma200[sma200.length-1] > datahigh
+            && spanA[spanA.length-1] < spanB[spanB.length-1] 
+            // && spanA[spanA.length-26] < spanB[spanB.length-26] 
+            && freechikoucount == true
+            && rsidowntrend == true
+            
+            ){
+                return true
+        }else{
+            // console.log('No trend')
+            return false
+        }
+    }
+}
+
+
+function checkRSI(rsi){
+    // let lastrsiarr = rsi.slice(Math.max(rsi.length - 5, 1))
+    // // console.log(lastrsiarr)
+    // let maxrsi = Math.max(...lastrsiarr)
+    // let minrsi = Math.min(...lastrsiarr)
+    
+    // let diffrsi = maxrsi-minrsi
+    // if(diffrsi > 20 & ((rsi[rsi.length-1] > rsi[rsi.length-2]) || (rsi[rsi.length-1] < rsi[rsi.length-2]))){
+    // // if(diffrsi > 20 ){
+    //     return true
+    // }else{
+    //     return false
+    // }
+
+    // if((rsi[rsi.length-1] > 70 && (rsi[rsi.length-2] < rsi[rsi.length-1]) && (rsi[rsi.length-2] < rsi[rsi.length-3])) || (rsi[rsi.length-1] > 60 && (rsi[rsi.length-2] < rsi[rsi.length-1]) && (rsi[rsi.length-2] < rsi[rsi.length-3])) || (rsi[rsi.length-1] > 50 && (rsi[rsi.length-2] < rsi[rsi.length-1]) && (rsi[rsi.length-2] < rsi[rsi.length-3])) ){
+    //     rsiuptrend =true
+    // }else{
+    //     rsiuptrend =false
+    // }
+    let countleftcross = false
+    for(let i = 2; i < 5 ; i++){
+        if(rsi[rsi.length-1] > 70 && rsi[rsi.length-i] > rsi[rsi.length-i-1] ){
+            countleftcross = true 
+        }
+    }
+}
+
+function UptrendEntryPoint(data,tenkan,kijun,chikou,spanA,spanB,sma200,freechikouRange,rsi_data,stochastic,macd_data,macdSlope,chikouspanSlope,stdbardata,dataBody,tfname,symbolname ){
+    // let stdBody = StandardDeviationCalc(dataBody,10);
+    // console.log(stdbardata.macdslope)
+   
+    let datalow = data[data.length-1][2]
+    let freechikoucount =true
+
+    let foundbigguy = false
+    for(let i = 2; i < 10; i++){
+        let bodysize = data[data.length-i][0] - data[data.length-i][1]
+        if(Math.abs(bodysize) > 5*stdbardata.value  ){
+            foundbigguy = true
+            break
+        }
+    }
+
+    for(let i = 0; i < freechikouRange; i++){
+        if(chikou[chikou.length-51-i] < data[data.length-26-i][3]){
+            freechikoucount = false
+            break
+        }
+    }
+
+
+    if(rsi_data[rsi_data.length-1] >= 65 && rsi_data[rsi_data.length-2] < rsi_data[rsi_data.length-1] && rsi_data[rsi_data.length-2] < rsi_data[rsi_data.length-3]
+       && stochastic[stochastic.length-1] > 75 
+       && macd_data[macd_data.length-1] > 0
+       && macdSlope[0] > stdbardata.macdslope
+       && chikouspanSlope[0] > 0
+       && freechikoucount == true
+       && tenkan[tenkan.length-26] > spanA[spanA.length-26] 
+       && tenkan[tenkan.length-26] > spanB[spanB.length-26] 
+       && kijun[kijun.length-26] > spanA[spanA.length-26] 
+       && kijun[kijun.length-26] > spanB[spanB.length-26] 
+       && tenkan[tenkan.length-26] >= kijun[kijun.length-26] 
+       && sma200[sma200.length-1] < datalow
+       && spanA[spanA.length-1] > spanB[spanB.length-1] 
+        ){
+        console.log(macdSlope[0] + ' std:' + stdbardata.macdslope)
+        
+        console.log(data[data.length-1])
+        if(foundbigguy == true){
+            console.log('Be carefull found big guy')
+        }
+        console.log('rsi uptrend')
+        return true
+    }else{
+        
+        return false
+    }
+}
+
+function DowntrendEntryPoint(data,tenkan,kijun,chikou,spanA,spanB,sma200,freechikouRange,rsi_data,stochastic,macd_data,macdSlope,chikouspanSlope,stdbardata,dataBody ,tfname,symbolname){
+    // let stdBody = StandardDeviationCalc(dataBody,10);
+    let datahigh = data[data.length-1][3]
+    let freechikoucount =true
+    let foundbigguy = false
+
+
+
+    for(let i = 2; i < 10; i++){
+        let bodysize = data[data.length-i][0] - data[data.length-i][1]
+        if(Math.abs(bodysize) > 5*stdbardata.value  ){
+            foundbigguy = true
+            break
+        }
+    }
+
+    for(let i = 0; i < freechikouRange; i++){
+        
+        if(chikou[chikou.length-51-i] > data[data.length-26-i][2]  ){
+            freechikoucount = false
+            break
+        }
+    }
+    
+    
+    if(rsi_data[rsi_data.length-1] <= 35 && rsi_data[rsi_data.length-2] > rsi_data[rsi_data.length-1]  && rsi_data[rsi_data.length-3] < rsi_data[rsi_data.length-2]
+       && stochastic[stochastic.length-1] < 25
+       && macd_data[macd_data.length-1] < 0
+       && macdSlope[0]*(-1) > stdbardata.macdslope
+       && chikouspanSlope[0] < 0
+       && freechikoucount == true
+       && tenkan[tenkan.length-26] < spanA[spanA.length-26] 
+       && tenkan[tenkan.length-26] < spanB[spanB.length-26] 
+       && kijun[kijun.length-26] < spanA[spanA.length-26] 
+       && kijun[kijun.length-26] < spanB[spanB.length-26] 
+       && tenkan[tenkan.length-26] < kijun[kijun.length-26] 
+       && sma200[sma200.length-1] > datahigh
+       && spanA[spanA.length-1] < spanB[spanB.length-1] 
+        ){
+        console.log(macdSlope[0] + ' std:' + stdbardata.macdslope)
+        console.log(data[data.length-1])
+        if(foundbigguy == true){
+            console.log('Be carefull found big guy')
+        }
+        console.log('rsi downtrend')
+        return true
+    }else{
+        return false
+    }
+}
+
+function Stochastic(highArr,lowArr,closeArr){
+    let range = 5
+    let maxhigharr =[]
+    let minlowarr = []
+    for (let i = 0 ; i < highArr.length-1-3 ; i++){
+        let _highArr = highArr.slice(i, range+i);
+        maxhigharr.push(Math.max(..._highArr));
+    }
+    for (let i = 0 ; i < lowArr.length-1-3 ; i++){
+        let _lowArr = lowArr.slice(i, range+i);
+        minlowarr.push(Math.min(..._lowArr));
+    }
+    let percentK = []
+    for(let i = 4 ;i<closeArr.length;i++){
+        let _percentK = (closeArr[i] - minlowarr[i-4])/(maxhigharr[i-4] - minlowarr[i-4])*100
+        percentK.push(_percentK)
+    }
+    // console.log(maxhigharr)
+
+
+
+    let avgPercentK = [];
+    for (var i = 0; i < percentK.length-3+1; i++) {
+        var _percentK = percentK.slice(i, 3+i).reduce((a,c) => a + c, 0) / 3;
+        avgPercentK.push(_percentK);
+    }
+
+    let PercentD = [];
+    for (var i = 0; i < avgPercentK.length-3+1; i++) {
+        var _percentD = avgPercentK.slice(i, 3+i).reduce((a,c) => a + c, 0) / 3;
+        PercentD.push(_percentD);
+    }
+
+    let nullpercentK= Array(6).fill(null);
+    let nullpercentD= Array(8).fill(null);
+    // console.log(nullpercentK)
+    // percentK =  nullpercentK.concat(avgPercentK); 
+    // PercentD =  nullpercentD.concat(PercentD); 
+
+    return {'main':nullpercentK.concat(avgPercentK),'signal':nullpercentD.concat(PercentD)}
+}
 
     function GetBodySize(arr){
         var bodyArr = [];
@@ -930,6 +1987,7 @@
 
     function genRegressionLine(_data,nRange){
         var yVal = [];
+        // console.log(_data)
         for(var i = _data.length-nRange ; i < _data.length ; i++ ){
             yVal.push(_data[i]);
         }
@@ -2015,6 +3073,9 @@
         return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / nRange)
     }
 
+    function calRSI(closePriceArr,mRange){
+
+    }
     function RS(mArray,mRange) {
         var _closePriceChanged = [];
         var _closePriceChangedGain = [];
@@ -2034,6 +3095,7 @@
                 _closePriceChangedLost.push(closePriceChanged*-1)
             }
         }
+        
 
         var avgGain = _closePriceChangedGain.slice(0, mRange).reduce((a,c) => a + c, 0) / mRange;
         var avgLost = _closePriceChangedLost.slice(0, mRange).reduce((a,c) => a + c, 0) / mRange;

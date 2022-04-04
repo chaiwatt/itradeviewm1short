@@ -228,56 +228,38 @@
         })
 
         $( document ).ready(function () {   
-            $( "#btnGetSingleOhlc" ).trigger( "click" );
+            // $( "#btnGetSingleOhlc" ).trigger( "click" );
             setInterval(function(){
-                //
-                // searchMarket();
                 getOrderSymbols().then(data => { //0=order on Buy 1=order on Sell
                     let html_orders_list = ''
                     // console.log('Num orders: ' + data.orders.length)
+                    // console.log(data.orders)
                     data.orders.forEach((order,i) => {
                         
-                        let _profit = order.profit
+                        let _profit = parseFloat(order.profit)
                         let _symbol = order.symbol
-
-                        console.log(order.comment)
-                        if(order.comment == 'AutoClose=True'){
+                        let lot = parseFloat(order.lot)
+                        
+                            let tp = lot * 75
+                            let sl = -1.5*tp
                             
-                        }else{
-                            console.log('manual close')
-                            let gbp_price_for_lot_tp = order.lot * 100
-                            let gbp_price_for_lot_sl = order.lot * 75
-
-                            if(_profit > gbp_price_for_lot_tp || _profit < -1*gbp_price_for_lot_tp){
-                            // if(_profit > gbp_price_for_lot_tp){
-                                // closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+                            console.log("price now:"+ _profit + ' tp:'+ tp + " sl:" + sl)
+                            if((_profit > tp || _profit < sl) && order.spread <=25 ){
+                                closeOrder(_symbol,order.ticket,order.type,lot).then(data => { //0=order on Buy 1=order on Sell
           
-                                // }).catch(error => {})
+                                }).catch(error => {})
                             }
-                        }
-                        // if(_symbol.includes("GBP") == true){
-                            
-                        //     let gbp_price_for_lot_tp = order.lot * 100
-                        //     let gbp_price_for_lot_sl = order.lot * 75
 
-                        //     if(_profit > gbp_price_for_lot_tp || _profit < -1*gbp_price_for_lot_tp){
-                        //     // if(_profit > gbp_price_for_lot_tp){
-                        //         // closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
+                            var today = new Date();   
+                            let hour = today.getUTCHours();
+                            // console.log(hour)
+                            if(hour>=20 && _profit>0){
+                                closeOrder(_symbol,order.ticket,order.type,lot).then(data => { //0=order on Buy 1=order on Sell
           
-                        //         // }).catch(error => {})
-                        //     }
-                        // }else{
-                            
-                        //     let none_gbp_price_for_lot_tp = order.lot * 60
-                        //     let none_gbp_price_for_lot_sl = order.lot * 40
-                        //     // console.log(order.symbol + ' profit:' + _profit +' target:'+ none_gbp_price_for_lot_tp)
-                        //     if(_profit > none_gbp_price_for_lot_tp || _profit < -1*none_gbp_price_for_lot_tp){
-                        //         // closeOrder(_symbol,order.ticket,order.type,order.lot).then(data => { //0=order on Buy 1=order on Sell
-                  
-                        //         // }).catch(error => {})
-                        //     }
-                        // }
-                   
+                                }).catch(error => {})
+                            }
+
+                        // console.log(order)
                         
                         let type = ''
                         if(order.type == 0){
@@ -286,19 +268,15 @@
                             type = 'sell'
                         }
 
-                        let closeprice = order.lot * 75
+                        let closeprice = parseFloat(order.lot) * 75
 
-                        if(order.symbol.includes("GBP") == false){
-                            closeprice = order.lot * 60
-                        }
-                
                         html_orders_list += `<tr>
                             <td>${order.symbol}</td>
                             <td>${order.ticket}</td>
                             <td>${type}</td>
-                            <td>${order.lot}</td>
-                            <td>${order.profit.toFixed(2)}</td>
-                            <td>${closeprice.toFixed(2)}</td>
+                            <td>${lot}</td>
+                            <td>${_profit.toFixed(2)}</td>
+                            <td>${parseFloat(closeprice).toFixed(2)}</td>
                             <td>${order.comment}</td>
                             <td class="text-right"><button type="button" class="btn btn-sm btn-info closeorder" data-lot="${order.lot}" data-type="${order.type}" data-ticket="${order.ticket}" data-symbol="${order.symbol}">Close</button></td>
                             </tr>`;
@@ -313,10 +291,11 @@
         }
 
         function searchMarket(){
-            // console.log('aha')
+            console.log('aha')
             if(apisymbols.length == 0){
                 getOrderSymbols().then(data => { //0=order on Buy 1=order on Sell
                     updateapisymbols = JSON.parse(data_item.apisymbols)
+                   
                 }).catch(error => {})
             }else{
                 let symbol = parseInt(apisymbols[symbolCountId].pk);
@@ -374,7 +353,7 @@
                     
                     // console.log(usdbase)
                 
-                    createData(data_item);
+                    // createData(data_item);
                 }).catch(error => {})
 
                 symbolCountId++;            
